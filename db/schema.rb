@@ -10,7 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_235557) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_235720) do
+  create_table "expenses", force: :cascade do |t|
+    t.decimal "amount", precision: 20, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.integer "expense_account_id", null: false
+    t.date "incurred_on", null: false
+    t.text "memo"
+    t.integer "organization_id", null: false
+    t.integer "paid_from_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "vendor", null: false
+    t.index ["expense_account_id"], name: "index_expenses_on_expense_account_id"
+    t.index ["organization_id"], name: "index_expenses_on_organization_id"
+    t.index ["paid_from_account_id"], name: "index_expenses_on_paid_from_account_id"
+  end
+
   create_table "identities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
@@ -82,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_235557) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  add_foreign_key "expenses", "organizations"
   add_foreign_key "invoices", "organizations"
   add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"
