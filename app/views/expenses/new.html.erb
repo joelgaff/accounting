@@ -1,0 +1,12 @@
+<header class="page-header">
+  <h1>New expense</h1>
+</header>
+
+<% if @expense_accounts.empty? || @paid_from_accounts.empty? %>
+  <div class="notice">
+    <p>You need to set up your Chart of Accounts before you can record an expense.</p>
+    <p>At minimum you need one <strong>Expense</strong> category and one <strong>Asset</strong> or <strong>Liability</strong> account to pay from.</p>
+  </div>
+<% else %>
+  <%= render "form", expense: @expense, expense_accounts: @expense_accounts, paid_from_accounts: @paid_from_accounts %>
+<% end %>

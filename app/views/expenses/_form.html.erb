@@ -1,0 +1,46 @@
+<%= form_with model: expense, class: "app-form" do |f| %>
+  <% if expense.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% expense.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :vendor %>
+    <%= f.text_field :vendor, autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :amount %>
+    <%= f.number_field :amount, step: 0.01, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :incurred_on, "Date incurred" %>
+    <%= f.date_field :incurred_on %>
+  </div>
+
+  <div class="field">
+    <%= f.label :expense_account_id, "Category (debit)" %>
+    <%= f.collection_select :expense_account_id, expense_accounts, :id, :name, prompt: "Select an expense category" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :paid_from_account_id, "Paid from (credit)" %>
+    <%= f.collection_select :paid_from_account_id, paid_from_accounts, :id, ->(a) { "#{a.name} (#{a.type.demodulize})" }, prompt: "Select an asset or liability account" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :memo %>
+    <%= f.text_area :memo, rows: 3 %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Record expense", class: "btn btn-primary" %>
+    <%= link_to "Cancel", expenses_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>
