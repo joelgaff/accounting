@@ -1,0 +1,41 @@
+<%= form_with model: invoice, class: "app-form" do |f| %>
+  <% if invoice.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% invoice.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :client_name %>
+    <%= f.text_field :client_name, autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :amount %>
+    <%= f.number_field :amount, step: 0.01, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :due_date, "Due date" %>
+    <%= f.date_field :due_date %>
+  </div>
+
+  <div class="field">
+    <%= f.label :receivable_account_id, "Receivable account (debit)" %>
+    <%= f.collection_select :receivable_account_id, receivable_accounts, :id, :name, prompt: "Select an asset account" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :revenue_account_id, "Revenue account (credit)" %>
+    <%= f.collection_select :revenue_account_id, revenue_accounts, :id, :name, prompt: "Select a revenue account" %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Create invoice", class: "btn btn-primary" %>
+    <%= link_to "Cancel", invoices_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

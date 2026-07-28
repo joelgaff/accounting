@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_233402) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_235557) do
   create_table "identities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
@@ -18,6 +18,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_233402) do
     t.datetime "login_code_expires_at"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_identities_on_email", unique: true
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.decimal "amount", precision: 20, scale: 2, null: false
+    t.string "client_name", null: false
+    t.datetime "created_at", null: false
+    t.date "due_date", null: false
+    t.integer "organization_id", null: false
+    t.integer "receivable_account_id", null: false
+    t.integer "revenue_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_invoices_on_organization_id"
+    t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
+    t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -68,6 +82,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_233402) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  add_foreign_key "invoices", "organizations"
   add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"
 end
