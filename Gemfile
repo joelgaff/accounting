@@ -68,3 +68,6 @@ end
 gem "letter_opener", "~> 1.10", group: :development
 
 gem "bcrypt", "~> 3.1"
+
+# Double-entry accounting ledger [https://github.com/mbulat/plutus]
+gem "plutus", "~> 0.18"
