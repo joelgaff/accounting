@@ -1,0 +1,29 @@
+<header class="page-header">
+  <h1>Invoices</h1>
+  <%= link_to "New invoice", new_invoice_path, class: "btn btn-primary" %>
+</header>
+
+<% if @invoices.any? %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Created</th>
+        <th>Client</th>
+        <th>Due</th>
+        <th class="num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @invoices.each do |invoice| %>
+        <tr>
+          <td><%= invoice.created_at.to_date.iso8601 %></td>
+          <td><%= invoice.client_name %></td>
+          <td><%= invoice.due_date.iso8601 %></td>
+          <td class="num">$<%= number_with_precision(invoice.amount, precision: 2, delimiter: ",") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No invoices yet.</p>
+<% end %>
