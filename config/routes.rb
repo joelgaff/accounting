@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root "home#index"
+  root "dashboard#index"
 
   resource :session, only: %i[new create destroy] do
     get  :verify
