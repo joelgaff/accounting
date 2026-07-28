@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_042610) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_233402) do
   create_table "identities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
@@ -24,6 +24,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_042610) do
     t.datetime "created_at", null: false
     t.string "name"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "plutus_accounts", force: :cascade do |t|
+    t.boolean "contra", default: false
+    t.datetime "created_at", precision: nil
+    t.string "name"
+    t.integer "tenant_id"
+    t.string "type"
+    t.datetime "updated_at", precision: nil
+    t.index ["name", "type"], name: "index_plutus_accounts_on_name_and_type"
+    t.index ["tenant_id"], name: "index_plutus_accounts_on_tenant_id"
+  end
+
+  create_table "plutus_amounts", force: :cascade do |t|
+    t.integer "account_id"
+    t.decimal "amount", precision: 20, scale: 10
+    t.integer "entry_id"
+    t.string "type"
+    t.index ["account_id", "entry_id"], name: "index_plutus_amounts_on_account_id_and_entry_id"
+    t.index ["entry_id", "account_id"], name: "index_plutus_amounts_on_entry_id_and_account_id"
+    t.index ["type"], name: "index_plutus_amounts_on_type"
+  end
+
+  create_table "plutus_entries", force: :cascade do |t|
+    t.integer "commercial_document_id"
+    t.string "commercial_document_type"
+    t.datetime "created_at", precision: nil
+    t.date "date"
+    t.string "description"
+    t.datetime "updated_at", precision: nil
+    t.index ["commercial_document_id", "commercial_document_type"], name: "index_entries_on_commercial_doc"
+    t.index ["date"], name: "index_plutus_entries_on_date"
   end
 
   create_table "users", force: :cascade do |t|
