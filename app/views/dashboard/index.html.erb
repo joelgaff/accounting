@@ -1,0 +1,58 @@
+<header class="page-header">
+  <h1>Dashboard</h1>
+</header>
+
+<% if @missing_accounts.any? %>
+  <div class="notice">
+    <p>The following KPI accounts don't exist yet in your Chart of Accounts:</p>
+    <ul>
+      <% @missing_accounts.each do |name| %>
+        <li><strong><%= name %></strong></li>
+      <% end %>
+    </ul>
+    <p>Create them (once you import your CoA, or via <code>bin/rails c</code>) to see live balances here.</p>
+  </div>
+<% end %>
+
+<section class="kpi-grid">
+  <% @kpis.each do |name, balance| %>
+    <article class="kpi-card">
+      <div class="kpi-label"><%= name %></div>
+      <div class="kpi-value">$<%= number_with_precision(balance, precision: 2, delimiter: ",") %></div>
+    </article>
+  <% end %>
+</section>
+
+<section class="audit-log">
+  <h2>Recent activity</h2>
+  <% if @recent_entries.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Description</th>
+          <th>Source</th>
+          <th class="num">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @recent_entries.each do |entry| %>
+          <tr>
+            <td><%= entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+            <td><%= entry.description %></td>
+            <td>
+              <% if entry.commercial_document %>
+                <%= entry.commercial_document_type %> #<%= entry.commercial_document_id %>
+              <% else %>
+                <span class="muted">—</span>
+              <% end %>
+            </td>
+            <td class="num">$<%= number_with_precision(entry.debit_amounts.sum(:amount), precision: 2, delimiter: ",") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No ledger entries yet.</p>
+  <% end %>
+</section>
