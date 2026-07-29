@@ -1,11 +1,9 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  email: MyString
-  login_code_digest: MyString
-  login_code_expires_at: 2026-07-27 21:26:09
+  email: one@example.com
+  login_code_digest: <%= BCrypt::Password.create("000000", cost: 4) %>
+  login_code_expires_at: <%= 1.hour.from_now %>
 
 two:
-  email: MyString
-  login_code_digest: MyString
-  login_code_expires_at: 2026-07-27 21:26:09
+  email: two@example.com
+  login_code_digest: <%= BCrypt::Password.create("000000", cost: 4) %>
+  login_code_expires_at: <%= 1.hour.from_now %>
