@@ -1,0 +1,22 @@
+<header class="page-header">
+  <h1>Email invoice #<%= @invoice.id %></h1>
+</header>
+
+<%= form_with url: send_email_invoice_path(@invoice), method: :post, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :to, "Send to (email)" %>
+    <%= f.email_field :to, value: @invoice.contact&.email, required: true %>
+  </div>
+  <div class="field">
+    <%= f.label :subject %>
+    <%= f.text_field :subject, value: "Invoice ##{@invoice.id} from #{@invoice.organization.name}" %>
+  </div>
+  <div class="field">
+    <%= f.label :body, "Personal note (optional)" %>
+    <%= f.text_area :body, rows: 5, placeholder: "Thanks for your business…" %>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Send email", class: "btn btn-primary" %>
+    <%= link_to "Cancel", print_invoice_path(@invoice), class: "btn btn-secondary" %>
+  </div>
+<% end %>

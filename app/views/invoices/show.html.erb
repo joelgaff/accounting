@@ -1,7 +1,9 @@
 <header class="page-header">
   <h1>Invoice #<%= @invoice.id %></h1>
-  <div>
+  <div style="display:flex;gap:8px;align-items:center;">
     <span class="badge badge-<%= @invoice.status %>"><%= @invoice.status %></span>
+    <%= link_to "Print / PDF", print_invoice_path(@invoice), class: "btn btn-secondary" %>
+    <%= link_to "Email", email_invoice_path(@invoice), class: "btn btn-secondary" %>
     <% unless @invoice.paid? %>
       <%= link_to "Record payment", new_invoice_payment_path(@invoice), class: "btn btn-primary" %>
     <% end %>

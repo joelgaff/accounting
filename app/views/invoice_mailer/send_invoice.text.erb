@@ -1,0 +1,16 @@
+Hi <%= @invoice.customer_display %>,
+
+<% if @body.present? %><%= @body %>
+
+<% else %>Please find your invoice below.
+
+<% end %>
+---
+Invoice #<%= @invoice.id %>
+From:     <%= @invoice.organization.name %>
+To:       <%= @invoice.customer_display %>
+Due date: <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+
+Services rendered .......... $<%= '%.2f' % (@invoice.subtotal || @invoice.amount) %>
+<% if @invoice.tax_amount.positive? %>Tax (<%= @invoice.tax_rate.name %>) . $<%= '%.2f' % @invoice.tax_amount %>
+<% end %>Total due .................. $<%= '%.2f' % @invoice.amount %>
