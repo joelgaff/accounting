@@ -1,0 +1,37 @@
+<header class="page-header">
+  <h1>Journal entry #<%= @journal_entry.id %></h1>
+</header>
+
+<div class="app-form" style="max-width:none;">
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 20px;">
+    <dt class="muted">Date</dt>       <dd style="margin:0;"><%= @journal_entry.posted_on.iso8601 %></dd>
+    <dt class="muted">Narrative</dt>  <dd style="margin:0;"><%= @journal_entry.narrative %></dd>
+    <% if @journal_entry.reference.present? %>
+      <dt class="muted">Reference</dt><dd style="margin:0;"><%= @journal_entry.reference %></dd>
+    <% end %>
+  </div>
+</div>
+
+<h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Lines</h2>
+<table class="data-table">
+  <thead>
+    <tr><th>Account</th><th>Memo</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+  </thead>
+  <tbody>
+    <% @journal_entry.lines.each do |line| %>
+      <tr>
+        <td><%= line.account.code %> <%= line.account.name %></td>
+        <td class="muted"><%= line.memo %></td>
+        <td class="num"><%= line.debit? ? "$#{number_with_precision(line.debit_amount, precision: 2, delimiter: ',')}" : "" %></td>
+        <td class="num"><%= line.credit? ? "$#{number_with_precision(line.credit_amount, precision: 2, delimiter: ',')}" : "" %></td>
+      </tr>
+    <% end %>
+    <tr style="font-weight:600;background:#fafbfc;">
+      <td colspan="2">Totals</td>
+      <td class="num">$<%= number_with_precision(@journal_entry.total_debits,  precision: 2, delimiter: ",") %></td>
+      <td class="num">$<%= number_with_precision(@journal_entry.total_credits, precision: 2, delimiter: ",") %></td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin-top:24px;"><%= link_to "← Back to journal", journal_entries_path %></p>

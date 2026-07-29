@@ -1,0 +1,10 @@
+<tr data-journal-lines-target="row">
+  <td><%= lf.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name} (#{a.type.demodulize})" }, { include_blank: "—" }, { style: "width:100%;" } %></td>
+  <td><%= lf.text_field :memo, style: "width:100%;" %></td>
+  <td class="num"><%= lf.number_field :debit_amount,  step: 0.01, min: 0, style: "width:100%;text-align:right;", data: { action: "input->journal-lines#recalc" } %></td>
+  <td class="num"><%= lf.number_field :credit_amount, step: 0.01, min: 0, style: "width:100%;text-align:right;", data: { action: "input->journal-lines#recalc" } %></td>
+  <td>
+    <%= lf.hidden_field :_destroy %>
+    <button type="button" class="btn btn-secondary" data-action="journal-lines#remove" style="padding:2px 8px;">×</button>
+  </td>
+</tr>

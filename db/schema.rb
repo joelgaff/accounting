@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_044243) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_045431) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -134,6 +134,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_044243) do
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
     t.index ["tax_rate_id"], name: "index_invoices_on_tax_rate_id"
+  end
+
+  create_table "journal_entries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "narrative", null: false
+    t.integer "organization_id", null: false
+    t.date "posted_on", null: false
+    t.string "reference"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_journal_entries_on_organization_id"
+  end
+
+  create_table "journal_lines", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "credit_amount", precision: 20, scale: 2, default: "0.0", null: false
+    t.decimal "debit_amount", precision: 20, scale: 2, default: "0.0", null: false
+    t.integer "journal_entry_id", null: false
+    t.string "memo"
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_journal_lines_on_account_id"
+    t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
   end
 
   create_table "line_items", force: :cascade do |t|
@@ -260,6 +283,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_044243) do
   add_foreign_key "invoices", "contacts"
   add_foreign_key "invoices", "organizations"
   add_foreign_key "invoices", "tax_rates"
+  add_foreign_key "journal_entries", "organizations"
+  add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "organization_settings", "organizations"
   add_foreign_key "payments", "organizations"
   add_foreign_key "tax_rates", "organizations"
