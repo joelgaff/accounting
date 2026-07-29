@@ -10,9 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_010754) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_011055) do
+  create_table "contacts", force: :cascade do |t|
+    t.text "address"
+    t.string "city"
+    t.string "company_number"
+    t.string "country"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "first_name"
+    t.string "kind", default: "both", null: false
+    t.string "last_name"
+    t.string "name", null: false
+    t.text "notes"
+    t.integer "organization_id", null: false
+    t.string "phone"
+    t.string "postal_code"
+    t.string "region"
+    t.string "tax_number"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "name"], name: "index_contacts_on_organization_id_and_name"
+    t.index ["organization_id"], name: "index_contacts_on_organization_id"
+  end
+
   create_table "expenses", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
+    t.integer "contact_id"
     t.datetime "created_at", null: false
     t.integer "expense_account_id", null: false
     t.date "incurred_on", null: false
@@ -21,6 +44,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_010754) do
     t.integer "paid_from_account_id", null: false
     t.datetime "updated_at", null: false
     t.string "vendor", null: false
+    t.index ["contact_id"], name: "index_expenses_on_contact_id"
     t.index ["expense_account_id"], name: "index_expenses_on_expense_account_id"
     t.index ["organization_id"], name: "index_expenses_on_organization_id"
     t.index ["paid_from_account_id"], name: "index_expenses_on_paid_from_account_id"
@@ -38,12 +62,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_010754) do
   create_table "invoices", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.string "client_name", null: false
+    t.integer "contact_id"
     t.datetime "created_at", null: false
     t.date "due_date", null: false
     t.integer "organization_id", null: false
     t.integer "receivable_account_id", null: false
     t.integer "revenue_account_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_invoices_on_contact_id"
     t.index ["organization_id"], name: "index_invoices_on_organization_id"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
@@ -114,7 +140,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_010754) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  add_foreign_key "contacts", "organizations"
+  add_foreign_key "expenses", "contacts"
   add_foreign_key "expenses", "organizations"
+  add_foreign_key "invoices", "contacts"
   add_foreign_key "invoices", "organizations"
   add_foreign_key "organization_settings", "organizations"
   add_foreign_key "users", "identities"

@@ -8,5 +8,5 @@
     <p>At minimum you need one <strong>Expense</strong> category and one <strong>Asset</strong> or <strong>Liability</strong> account to pay from.</p>
   </div>
 <% else %>
-  <%= render "form", expense: @expense, expense_accounts: @expense_accounts, paid_from_accounts: @paid_from_accounts %>
+  <%= render "form", expense: @expense, expense_accounts: @expense_accounts, paid_from_accounts: @paid_from_accounts, vendors: @vendors %>
 <% end %>

@@ -1,0 +1,44 @@
+<header class="page-header">
+  <h1>Contacts</h1>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "Import from Xero", new_contact_import_path, class: "btn btn-secondary" %>
+    <%= link_to "New contact", new_contact_path, class: "btn btn-primary" %>
+  </div>
+</header>
+
+<nav style="display:flex;gap:12px;margin-bottom:20px;font-size:13px;">
+  <%= link_to "All", contacts_path, class: (params[:kind].blank? ? "active" : nil), style: "font-weight:600;" %>
+  <%= link_to "Customers", contacts_path(kind: "customer"), class: (params[:kind] == "customer" ? "active" : nil) %>
+  <%= link_to "Vendors", contacts_path(kind: "vendor"), class: (params[:kind] == "vendor" ? "active" : nil) %>
+</nav>
+
+<% if @contacts.any? %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Kind</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @contacts.each do |c| %>
+        <tr>
+          <td><%= link_to c.name, contact_path(c) %></td>
+          <td class="muted"><%= c.kind %></td>
+          <td><%= c.email %></td>
+          <td><%= c.phone %></td>
+          <td><%= link_to "Edit", edit_contact_path(c) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">
+    No contacts yet.
+    <%= link_to "Import a Xero Contacts CSV", new_contact_import_path %> or
+    <%= link_to "add one manually", new_contact_path %>.
+  </p>
+<% end %>

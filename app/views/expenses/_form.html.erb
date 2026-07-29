@@ -9,9 +9,16 @@
     </div>
   <% end %>
 
+  <% if vendors.any? %>
+    <div class="field">
+      <%= f.label :contact_id, "Vendor" %>
+      <%= f.collection_select :contact_id, vendors, :id, :name, include_blank: "— pick a vendor or type a name below —" %>
+    </div>
+  <% end %>
+
   <div class="field">
-    <%= f.label :vendor %>
-    <%= f.text_field :vendor, autofocus: true %>
+    <%= f.label :vendor, "Vendor name (used if no vendor picked)" %>
+    <%= f.text_field :vendor, autofocus: vendors.empty? %>
   </div>
 
   <div class="field">

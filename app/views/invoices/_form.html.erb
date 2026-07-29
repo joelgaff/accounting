@@ -9,9 +9,16 @@
     </div>
   <% end %>
 
+  <% if customers.any? %>
+    <div class="field">
+      <%= f.label :contact_id, "Customer" %>
+      <%= f.collection_select :contact_id, customers, :id, :name, include_blank: "— pick a customer or type a name below —" %>
+    </div>
+  <% end %>
+
   <div class="field">
-    <%= f.label :client_name %>
-    <%= f.text_field :client_name, autofocus: true %>
+    <%= f.label :client_name, "Client name (used if no customer picked)" %>
+    <%= f.text_field :client_name, autofocus: customers.empty? %>
   </div>
 
   <div class="field">

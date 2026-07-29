@@ -1,0 +1,23 @@
+<header class="page-header">
+  <h1>Import contacts from Xero</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Upload the Xero <strong>Contacts CSV</strong> (Business → Contacts → Export). The importer keys off <code>*ContactName</code>; re-importing updates in place.</p>
+  <p>Xero doesn't tag contacts as customer vs vendor in the export. Pick the default kind for this batch — you can override per-contact afterwards. Or export Customers and Suppliers separately from Xero and import each with the appropriate kind.</p>
+</div>
+
+<%= form_with url: contact_import_path, multipart: true, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :default_kind, "Kind for new contacts" %>
+    <%= f.select :default_kind, Contact::KINDS.map { |k| [k.titleize, k] }, selected: "both" %>
+  </div>
+  <div class="field">
+    <%= f.label :file, "CSV file" %>
+    <%= f.file_field :file, accept: "text/csv,.csv" %>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Import", class: "btn btn-primary" %>
+    <%= link_to "Cancel", contacts_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

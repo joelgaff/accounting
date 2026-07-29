@@ -1,0 +1,7 @@
+<header class="page-header">
+  <h1>Edit <%= @contact.name %></h1>
+  <%= button_to "Delete", contact_path(@contact), method: :delete, class: "btn btn-secondary",
+      form: { data: { turbo_confirm: "Delete #{@contact.name}?" }, style: "display:inline" } %>
+</header>
+
+<%= render "form", contact: @contact %>
