@@ -1,0 +1,37 @@
+<%= form_with model: tax_rate, class: "app-form" do |f| %>
+  <% if tax_rate.errors.any? %>
+    <div class="form-errors">
+      <ul><% tax_rate.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name, autofocus: true, placeholder: "e.g. Sales Tax 8.75%" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :rate, "Rate (decimal, e.g. 0.0875 for 8.75%)" %>
+    <%= f.number_field :rate, step: 0.0001, min: 0, max: 0.9999 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :xero_tax_type, "Xero tax code (optional)" %>
+    <%= f.text_field :xero_tax_type, placeholder: "e.g. OUTPUT2, INPUT2, NONE" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :liability_account_id, "Sales tax liability account (money we owe to gov)" %>
+    <%= f.collection_select :liability_account_id, @liability_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, include_blank: "— none —" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :asset_account_id, "Purchase tax asset account (recoverable input VAT)" %>
+    <%= f.collection_select :asset_account_id, @asset_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, include_blank: "— none (non-recoverable) —" %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit (tax_rate.new_record? ? "Create tax rate" : "Update tax rate"), class: "btn btn-primary" %>
+    <%= link_to "Cancel", tax_rates_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

@@ -8,5 +8,5 @@
     <p>At minimum you need one <strong>Asset</strong> account (typically "Accounts Receivable") and one <strong>Revenue</strong> account (typically "Sales").</p>
   </div>
 <% else %>
-  <%= render "form", invoice: @invoice, receivable_accounts: @receivable_accounts, revenue_accounts: @revenue_accounts, customers: @customers %>
+  <%= render "form", invoice: @invoice, receivable_accounts: @receivable_accounts, revenue_accounts: @revenue_accounts, customers: @customers, tax_rates: @tax_rates %>
 <% end %>
