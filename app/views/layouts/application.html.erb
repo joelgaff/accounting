@@ -11,19 +11,39 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <div class="app-shell">
+      <% if logged_in? %>
+        <nav class="app-nav">
+          <div class="brand">Ledger</div>
+          <div class="nav-links">
+            <%= link_to "Dashboard", root_path,        class: ("active" if current_page?(root_path)) %>
+            <%= link_to "Invoices",  invoices_path,    class: ("active" if controller_name == "invoices") %>
+            <%= link_to "Expenses",  expenses_path,    class: ("active" if controller_name == "expenses") %>
+            <%= link_to "Import",    new_import_path,  class: ("active" if controller_name == "imports") %>
+          </div>
+          <div class="nav-user">
+            <span><%= current_user.email %></span>
+            <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
+          </div>
+        </nav>
+      <% end %>
+
+      <main class="<%= logged_in? ? "app-main" : "" %>">
+        <% flash.each do |type, message| %>
+          <div class="flash flash-<%= type == "notice" ? "notice" : "alert" %>"><%= message %></div>
+        <% end %>
+
+        <%= yield %>
+      </main>
+    </div>
   </body>
 </html>

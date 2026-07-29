@@ -1,7 +1,16 @@
-<h1>Enter your code</h1>
-<p>We emailed a 6-digit code to <%= @identity.email %>.</p>
-<%= form_with url: confirm_session_path, method: :post do |f| %>
-  <%= f.hidden_field :identity_id, value: @identity.id %>
-  <%= f.text_field :code, inputmode: "numeric", pattern: "[0-9]*", maxlength: 6, required: true, autofocus: true %>
-  <%= f.submit "Sign in" %>
-<% end %>
+<div class="guest-card">
+  <h1>Enter your code</h1>
+  <p style="text-align:center;color:var(--text-muted);font-size:13px;margin:-8px 0 20px;">
+    We emailed a 6-digit code to <strong><%= @identity.email %></strong>.
+  </p>
+  <%= form_with url: confirm_session_path, method: :post, class: "app-form" do |f| %>
+    <%= f.hidden_field :identity_id, value: @identity.id %>
+    <div class="field">
+      <%= f.label :code, "Verification code" %>
+      <%= f.text_field :code, inputmode: "numeric", pattern: "[0-9]*", maxlength: 6, required: true, autofocus: true %>
+    </div>
+    <div class="form-actions">
+      <%= f.submit "Sign in", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>
