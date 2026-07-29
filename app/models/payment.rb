@@ -34,6 +34,7 @@ class Payment < ApplicationRecord
     debit, credit = ledger_legs
     Ledger.post(
       description: description,
+      date: paid_on,
       commercial_document: self,
       debits:  [{ account: debit,  amount: amount }],
       credits: [{ account: credit, amount: amount }]

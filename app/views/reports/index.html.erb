@@ -1,0 +1,26 @@
+<header class="page-header">
+  <h1>Reports</h1>
+</header>
+
+<div class="kpi-grid">
+  <article class="kpi-card">
+    <div class="kpi-label">Profit &amp; Loss</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Revenue minus expenses over a date range.</p>
+    <%= link_to "Open →", profit_and_loss_report_path %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">Balance Sheet</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Assets = Liabilities + Equity as of a date.</p>
+    <%= link_to "Open →", balance_sheet_report_path %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">Trial Balance</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Every account's debit or credit position. Sanity check.</p>
+    <%= link_to "Open →", trial_balance_report_path %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">General Ledger</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Per-account entry detail with running balance.</p>
+    <%= link_to "Open →", general_ledger_report_path %>
+  </article>
+</div>

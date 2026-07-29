@@ -1,0 +1,57 @@
+<header class="page-header">
+  <h1>Profit &amp; Loss</h1>
+  <span class="muted"><%= @from.strftime("%b %-d, %Y") %> — <%= @to.strftime("%b %-d, %Y") %></span>
+</header>
+
+<%= render "date_range_form", url: profit_and_loss_report_path, from: @from, to: @to %>
+
+<section class="account-group">
+  <h2>Revenue</h2>
+  <table class="data-table">
+    <tbody>
+      <% @report.revenue_rows.each do |row| %>
+        <tr>
+          <td><%= row.account.code %></td>
+          <td><%= row.account.name %></td>
+          <td class="num">$<%= number_with_precision(row.amount, precision: 2, delimiter: ",") %></td>
+        </tr>
+      <% end %>
+      <tr style="font-weight:600;background:#fafbfc;">
+        <td></td><td>Total revenue</td>
+        <td class="num">$<%= number_with_precision(@report.total_revenue, precision: 2, delimiter: ",") %></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="account-group">
+  <h2>Expenses</h2>
+  <table class="data-table">
+    <tbody>
+      <% @report.expense_rows.each do |row| %>
+        <tr>
+          <td><%= row.account.code %></td>
+          <td><%= row.account.name %></td>
+          <td class="num">$<%= number_with_precision(row.amount, precision: 2, delimiter: ",") %></td>
+        </tr>
+      <% end %>
+      <tr style="font-weight:600;background:#fafbfc;">
+        <td></td><td>Total expenses</td>
+        <td class="num">$<%= number_with_precision(@report.total_expenses, precision: 2, delimiter: ",") %></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="account-group">
+  <table class="data-table">
+    <tbody>
+      <tr style="font-weight:700;font-size:16px;">
+        <td>Net income</td>
+        <td class="num" style="color:<%= @report.net_income.negative? ? 'var(--danger)' : 'var(--success)' %>;">
+          $<%= number_with_precision(@report.net_income, precision: 2, delimiter: ",") %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

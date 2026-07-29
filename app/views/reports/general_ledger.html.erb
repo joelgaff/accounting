@@ -1,0 +1,54 @@
+<header class="page-header">
+  <h1>General Ledger</h1>
+</header>
+
+<%= form_with url: general_ledger_report_path, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
+  <div class="field" style="margin:0;flex:1;">
+    <%= f.label :account_id, "Account" %>
+    <%= f.collection_select :account_id, @accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name} (#{a.type.demodulize})" }, selected: @account&.id %>
+  </div>
+  <div class="field" style="margin:0;">
+    <%= f.label :from, "From" %>
+    <%= f.date_field :from, value: @from %>
+  </div>
+  <div class="field" style="margin:0;">
+    <%= f.label :to, "To" %>
+    <%= f.date_field :to, value: @to %>
+  </div>
+  <%= f.submit "Run", class: "btn btn-primary" %>
+<% end %>
+
+<% if @account && @report %>
+  <p class="muted" style="margin:0 0 12px;font-size:13px;">
+    Opening balance: <strong>$<%= number_with_precision(@report.opening_balance, precision: 2, delimiter: ",") %></strong> ·
+    Closing balance: <strong>$<%= number_with_precision(@report.closing_balance, precision: 2, delimiter: ",") %></strong>
+  </p>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th class="num">Debit</th>
+        <th class="num">Credit</th>
+        <th class="num">Balance</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @report.lines.each do |l| %>
+        <tr>
+          <td><%= l.date&.iso8601 %></td>
+          <td><%= l.description %></td>
+          <td class="num"><%= l.debit.positive?  ? "$#{number_with_precision(l.debit,  precision: 2, delimiter: ',')}" : "" %></td>
+          <td class="num"><%= l.credit.positive? ? "$#{number_with_precision(l.credit, precision: 2, delimiter: ',')}" : "" %></td>
+          <td class="num">$<%= number_with_precision(l.running_balance, precision: 2, delimiter: ",") %></td>
+        </tr>
+      <% end %>
+      <% if @report.lines.empty? %>
+        <tr><td colspan="5" class="muted" style="text-align:center;">No entries in this window.</td></tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No accounts yet — import a Chart of Accounts to get started.</p>
+<% end %>

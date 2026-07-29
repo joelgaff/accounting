@@ -32,6 +32,7 @@ class Invoice < ApplicationRecord
   def post_to_ledger
     Ledger.post(
       description: "Invoice ##{id} — #{client_name}",
+      date: created_at&.to_date || Date.current,
       commercial_document: self,
       debits:  [{ account: receivable_account, amount: amount }],
       credits: [{ account: revenue_account,    amount: amount }]
