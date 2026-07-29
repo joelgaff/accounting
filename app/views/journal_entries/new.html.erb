@@ -1,0 +1,78 @@
+<header class="page-header">
+  <h1>New journal entry</h1>
+</header>
+
+<%= form_with model: @journal_entry, class: "app-form", style: "max-width:none;" do |f| %>
+  <% if @journal_entry.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% @journal_entry.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :posted_on, "Date" %>
+    <%= f.date_field :posted_on %>
+  </div>
+
+  <div class="field">
+    <%= f.label :narrative %>
+    <%= f.text_field :narrative, placeholder: "e.g. Depreciation for July" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
+  </div>
+
+  <fieldset class="journal-lines"
+            data-controller="journal-lines"
+            data-journal-lines-index-value="<%= @journal_entry.lines.size %>"
+            style="border:0;padding:0;margin:20px 0;">
+    <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Lines</legend>
+
+    <table class="data-table" style="margin-bottom:8px;">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Memo</th>
+          <th class="num" style="width:120px;">Debit</th>
+          <th class="num" style="width:120px;">Credit</th>
+          <th style="width:40px;"></th>
+        </tr>
+      </thead>
+      <tbody data-journal-lines-target="rows">
+        <%= f.fields_for :lines do |lf| %>
+          <%= render "journal_line_row", lf: lf, accounts: @accounts %>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:600;background:#fafbfc;">
+          <td colspan="2" style="text-align:right;">Totals</td>
+          <td class="num" data-journal-lines-target="debitTotal">$0.00</td>
+          <td class="num" data-journal-lines-target="creditTotal">$0.00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:right;" class="muted">Difference</td>
+          <td class="num" colspan="2" data-journal-lines-target="difference">$0.00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <template data-journal-lines-target="template">
+      <%= f.fields_for :lines, JournalLine.new, child_index: "NEW_RECORD" do |lf| %>
+        <%= render "journal_line_row", lf: lf, accounts: @accounts %>
+      <% end %>
+    </template>
+
+    <button type="button" class="btn btn-secondary" data-action="journal-lines#add">+ Add line</button>
+  </fieldset>
+
+  <div class="form-actions">
+    <%= f.submit "Post entry", class: "btn btn-primary" %>
+    <%= link_to "Cancel", journal_entries_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

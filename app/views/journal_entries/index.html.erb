@@ -1,0 +1,24 @@
+<header class="page-header">
+  <h1>Journal</h1>
+  <%= link_to "New journal entry", new_journal_entry_path, class: "btn btn-primary" %>
+</header>
+
+<% if @journal_entries.any? %>
+  <table class="data-table">
+    <thead>
+      <tr><th>Date</th><th>Narrative</th><th>Reference</th><th class="num">Amount</th></tr>
+    </thead>
+    <tbody>
+      <% @journal_entries.each do |je| %>
+        <tr>
+          <td><%= je.posted_on.iso8601 %></td>
+          <td><%= link_to je.narrative, journal_entry_path(je) %></td>
+          <td class="muted"><%= je.reference %></td>
+          <td class="num">$<%= number_with_precision(je.total_debits, precision: 2, delimiter: ",") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No journal entries yet. <%= link_to "Post one", new_journal_entry_path %>.</p>
+<% end %>
