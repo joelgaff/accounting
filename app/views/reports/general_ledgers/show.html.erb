@@ -2,7 +2,7 @@
   <h1>General Ledger</h1>
 </header>
 
-<%= form_with url: general_ledger_report_path, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
+<%= form_with url: reports_general_ledger_path, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
   <div class="field" style="margin:0;flex:1;">
     <%= f.label :account_id, "Account" %>
     <%= f.collection_select :account_id, @accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name} (#{a.type.demodulize})" }, selected: @account&.id %>

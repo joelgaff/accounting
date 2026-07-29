@@ -1,0 +1,47 @@
+<header class="page-header">
+  <h1>AR Aging</h1>
+  <span class="muted">As of <%= @as_of.strftime("%b %-d, %Y") %></span>
+</header>
+
+<%= form_with url: reports_accounts_receivable_aging_path, method: :get, class: "app-form",
+    style: "display:flex;gap:12px;max-width:none;align-items:flex-end;padding:16px;margin-bottom:20px;" do |f| %>
+  <div class="field" style="margin:0;">
+    <%= f.label :as_of, "As of" %>
+    <%= f.date_field :as_of, value: @as_of %>
+  </div>
+  <%= f.submit "Run", class: "btn btn-primary" %>
+<% end %>
+
+<% if @report.rows.any? %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <% Reports::AccountsReceivableAging::BUCKETS.each do |b| %>
+          <th class="num"><%= b %></th>
+        <% end %>
+        <th class="num">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @report.rows.each do |row| %>
+        <tr>
+          <td><%= row.contact_name %></td>
+          <% Reports::AccountsReceivableAging::BUCKETS.each do |b| %>
+            <td class="num"><%= row.buckets[b].to_d.positive? ? "$#{number_with_precision(row.buckets[b], precision: 2, delimiter: ',')}" : "" %></td>
+          <% end %>
+          <td class="num"><strong>$<%= number_with_precision(row.total, precision: 2, delimiter: ",") %></strong></td>
+        </tr>
+      <% end %>
+      <tr style="font-weight:600;background:#fafbfc;">
+        <td>Totals</td>
+        <% Reports::AccountsReceivableAging::BUCKETS.each do |b| %>
+          <td class="num">$<%= number_with_precision(@report.totals_by_bucket[b], precision: 2, delimiter: ",") %></td>
+        <% end %>
+        <td class="num">$<%= number_with_precision(@report.grand_total, precision: 2, delimiter: ",") %></td>
+      </tr>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No outstanding customer balances 🎉</p>
+<% end %>
