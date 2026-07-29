@@ -1,0 +1,31 @@
+<header class="page-header">
+  <h1><%= @recurring_invoice.customer_display %></h1>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "Edit", edit_recurring_invoice_path(@recurring_invoice), class: "btn btn-secondary" %>
+    <%= button_to "Run now", run_now_recurring_invoice_path(@recurring_invoice), method: :post,
+        class: "btn btn-primary", form: { style: "display:inline;" }, data: { turbo_confirm: "Generate one invoice now?" } %>
+  </div>
+</header>
+
+<%= render "schedule", recurring_invoice: @recurring_invoice %>
+
+<h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Template lines</h2>
+<table class="data-table">
+  <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th>Account</th><th>Tax</th></tr></thead>
+  <tbody>
+    <% @recurring_invoice.line_items.each do |li| %>
+      <tr>
+        <td><%= li.description %></td>
+        <td class="num"><%= li.quantity %></td>
+        <td class="num">$<%= number_with_precision(li.unit_amount, precision: 2, delimiter: ",") %></td>
+        <td><%= li.account.name %></td>
+        <td class="muted"><%= li.tax_rate&.name %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Generated invoices (this session)</h2>
+<ul id="generated-invoices"></ul>
+
+<p style="margin-top:24px;"><%= link_to "← Back", recurring_invoices_path %></p>

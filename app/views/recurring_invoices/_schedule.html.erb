@@ -1,0 +1,10 @@
+<%= tag.div id: dom_id(recurring_invoice, :schedule), class: "app-form", style: "max-width:none;" do %>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 20px;">
+    <dt class="muted">Frequency</dt>  <dd style="margin:0;">every <%= recurring_invoice.interval %> <%= recurring_invoice.frequency.chomp("ly") + (recurring_invoice.interval > 1 ? "s" : "") %></dd>
+    <dt class="muted">Next run</dt>   <dd style="margin:0;"><strong><%= recurring_invoice.next_run_on.iso8601 %></strong></dd>
+    <% if recurring_invoice.end_on.present? %>
+      <dt class="muted">Ends on</dt>  <dd style="margin:0;"><%= recurring_invoice.end_on.iso8601 %></dd>
+    <% end %>
+    <dt class="muted">Active</dt>     <dd style="margin:0;"><%= recurring_invoice.active? ? "yes" : "paused" %></dd>
+  </div>
+<% end %>
