@@ -1,10 +1,11 @@
 class Ledger
   class MissingAccount < StandardError; end
 
-  def self.post(description:, commercial_document:, debits:, credits:)
+  def self.post(description:, commercial_document:, debits:, credits:, date: Date.current)
     ActiveRecord::Base.transaction do
       Plutus::Entry.create!(
         description: description,
+        date: date,
         commercial_document: commercial_document,
         debits: debits,
         credits: credits

@@ -19,5 +19,11 @@ Rails.application.routes.draw do
   resource  :import,   only: %i[new create]
   resource  :settings, only: %i[show update]
 
+  get "reports"                => "reports#index",           as: :reports
+  get "reports/profit_and_loss" => "reports#profit_and_loss", as: :profit_and_loss_report
+  get "reports/balance_sheet"   => "reports#balance_sheet",   as: :balance_sheet_report
+  get "reports/trial_balance"   => "reports#trial_balance",   as: :trial_balance_report
+  get "reports/general_ledger"  => "reports#general_ledger",  as: :general_ledger_report
+
   get "up" => "rails/health#show", as: :rails_health_check
 end

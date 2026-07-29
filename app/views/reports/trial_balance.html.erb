@@ -1,0 +1,40 @@
+<header class="page-header">
+  <h1>Trial Balance</h1>
+  <span class="muted"><%= @from.strftime("%b %-d, %Y") %> — <%= @to.strftime("%b %-d, %Y") %></span>
+</header>
+
+<%= render "date_range_form", url: trial_balance_report_path, from: @from, to: @to %>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th style="width:80px">Code</th>
+      <th>Account</th>
+      <th>Type</th>
+      <th class="num">Debit</th>
+      <th class="num">Credit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @report.rows.each do |r| %>
+      <tr>
+        <td><%= r.account.code %></td>
+        <td><%= r.account.name %></td>
+        <td class="muted"><%= r.account.type.demodulize %></td>
+        <td class="num"><%= r.debit.positive? ? "$#{number_with_precision(r.debit, precision: 2, delimiter: ',')}" : "" %></td>
+        <td class="num"><%= r.credit.positive? ? "$#{number_with_precision(r.credit, precision: 2, delimiter: ',')}" : "" %></td>
+      </tr>
+    <% end %>
+    <tr style="font-weight:600;background:#fafbfc;">
+      <td colspan="3">Totals</td>
+      <td class="num">$<%= number_with_precision(@report.total_debit,  precision: 2, delimiter: ",") %></td>
+      <td class="num">$<%= number_with_precision(@report.total_credit, precision: 2, delimiter: ",") %></td>
+    </tr>
+  </tbody>
+</table>
+
+<% unless @report.balanced? %>
+  <div class="notice" style="margin-top:20px;">
+    <p><strong>Trial balance is off</strong> — debits and credits differ by <strong>$<%= number_with_precision((@report.total_debit - @report.total_credit).abs, precision: 2, delimiter: ",") %></strong>. Every entry should be balanced; this points to a bug or manual corruption.</p>
+  </div>
+<% end %>

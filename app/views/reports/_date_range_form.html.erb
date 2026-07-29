@@ -1,0 +1,11 @@
+<%= form_with url: url, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
+  <div class="field" style="margin:0;">
+    <%= f.label :from, "From" %>
+    <%= f.date_field :from, value: from %>
+  </div>
+  <div class="field" style="margin:0;">
+    <%= f.label :to, "To" %>
+    <%= f.date_field :to, value: to %>
+  </div>
+  <%= f.submit "Run", class: "btn btn-primary" %>
+<% end %>

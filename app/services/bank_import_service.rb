@@ -36,6 +36,7 @@ class BankImportService
 
         Ledger.post(
           description: "Import #{date.iso8601}: #{description}",
+          date: date,
           commercial_document: nil,
           debits:  [{ account: debit_account,  amount: amount.abs }],
           credits: [{ account: credit_account, amount: amount.abs }]

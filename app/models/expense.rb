@@ -38,6 +38,7 @@ class Expense < ApplicationRecord
   def post_to_ledger
     Ledger.post(
       description: "Expense: #{vendor} — #{expense_account.name}",
+      date: incurred_on,
       commercial_document: self,
       debits:  [{ account: expense_account,   amount: amount }],
       credits: [{ account: paid_from_account, amount: amount }]
