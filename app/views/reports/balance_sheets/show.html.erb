@@ -3,7 +3,7 @@
   <span class="muted">As of <%= @as_of.strftime("%b %-d, %Y") %></span>
 </header>
 
-<%= form_with url: balance_sheet_report_path, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
+<%= form_with url: reports_balance_sheet_path, method: :get, class: "app-form", style: "display:flex;gap:12px;max-width:none;align-items:flex-end;margin-bottom:20px;padding:16px;" do |f| %>
   <div class="field" style="margin:0;">
     <%= f.label :as_of, "As of" %>
     <%= f.date_field :as_of, value: @as_of %>

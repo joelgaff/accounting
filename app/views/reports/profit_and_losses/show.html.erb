@@ -3,7 +3,7 @@
   <span class="muted"><%= @from.strftime("%b %-d, %Y") %> — <%= @to.strftime("%b %-d, %Y") %></span>
 </header>
 
-<%= render "date_range_form", url: profit_and_loss_report_path, from: @from, to: @to %>
+<%= render "date_range_form", url: reports_profit_and_loss_path, from: @from, to: @to %>
 
 <section class="account-group">
   <h2>Revenue</h2>

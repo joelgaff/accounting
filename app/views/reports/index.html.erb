@@ -6,21 +6,31 @@
   <article class="kpi-card">
     <div class="kpi-label">Profit &amp; Loss</div>
     <p class="muted" style="margin:8px 0 12px;font-size:13px;">Revenue minus expenses over a date range.</p>
-    <%= link_to "Open →", profit_and_loss_report_path %>
+    <%= link_to "Open →", reports_profit_and_loss_path %>
   </article>
   <article class="kpi-card">
     <div class="kpi-label">Balance Sheet</div>
     <p class="muted" style="margin:8px 0 12px;font-size:13px;">Assets = Liabilities + Equity as of a date.</p>
-    <%= link_to "Open →", balance_sheet_report_path %>
+    <%= link_to "Open →", reports_balance_sheet_path %>
   </article>
   <article class="kpi-card">
     <div class="kpi-label">Trial Balance</div>
     <p class="muted" style="margin:8px 0 12px;font-size:13px;">Every account's debit or credit position. Sanity check.</p>
-    <%= link_to "Open →", trial_balance_report_path %>
+    <%= link_to "Open →", reports_trial_balance_path %>
   </article>
   <article class="kpi-card">
     <div class="kpi-label">General Ledger</div>
     <p class="muted" style="margin:8px 0 12px;font-size:13px;">Per-account entry detail with running balance.</p>
-    <%= link_to "Open →", general_ledger_report_path %>
+    <%= link_to "Open →", reports_general_ledger_path %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">AR Aging</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Outstanding invoices bucketed by days past due.</p>
+    <%= link_to "Open →", reports_accounts_receivable_aging_path %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">AP Aging</div>
+    <p class="muted" style="margin:8px 0 12px;font-size:13px;">Outstanding bills bucketed by days past due.</p>
+    <%= link_to "Open →", reports_accounts_payable_aging_path %>
   </article>
 </div>

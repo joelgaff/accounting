@@ -45,11 +45,15 @@ Rails.application.routes.draw do
   resource  :settings, only: %i[show update]
   resources :tax_rates
 
-  get "reports"                => "reports#index",           as: :reports
-  get "reports/profit_and_loss" => "reports#profit_and_loss", as: :profit_and_loss_report
-  get "reports/balance_sheet"   => "reports#balance_sheet",   as: :balance_sheet_report
-  get "reports/trial_balance"   => "reports#trial_balance",   as: :trial_balance_report
-  get "reports/general_ledger"  => "reports#general_ledger",  as: :general_ledger_report
+  get "reports" => "reports#index", as: :reports
+  namespace :reports do
+    resource :profit_and_loss,             only: :show
+    resource :balance_sheet,               only: :show
+    resource :trial_balance,               only: :show
+    resource :general_ledger,              only: :show
+    resource :accounts_receivable_aging,   only: :show
+    resource :accounts_payable_aging,      only: :show
+  end
 
   get "up" => "rails/health#show", as: :rails_health_check
 end
