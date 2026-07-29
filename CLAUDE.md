@@ -15,6 +15,12 @@
 - Root route → `home#index` (a trivial signed-in landing page).
 
 ## Conventions
+- **Hotwire-native by default.** Turbo Drive is on via importmap. Reach for `turbo_frame_tag`
+  whenever a page updates one region rather than the whole page; use `turbo_stream` responses
+  instead of `redirect_to` when appropriate; use Stimulus (`app/javascript/controllers/`) for
+  any client-side state (add/remove nested rows, live totals, autocompletes). Full-page
+  redirects are the fallback, not the default. Always use `dom_id(record, :section)` for
+  frame IDs and stream targets — never handwritten strings.
 - **Delegated types** for "same role, different attributes" modeling; keep superclasses lean
   (only universal FKs on the parent), type-specific attributes on the type tables.
 - **Shared behavior via concerns** with a common interface; let each type define divergent pieces.
@@ -23,6 +29,9 @@
   instead of building logins for external/read-only users.
 - **Route reads through `Current.organization`** — never a hardcoded id or `.first` outside
   `set_organization`. Keeps multi-tenancy a one-line change later.
+- **Xero-native imports.** Every CSV importer accepts Xero's export format as-is. Header
+  normalization strips leading `*` and lowercases. Xero fixtures live in
+  `test/fixtures/files/xero/` and drive service tests.
 
 ## Deferred until actually needed
 - Multi-tenant membership/roles/switching (single-tenant now; structure is ready).
