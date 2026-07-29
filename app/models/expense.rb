@@ -1,18 +1,21 @@
 class Expense < ApplicationRecord
   belongs_to :organization
   belongs_to :contact,           optional: true
-  belongs_to :expense_account,   class_name: "Plutus::Expense"
+  belongs_to :expense_account,   class_name: "Plutus::Expense", optional: true   # deprecated; carried by line items now
   belongs_to :paid_from_account, class_name: "Plutus::Account"
-  belongs_to :tax_rate,          optional: true
+  belongs_to :tax_rate,          optional: true                                    # deprecated; carried by line items now
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
   has_many_attached :receipts
   include HasBalanceDue
+  include HasLineItems
 
   before_validation :sync_vendor_from_contact
-  before_validation :compute_totals
-  validates :vendor, :amount, :incurred_on, presence: true
+  before_validation :default_line_from_flat_amount
+  before_validation :sync_amount_from_lines
+  validates :vendor, :incurred_on, presence: true
   validates :amount, numericality: { greater_than: 0 }
   validate  :paid_from_must_be_asset_or_liability
+  validate  :must_have_line_items
 
   after_create :post_to_ledger
 
@@ -35,32 +38,46 @@ class Expense < ApplicationRecord
     errors.add(:paid_from_account, "must be an asset or liability account")
   end
 
-  # Amount in the form is the SUBTOTAL. Tax is added on top.
-  def compute_totals
-    return if amount.blank?
-    if tax_rate && !tax_rate.zero?
-      self.subtotal   = amount if subtotal.blank? || subtotal == amount
-      self.tax_amount = (subtotal * tax_rate.rate).round(2)
-      self.amount     = subtotal + tax_amount
-    else
-      self.subtotal   = amount
-      self.tax_amount = 0
-    end
+  def default_line_from_flat_amount
+    return if line_items.any? || amount.blank? || expense_account.blank?
+    line_items.build(
+      description: "Expense",
+      quantity:    1,
+      unit_amount: attributes["subtotal"].presence || amount,
+      account:     expense_account,
+      tax_rate:    tax_rate
+    )
+  end
+
+  def sync_amount_from_lines
+    return if line_items.empty?
+    self.subtotal   = subtotal
+    self.tax_amount = tax_amount
+    self.amount     = total
+  end
+
+  def must_have_line_items
+    errors.add(:base, "must have at least one line item") if line_items.empty?
   end
 
   def post_to_ledger
-    debits = [{ account: expense_account, amount: subtotal }]
-    if tax_amount.positive?
-      # If the tax rate has a recoverable asset (input VAT), debit that.
-      # Otherwise the tax hits the expense itself (non-recoverable).
-      if tax_rate.asset_account
-        debits << { account: tax_rate.asset_account, amount: tax_amount }
+    legs = line_ledger_legs
+
+    debits = legs[:accounts].map { |acct, amt| { account: acct, amount: amt } }
+    legs[:taxes].each do |tax, amt|
+      if tax.asset_account
+        debits << { account: tax.asset_account, amount: amt }
       else
-        debits.first[:amount] = subtotal + tax_amount
+        # Non-recoverable tax rolls back onto every expense line
+        # proportionally. Simplest: fold onto the first line's account.
+        # (Xero and QBO both allow this in "gross" mode.)
+        first_acct = debits.first[:account]
+        debits.first[:amount] += amt
       end
     end
+
     Ledger.post(
-      description: "Expense: #{vendor} — #{expense_account.name}",
+      description: "Expense: #{vendor} — #{line_items.first.account.name}",
       date: incurred_on,
       commercial_document: self,
       debits:  debits,

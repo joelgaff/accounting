@@ -1,0 +1,16 @@
+<tr data-line-items-target="row">
+  <td><%= li_form.text_field :description, placeholder: "Description", style: "width:100%;" %></td>
+  <td class="num"><%= li_form.number_field :quantity, step: 0.0001, min: 0, value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
+  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
+  <td><%= li_form.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, {}, { style: "width:100%;" } %></td>
+  <% if tax_rates.any? %>
+    <td>
+      <%= li_form.collection_select :tax_rate_id, tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, { include_blank: "—" }, { style: "width:100%;", data: { action: "change->line-items#recalc", line_items_target: "tax_rate", "tax-rates": tax_rates.map { |t| [t.id.to_s, t.rate.to_f] }.to_h.to_json } } %>
+    </td>
+  <% end %>
+  <td class="num" data-line-items-target="rowTotal">$0.00</td>
+  <td>
+    <%= li_form.hidden_field :_destroy, data: { line_items_target: "destroy" } %>
+    <button type="button" class="btn btn-secondary" data-action="line-items#remove" style="padding:2px 8px;">×</button>
+  </td>
+</tr>

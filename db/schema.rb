@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_012637) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_043421) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -65,7 +65,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_012637) do
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.integer "contact_id"
     t.datetime "created_at", null: false
-    t.integer "expense_account_id", null: false
+    t.integer "expense_account_id"
     t.date "incurred_on", null: false
     t.text "memo"
     t.integer "organization_id", null: false
@@ -99,7 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_012637) do
     t.date "due_date", null: false
     t.integer "organization_id", null: false
     t.integer "receivable_account_id", null: false
-    t.integer "revenue_account_id", null: false
+    t.integer "revenue_account_id"
     t.decimal "subtotal", precision: 20, scale: 2
     t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.integer "tax_rate_id"
@@ -109,6 +109,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_012637) do
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
     t.index ["tax_rate_id"], name: "index_invoices_on_tax_rate_id"
+  end
+
+  create_table "line_items", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.string "description", default: "", null: false
+    t.integer "lineable_id", null: false
+    t.string "lineable_type", null: false
+    t.integer "position", default: 0, null: false
+    t.decimal "quantity", precision: 10, scale: 4, default: "1.0", null: false
+    t.integer "tax_rate_id"
+    t.decimal "unit_amount", precision: 20, scale: 4, null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_line_items_on_account_id"
+    t.index ["lineable_type", "lineable_id", "position"], name: "index_line_items_on_lineable_type_and_lineable_id_and_position"
+    t.index ["lineable_type", "lineable_id"], name: "index_line_items_on_lineable"
+    t.index ["tax_rate_id"], name: "index_line_items_on_tax_rate_id"
   end
 
   create_table "organization_settings", force: :cascade do |t|

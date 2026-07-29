@@ -58,24 +58,28 @@
 </div>
 
 <table class="invoice-lines">
-  <thead><tr><th>Description</th><th class="num">Amount</th></tr></thead>
+  <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead>
   <tbody>
-    <tr>
-      <td>Services rendered</td>
-      <td class="num">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
-    </tr>
+    <% @invoice.line_items.each do |li| %>
+      <tr>
+        <td><%= li.description.presence || li.account.name %></td>
+        <td class="num"><%= li.quantity.to_d.frac.zero? ? li.quantity.to_i : li.quantity %></td>
+        <td class="num">$<%= number_with_precision(li.unit_amount, precision: 2, delimiter: ",") %></td>
+        <td class="num">$<%= number_with_precision(li.amount, precision: 2, delimiter: ",") %></td>
+      </tr>
+    <% end %>
   </tbody>
 </table>
 
 <table class="totals">
   <tr>
     <td>Subtotal</td>
-    <td class="num">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
+    <td class="num">$<%= number_with_precision(@invoice.subtotal, precision: 2, delimiter: ",") %></td>
   </tr>
-  <% if @invoice.tax_amount.positive? %>
+  <% @invoice.line_ledger_legs[:taxes].each do |tax, amt| %>
     <tr>
-      <td><%= @invoice.tax_rate.name %></td>
-      <td class="num">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
+      <td><%= tax.name %></td>
+      <td class="num">$<%= number_with_precision(amt, precision: 2, delimiter: ",") %></td>
     </tr>
   <% end %>
   <tr class="total">
