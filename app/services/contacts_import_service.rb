@@ -1,19 +1,9 @@
-require "csv"
-
 # Imports Xero's "Contacts CSV" (Business → Contacts → Export).
-# The export has one row per contact with header columns like:
-#   *ContactName, EmailAddress, FirstName, LastName, POAttentionTo,
-#   POAddressLine1..4, POCity, PORegion, POPostalCode, POCountry,
-#   PhoneNumber, MobileNumber, DDIPhoneNumber, FaxNumber, SkypeName,
-#   AccountNumber, TaxNumber, BankAccountName, BankAccountNumber, ...
-#
 # We use *ContactName as the unique key. Kind defaults to "both" since
-# Xero exports doesn't tell us which contacts are customers vs vendors;
-# the user can retype later, or import separate Customers / Suppliers
-# exports and pass `default_kind:` accordingly.
-class ContactsImportService
-  Result = Struct.new(:created, :updated, :skipped, :errors, keyword_init: true)
-
+# Xero's export doesn't distinguish customers from vendors; the user can
+# retype later, or import Customers and Suppliers exports separately with
+# the appropriate default_kind:.
+class ContactsImportService < Imports::BaseService
   def initialize(source, organization:, default_kind: "both")
     @source       = source
     @organization = organization
@@ -24,12 +14,10 @@ class ContactsImportService
     created = updated = skipped = 0
     errors = []
 
-    data = @source.respond_to?(:read) ? @source.read : @source
-    rows = CSV.parse(data, headers: true, header_converters: ->(h) { normalize_header(h) })
+    rows = self.class.csv(@source)
 
     unless rows.headers.include?("contactname")
-      return Result.new(created: 0, updated: 0, skipped: 0,
-                        errors: ["CSV must have a ContactName column (Xero exports it as *ContactName)"])
+      return Result.new(errors: ["CSV must have a ContactName column (Xero exports it as *ContactName)"])
     end
 
     ActiveRecord::Base.transaction do
@@ -72,10 +60,6 @@ class ContactsImportService
   end
 
   private
-
-  def normalize_header(h)
-    h.to_s.sub(/\A\*/, "").strip.downcase.gsub(/\s+/, "")
-  end
 
   def compose_address(row)
     lines = (1..4).map { |n| row["poaddressline#{n}"].to_s.strip }.reject(&:blank?)

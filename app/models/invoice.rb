@@ -5,8 +5,8 @@ class Invoice < ApplicationRecord
   belongs_to :revenue_account,    class_name: "Plutus::Revenue"
   belongs_to :tax_rate,           optional: true
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
-  has_many   :payments, as: :payable, dependent: :restrict_with_error
   has_many_attached :attachments
+  include HasBalanceDue
 
   before_validation :sync_client_name_from_contact
   before_validation :compute_totals
@@ -18,9 +18,6 @@ class Invoice < ApplicationRecord
 
   def customer_display = contact&.name.presence || client_name
 
-  def paid_amount   = payments.sum(:amount)
-  def balance_due   = amount - paid_amount
-  def paid?         = balance_due <= 0
   def status
     return "paid"    if paid?
     return "partial" if paid_amount.positive?
