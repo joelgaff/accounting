@@ -37,4 +37,15 @@
   <% end %>
 </section>
 
+<% if @invoice.attachments.any? %>
+  <section style="margin-top:32px;">
+    <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Attachments</h2>
+    <ul>
+      <% @invoice.attachments.each do |a| %>
+        <li><%= link_to a.filename, rails_blob_path(a, disposition: "attachment") %> — <span class="muted"><%= number_to_human_size a.byte_size %></span></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
 <p style="margin-top:24px;"><%= link_to "← Back to invoices", invoices_path %></p>

@@ -42,4 +42,15 @@
   <% end %>
 </section>
 
+<% if @expense.receipts.any? %>
+  <section style="margin-top:32px;">
+    <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Receipts</h2>
+    <ul>
+      <% @expense.receipts.each do |r| %>
+        <li><%= link_to r.filename, rails_blob_path(r, disposition: "attachment") %> — <span class="muted"><%= number_to_human_size r.byte_size %></span></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
 <p style="margin-top:24px;"><%= link_to "← Back to expenses", expenses_path %></p>
