@@ -1,9 +1,11 @@
-require "csv"
+class BankImportService < Imports::BaseService
+  # Backwards-compat return shape — this service predates the shared Result
+  # struct and callers/tests read :imported (not :created). Slice J will
+  # replace this whole service with Imports::BankStatementService; keeping
+  # the legacy shape until then avoids churn.
+  LegacyResult = Struct.new(:imported, :skipped, :errors, keyword_init: true)
 
-class BankImportService
-  Result = Struct.new(:imported, :skipped, :errors, keyword_init: true)
-
-  REQUIRED_COLUMNS = %w[Date Description Amount].freeze
+  REQUIRED_COLUMNS = %w[date amount].freeze
 
   def initialize(source, bank_account:, paired_account:)
     @source         = source
@@ -16,19 +18,18 @@ class BankImportService
     skipped  = 0
     errors   = []
 
-    data = @source.respond_to?(:read) ? @source.read : @source
-    csv  = CSV.parse(data, headers: true)
-
-    missing = REQUIRED_COLUMNS - csv.headers.compact
+    rows = self.class.csv(@source)
+    missing = REQUIRED_COLUMNS - rows.headers.compact
     if missing.any?
-      return Result.new(imported: 0, skipped: 0, errors: ["Missing required columns: #{missing.join(", ")}"])
+      return LegacyResult.new(imported: 0, skipped: 0,
+                              errors: ["Missing required columns: #{missing.map(&:capitalize).join(", ")}"])
     end
 
-    csv.each.with_index(2) do |row, line|
+    rows.each.with_index(2) do |row, line|
       begin
-        date        = Date.parse(row["Date"].to_s)
-        description = row["Description"].to_s.strip
-        amount      = BigDecimal(row["Amount"].to_s.strip)
+        date        = self.class.parse_xero_date(row["date"])
+        description = [row["payee"], row["description"]].compact_blank.map { |s| s.to_s.strip }.reject(&:blank?).join(" — ").presence || "(no description)"
+        amount      = BigDecimal(row["amount"].to_s.strip)
 
         debit_account, credit_account =
           amount.positive? ? [@bank_account, @paired_account]
@@ -48,6 +49,6 @@ class BankImportService
       end
     end
 
-    Result.new(imported: imported, skipped: skipped, errors: errors)
+    LegacyResult.new(imported: imported, skipped: skipped, errors: errors)
   end
 end

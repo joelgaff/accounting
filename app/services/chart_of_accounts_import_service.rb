@@ -1,8 +1,4 @@
-require "csv"
-
-class ChartOfAccountsImportService
-  Result = Struct.new(:created, :updated, :skipped, :errors, keyword_init: true)
-
+class ChartOfAccountsImportService < Imports::BaseService
   # Xero's *Type values → plutus STI class
   XERO_TYPE_MAP = {
     # Assets
@@ -53,16 +49,14 @@ class ChartOfAccountsImportService
     created = updated = skipped = 0
     errors  = []
 
-    data = @source.respond_to?(:read) ? @source.read : @source
-    rows = CSV.parse(data, headers: true, header_converters: ->(h) { normalize_header(h) })
+    rows = self.class.csv(@source)
 
     if rows.headers.compact.empty?
-      return Result.new(created: 0, updated: 0, skipped: 0, errors: ["CSV has no header row"])
+      return Result.new(errors: ["CSV has no header row"])
     end
 
     unless rows.headers.include?("name") && rows.headers.include?("type")
-      return Result.new(created: 0, updated: 0, skipped: 0,
-                        errors: ["CSV must have at least Name and Type columns (Code, Description optional)"])
+      return Result.new(errors: ["CSV must have at least Name and Type columns (Code, Description optional)"])
     end
 
     ActiveRecord::Base.transaction do
@@ -111,10 +105,6 @@ class ChartOfAccountsImportService
   end
 
   private
-
-  def normalize_header(h)
-    h.to_s.sub(/\A\*/, "").strip.downcase.tr(" ", "_")
-  end
 
   def classify(raw)
     key = raw.strip
