@@ -1,0 +1,55 @@
+<%
+  payable = @payable
+  is_invoice = payable.is_a?(Invoice)
+  path       = is_invoice ? invoice_payments_path(payable) : expense_payments_path(payable)
+  back_path  = is_invoice ? invoice_path(payable) : expense_path(payable)
+%>
+
+<header class="page-header">
+  <h1>Record <%= is_invoice ? "payment received" : "payment made" %></h1>
+</header>
+
+<div class="notice notice-info">
+  <p><strong><%= is_invoice ? "Invoice ##{payable.id} — #{payable.customer_display}" : "Expense ##{payable.id} — #{payable.vendor_display}" %></strong></p>
+  <p>Balance due: <strong>$<%= number_with_precision(payable.balance_due, precision: 2, delimiter: ",") %></strong></p>
+</div>
+
+<%= form_with model: @payment, url: path, class: "app-form" do |f| %>
+  <% if @payment.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% @payment.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :amount %>
+    <%= f.number_field :amount, step: 0.01, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :paid_on, "Payment date" %>
+    <%= f.date_field :paid_on %>
+  </div>
+
+  <div class="field">
+    <%= f.label :bank_account_id, is_invoice ? "Deposit into" : "Paid from bank" %>
+    <%= f.collection_select :bank_account_id, @bank_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, prompt: "Select bank account" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :reference, "Reference (check #, txn id, etc.)" %>
+    <%= f.text_field :reference %>
+  </div>
+
+  <div class="field">
+    <%= f.label :memo %>
+    <%= f.text_area :memo, rows: 2 %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Record payment", class: "btn btn-primary" %>
+    <%= link_to "Cancel", back_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

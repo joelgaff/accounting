@@ -6,8 +6,12 @@ Rails.application.routes.draw do
     post :confirm
   end
 
-  resources :invoices, only: %i[index new create]
-  resources :expenses, only: %i[index new create]
+  resources :invoices, only: %i[index show new create] do
+    resources :payments, only: %i[new create]
+  end
+  resources :expenses, only: %i[index show new create] do
+    resources :payments, only: %i[new create]
+  end
   resources :accounts, only: %i[index]
   resources :contacts
   resource  :contact_import,           only: %i[new create]

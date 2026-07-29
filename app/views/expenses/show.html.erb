@@ -1,0 +1,45 @@
+<header class="page-header">
+  <h1>Expense #<%= @expense.id %></h1>
+  <div>
+    <span class="badge badge-<%= @expense.status %>"><%= @expense.status %></span>
+    <% unless @expense.paid? %>
+      <%= link_to "Record payment", new_expense_payment_path(@expense), class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</header>
+
+<div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Vendor</div><div><%= @expense.vendor_display %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Incurred</div><div><%= @expense.incurred_on.strftime("%b %-d, %Y") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Category</div><div><%= @expense.expense_account.name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid from</div><div><%= @expense.paid_from_account.name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div>$<%= number_with_precision(@expense.amount, precision: 2, delimiter: ",") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid</div><div>$<%= number_with_precision(@expense.paid_amount, precision: 2, delimiter: ",") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Balance due</div><div><strong>$<%= number_with_precision(@expense.balance_due, precision: 2, delimiter: ",") %></strong></div></div>
+  <% if @expense.memo.present? %>
+    <div style="grid-column:1/-1;"><div class="muted" style="font-size:12px;text-transform:uppercase;">Memo</div><div><%= simple_format @expense.memo %></div></div>
+  <% end %>
+</div>
+
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Payments</h2>
+  <% if @expense.payments.any? %>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>From</th><th>Reference</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        <% @expense.payments.order(paid_on: :desc).each do |p| %>
+          <tr>
+            <td><%= p.paid_on.iso8601 %></td>
+            <td><%= p.bank_account.name %></td>
+            <td><%= p.reference %></td>
+            <td class="num">$<%= number_with_precision(p.amount, precision: 2, delimiter: ",") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No payments recorded.</p>
+  <% end %>
+</section>
+
+<p style="margin-top:24px;"><%= link_to "← Back to expenses", expenses_path %></p>

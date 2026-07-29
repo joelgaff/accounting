@@ -6,6 +6,10 @@ class InvoicesController < ApplicationController
     @invoices = Current.organization.invoices.order(created_at: :desc)
   end
 
+  def show
+    @invoice = Current.organization.invoices.find(params[:id])
+  end
+
   def new
     @invoice = Current.organization.invoices.build(due_date: Date.current + 30.days)
   end
