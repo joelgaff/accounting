@@ -1,0 +1,4 @@
+*ContactName,EmailAddress,*InvoiceNumber,Reference,*InvoiceDate,*DueDate,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType
+DigitalOcean,billing@do.example,BILL-500,,10 Jul 2026,10 Aug 2026,Hosting - July,1,120,400,INPUT
+DigitalOcean,billing@do.example,BILL-500,,10 Jul 2026,10 Aug 2026,Backups - July,1,20,400,INPUT
+Cloudflare,,BILL-501,,12 Jul 2026,12 Aug 2026,CDN monthly,1,25,400,

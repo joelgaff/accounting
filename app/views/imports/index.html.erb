@@ -1,0 +1,23 @@
+<header class="page-header">
+  <h1>Import from Xero</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Migrate your Xero data one export at a time, in order (top to bottom). Every importer is idempotent — re-running updates existing records instead of duplicating.</p>
+</div>
+
+<div class="kpi-grid">
+  <% @importers.each_with_index do |imp, i| %>
+    <article class="kpi-card">
+      <div class="kpi-label"><%= i + 1 %>. <%= imp[:name] %></div>
+      <p class="muted" style="margin:8px 0 12px;font-size:13px;">
+        <% if imp[:run_before] %>
+          ✓ imported (upload again to update)
+        <% else %>
+          not run yet
+        <% end %>
+      </p>
+      <%= link_to "Upload CSV →", imp[:path], class: "btn btn-primary" %>
+    </article>
+  <% end %>
+</div>

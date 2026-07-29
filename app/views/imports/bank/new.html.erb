@@ -8,11 +8,11 @@
   </div>
 <% else %>
   <div class="notice notice-info">
-    <p>Upload a CSV with columns <code>Date</code>, <code>Description</code>, <code>Amount</code>. Positive amounts are treated as deposits, negative as withdrawals.</p>
+    <p>Upload a CSV with columns <code>Date</code>, <code>Description</code>, <code>Amount</code> (or Xero's <code>*Date</code>, <code>Payee</code>, <code>Description</code>, <code>*Amount</code>). Positive amounts are deposits, negative are withdrawals.</p>
     <p>Each row is posted as a balanced entry: bank ↔ paired account. Use a suspense/holding account for the paired side; you can re-categorize later.</p>
   </div>
 
-  <%= form_with url: import_path, multipart: true, class: "app-form" do |f| %>
+  <%= form_with url: imports_bank_path, multipart: true, class: "app-form" do |f| %>
     <div class="field">
       <%= f.label :bank_account_id, "Bank account (deposits debit, withdrawals credit)" %>
       <%= f.collection_select :bank_account_id, @asset_accounts, :id, :name, prompt: "Select bank account" %>
