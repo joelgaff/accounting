@@ -1,5 +1,12 @@
-<h1>Sign in</h1>
-<%= form_with url: session_path, method: :post do |f| %>
-  <%= f.email_field :email, placeholder: "you@example.com", required: true, autofocus: true %>
-  <%= f.submit "Email me a code" %>
-<% end %>
+<div class="guest-card">
+  <h1>Sign in</h1>
+  <%= form_with url: session_path, method: :post, class: "app-form" do |f| %>
+    <div class="field">
+      <%= f.label :email %>
+      <%= f.email_field :email, placeholder: "you@example.com", required: true, autofocus: true %>
+    </div>
+    <div class="form-actions">
+      <%= f.submit "Email me a code", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>
