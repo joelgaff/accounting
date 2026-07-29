@@ -53,6 +53,11 @@
     <%= f.text_area :memo, rows: 3 %>
   </div>
 
+  <div class="field">
+    <%= f.label :receipts, "Receipts (PDF, images)" %>
+    <%= f.file_field :receipts, multiple: true %>
+  </div>
+
   <div class="form-actions">
     <%= f.submit "Record expense", class: "btn btn-primary" %>
     <%= link_to "Cancel", expenses_path, class: "btn btn-secondary" %>

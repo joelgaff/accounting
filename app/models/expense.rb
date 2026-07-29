@@ -6,6 +6,7 @@ class Expense < ApplicationRecord
   belongs_to :tax_rate,          optional: true
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
   has_many   :payments, as: :payable, dependent: :restrict_with_error
+  has_many_attached :receipts
 
   before_validation :sync_vendor_from_contact
   before_validation :compute_totals

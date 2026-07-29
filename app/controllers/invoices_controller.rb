@@ -34,6 +34,7 @@ class InvoicesController < ApplicationController
 
   def invoice_params
     params.require(:invoice).permit(:contact_id, :client_name, :amount, :due_date,
-                                    :receivable_account_id, :revenue_account_id, :tax_rate_id)
+                                    :receivable_account_id, :revenue_account_id, :tax_rate_id,
+                                    attachments: [])
   end
 end

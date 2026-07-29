@@ -48,6 +48,11 @@
     <%= f.collection_select :revenue_account_id, revenue_accounts, :id, :name, prompt: "Select a revenue account" %>
   </div>
 
+  <div class="field">
+    <%= f.label :attachments, "Attachments (PDF, images)" %>
+    <%= f.file_field :attachments, multiple: true %>
+  </div>
+
   <div class="form-actions">
     <%= f.submit "Create invoice", class: "btn btn-primary" %>
     <%= link_to "Cancel", invoices_path, class: "btn btn-secondary" %>

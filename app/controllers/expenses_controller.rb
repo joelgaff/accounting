@@ -35,6 +35,7 @@ class ExpensesController < ApplicationController
 
   def expense_params
     params.require(:expense).permit(:contact_id, :vendor, :amount, :incurred_on, :memo,
-                                    :expense_account_id, :paid_from_account_id, :tax_rate_id)
+                                    :expense_account_id, :paid_from_account_id, :tax_rate_id,
+                                    receipts: [])
   end
 end
