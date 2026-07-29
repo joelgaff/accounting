@@ -1,0 +1,21 @@
+<header class="page-header">
+  <h1>Import Chart of Accounts</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Upload a Xero <strong>Chart of Accounts</strong> CSV export (Accounting → Advanced → Chart of Accounts → Export). A hand-rolled CSV works too — the importer requires <code>Name</code> and <code>Type</code> columns and optionally reads <code>Code</code> and <code>Description</code>.</p>
+  <p><strong>Type</strong> accepts Xero codes (<code>BANK</code>, <code>SALES</code>, <code>CURRLIAB</code>, <code>OVERHEADS</code>, etc.) or plain words (<code>Asset</code>, <code>Liability</code>, <code>Equity</code>, <code>Revenue</code>, <code>Expense</code>).</p>
+  <p>Existing accounts are matched by <code>Code</code> first, then by <code>Name</code>, and updated in place. Re-import is safe. The importer refuses to change an account's type since that would break every entry already posted against it.</p>
+</div>
+
+<%= form_with url: chart_of_accounts_import_path, multipart: true, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :file, "CSV file" %>
+    <%= f.file_field :file, accept: "text/csv,.csv" %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Import", class: "btn btn-primary" %>
+    <%= link_to "Cancel", accounts_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

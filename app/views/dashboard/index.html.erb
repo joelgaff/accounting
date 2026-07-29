@@ -10,7 +10,7 @@
         <li><strong><%= name %></strong></li>
       <% end %>
     </ul>
-    <p>Create them (once you import your CoA, or via <code>bin/rails c</code>) to see live balances here.</p>
+    <p><%= link_to "Import your Chart of Accounts", new_chart_of_accounts_import_path %> to see live balances here.</p>
   </div>
 <% end %>
 

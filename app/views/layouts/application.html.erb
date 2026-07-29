@@ -28,6 +28,7 @@
             <%= link_to "Dashboard", root_path,        class: ("active" if current_page?(root_path)) %>
             <%= link_to "Invoices",  invoices_path,    class: ("active" if controller_name == "invoices") %>
             <%= link_to "Expenses",  expenses_path,    class: ("active" if controller_name == "expenses") %>
+            <%= link_to "Accounts",  accounts_path,    class: ("active" if %w[accounts chart_of_accounts_imports].include?(controller_name)) %>
             <%= link_to "Import",    new_import_path,  class: ("active" if controller_name == "imports") %>
           </div>
           <div class="nav-user">

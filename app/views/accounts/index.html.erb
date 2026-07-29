@@ -1,0 +1,36 @@
+<header class="page-header">
+  <h1>Chart of Accounts</h1>
+  <%= link_to "Import CSV", new_chart_of_accounts_import_path, class: "btn btn-primary" %>
+</header>
+
+<% if @grouped.empty? %>
+  <p class="empty-state">
+    No accounts yet. <%= link_to "Import a Chart of Accounts CSV", new_chart_of_accounts_import_path %> to get started.
+  </p>
+<% else %>
+  <% @grouped.each do |type, accounts| %>
+    <section class="account-group">
+      <h2><%= type.demodulize.pluralize %></h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:80px">Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th class="num">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% accounts.each do |account| %>
+            <tr>
+              <td><%= account.code || content_tag(:span, "—", class: "muted") %></td>
+              <td><%= account.name %></td>
+              <td class="muted"><%= account.description %></td>
+              <td class="num">$<%= number_with_precision(account.balance, precision: 2, delimiter: ",") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  <% end %>
+<% end %>
