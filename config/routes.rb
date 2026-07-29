@@ -8,6 +8,11 @@ Rails.application.routes.draw do
 
   resources :invoices, only: %i[index show new create] do
     resources :payments, only: %i[new create]
+    member do
+      get  :print
+      get  :email
+      post :send_email
+    end
   end
   resources :expenses, only: %i[index show new create] do
     resources :payments, only: %i[new create]

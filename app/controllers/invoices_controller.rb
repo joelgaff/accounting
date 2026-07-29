@@ -10,6 +10,24 @@ class InvoicesController < ApplicationController
     @invoice = Current.organization.invoices.find(params[:id])
   end
 
+  def print
+    @invoice = Current.organization.invoices.find(params[:id])
+  end
+
+  def email
+    @invoice = Current.organization.invoices.find(params[:id])
+  end
+
+  def send_email
+    invoice = Current.organization.invoices.find(params[:id])
+    to      = params.require(:to)
+    subject = params[:subject].presence
+    body    = params[:body].presence
+
+    InvoiceMailer.send_invoice(invoice, to: to, subject: subject, body: body).deliver_later
+    redirect_to invoice_path(invoice), notice: "Invoice emailed to #{to}."
+  end
+
   def new
     @invoice = Current.organization.invoices.build(due_date: Date.current + 30.days)
   end

@@ -1,0 +1,95 @@
+<% content_for :head do %>
+  <style>
+    body { background: white; }
+    .app-nav, .flash, .print-hide { display: none !important; }
+    .app-main { max-width: 780px; margin: 0 auto; padding: 40px; }
+    .invoice-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; }
+    .invoice-header h1 { margin:0; font-size:32px; letter-spacing:-0.02em; }
+    .invoice-meta { text-align:right; font-size:13px; color:var(--text-muted); }
+    .invoice-meta strong { color:var(--text); font-size:14px; }
+    .invoice-bill { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px; }
+    .invoice-bill h3 { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 6px; color:var(--text-muted); }
+    table.invoice-lines { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    table.invoice-lines th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); border-bottom:2px solid var(--text); padding:8px 4px; }
+    table.invoice-lines td { padding:12px 4px; border-bottom:1px solid var(--border); }
+    table.invoice-lines .num { text-align:right; }
+    .totals { margin-left:auto; width:280px; }
+    .totals tr td { padding:6px 4px; }
+    .totals .total { font-weight:700; font-size:16px; border-top:2px solid var(--text); }
+    @media print { .print-hide, .app-nav { display: none !important; } .app-main { padding: 0; } }
+  </style>
+<% end %>
+
+<div class="print-hide" style="margin-bottom:16px;">
+  <button onclick="window.print()" class="btn btn-primary">Print / Save as PDF</button>
+  <%= link_to "Email to customer", email_invoice_path(@invoice), class: "btn btn-secondary" %>
+  <%= link_to "← Back", invoice_path(@invoice), class: "btn btn-secondary" %>
+</div>
+
+<div class="invoice-header">
+  <div>
+    <h1>Invoice</h1>
+    <p style="margin:8px 0 0;color:var(--text-muted);">#<%= @invoice.id %></p>
+  </div>
+  <div class="invoice-meta">
+    <strong><%= @invoice.organization.name %></strong><br>
+    Issued <%= @invoice.created_at.strftime("%b %-d, %Y") %><br>
+    Due <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+  </div>
+</div>
+
+<div class="invoice-bill">
+  <div>
+    <h3>Billed to</h3>
+    <div><%= @invoice.customer_display %></div>
+    <% if @invoice.contact %>
+      <% c = @invoice.contact %>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">
+        <%= c.email %><br>
+        <%= [c.address, [c.city, c.region, c.postal_code].compact_blank.join(", "), c.country].compact_blank.join("\n").then { |a| simple_format a, {}, wrapper_tag: "span" } if [c.address, c.city, c.country].any?(&:present?) %>
+      </div>
+    <% end %>
+  </div>
+  <div>
+    <h3>Balance due</h3>
+    <div style="font-size:24px;font-weight:600;">$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></div>
+    <div style="font-size:12px;color:var(--text-muted);">of $<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></div>
+  </div>
+</div>
+
+<table class="invoice-lines">
+  <thead><tr><th>Description</th><th class="num">Amount</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Services rendered</td>
+      <td class="num">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="totals">
+  <tr>
+    <td>Subtotal</td>
+    <td class="num">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
+  </tr>
+  <% if @invoice.tax_amount.positive? %>
+    <tr>
+      <td><%= @invoice.tax_rate.name %></td>
+      <td class="num">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
+    </tr>
+  <% end %>
+  <tr class="total">
+    <td>Total</td>
+    <td class="num">$<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></td>
+  </tr>
+  <% if @invoice.paid_amount.positive? %>
+    <tr>
+      <td>Paid</td>
+      <td class="num">−$<%= number_with_precision(@invoice.paid_amount, precision: 2, delimiter: ",") %></td>
+    </tr>
+    <tr class="total">
+      <td>Balance due</td>
+      <td class="num">$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></td>
+    </tr>
+  <% end %>
+</table>

@@ -1,0 +1,42 @@
+<p>Hi <%= @invoice.customer_display %>,</p>
+
+<% if @body.present? %>
+  <%= simple_format @body %>
+<% else %>
+  <p>Please find your invoice attached below.</p>
+<% end %>
+
+<hr style="border:0;border-top:1px solid #ccc;margin:24px 0;">
+
+<h2>Invoice #<%= @invoice.id %></h2>
+<p>
+  <strong>From:</strong> <%= @invoice.organization.name %><br>
+  <strong>To:</strong> <%= @invoice.customer_display %><br>
+  <strong>Due date:</strong> <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+</p>
+
+<table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;max-width:500px;">
+  <thead>
+    <tr style="background:#f4f4f4;"><th align="left">Description</th><th align="right">Amount</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Services rendered</td>
+      <td align="right">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
+    </tr>
+    <% if @invoice.tax_amount.positive? %>
+      <tr>
+        <td>Tax (<%= @invoice.tax_rate.name %>)</td>
+        <td align="right">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
+      </tr>
+    <% end %>
+    <tr style="background:#f4f4f4;font-weight:bold;">
+      <td>Total due</td>
+      <td align="right">$<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin-top:24px;color:#666;font-size:13px;">
+  Sent from <%= @invoice.organization.name %>
+</p>
