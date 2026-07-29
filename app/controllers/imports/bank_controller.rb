@@ -6,27 +6,26 @@ class Imports::BankController < ApplicationController
   end
 
   def create
-    file = params[:file]
-    bank_account   = @asset_accounts.find { |a| a.id.to_s == params[:bank_account_id].to_s }
-    paired_account = @all_accounts.find   { |a| a.id.to_s == params[:paired_account_id].to_s }
+    file         = params[:file]
+    bank_account = @asset_accounts.find { |a| a.id.to_s == params[:bank_account_id].to_s }
 
-    if file.blank? || bank_account.nil? || paired_account.nil?
-      flash.now[:alert] = "Choose a CSV file, a bank account, and a paired account."
+    if file.blank? || bank_account.nil?
+      flash.now[:alert] = "Choose a CSV file and a bank account."
       return render :new, status: :unprocessable_entity
     end
 
-    result = BankImportService.new(file.read, bank_account: bank_account, paired_account: paired_account).call
+    result = Imports::BankStatementService.new(
+      file.read, bank_account: bank_account, organization: Current.organization
+    ).call
 
-    msg = "Imported #{result.imported}, skipped #{result.skipped}."
-    msg += " Errors: #{result.errors.join("; ")}" if result.errors.any?
-    redirect_to root_path, notice: msg
+    msg = "Imported #{result.imported}, duplicates skipped #{result.duplicates}."
+    msg += " Errors: #{result.errors.first(5).join('; ')}" if result.errors.any?
+    redirect_to bank_transactions_path, notice: msg
   end
 
   private
 
   def load_accounts
-    scope = Plutus::Account.where(tenant: Current.organization).order(:type, :name)
-    @asset_accounts = scope.where(type: "Plutus::Asset")
-    @all_accounts   = scope
+    @asset_accounts = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
   end
 end

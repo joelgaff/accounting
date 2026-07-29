@@ -1,0 +1,46 @@
+<header class="page-header">
+  <h1>Bank reconciliation
+    <span id="unmatched-count" class="muted" style="font-size:14px;font-weight:400;">
+      <%= @unmatched_count %>
+    </span> unmatched
+  </h1>
+  <%= link_to "Import statement", new_imports_bank_path, class: "btn btn-primary" %>
+</header>
+
+<%= form_with url: bank_transactions_path, method: :get, class: "app-form",
+    style: "display:flex;gap:12px;max-width:none;align-items:flex-end;padding:16px;margin-bottom:20px;" do |f| %>
+  <div class="field" style="margin:0;">
+    <%= f.label :bank_account_id, "Bank account" %>
+    <%= f.collection_select :bank_account_id, @bank_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, { include_blank: "All" }, selected: params[:bank_account_id] %>
+  </div>
+  <div class="field" style="margin:0;">
+    <%= f.label :status %>
+    <%= f.select :status, BankTransaction::STATUSES.map { |s| [s.titleize, s] }, { include_blank: "All" }, selected: params[:status] %>
+  </div>
+  <%= f.submit "Filter", class: "btn btn-secondary" %>
+<% end %>
+
+<%= turbo_frame_tag "bank-transactions" do %>
+  <% if @transactions.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Bank</th>
+          <th>Description</th>
+          <th>Reference</th>
+          <th class="num">Amount</th>
+          <th>Status</th>
+          <th style="width:340px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @transactions.each do |txn| %>
+          <%= render "bank_transactions/row", txn: txn, expense_accts: @expense_accts %>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="empty-state">No transactions match this filter.</p>
+  <% end %>
+<% end %>

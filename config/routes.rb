@@ -19,6 +19,14 @@ Rails.application.routes.draw do
   end
   resources :accounts, only: %i[index]
   resources :contacts
+  resources :bank_transactions, only: %i[index] do
+    member do
+      post :match_invoice
+      post :match_expense
+      post :categorize
+      post :ignore
+    end
+  end
   resource  :contact_import,           only: %i[new create]
   resource  :chart_of_accounts_import, only: %i[new create]
 

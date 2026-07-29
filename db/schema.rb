@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_043512) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_044243) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -37,6 +37,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_043512) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "bank_transactions", force: :cascade do |t|
+    t.decimal "amount", precision: 20, scale: 2, null: false
+    t.integer "bank_account_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "matched_id"
+    t.string "matched_type"
+    t.integer "organization_id", null: false
+    t.date "posted_on", null: false
+    t.string "reference"
+    t.string "status", default: "unmatched", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bank_account_id"], name: "index_bank_transactions_on_bank_account_id"
+    t.index ["matched_type", "matched_id"], name: "index_bank_transactions_on_matched"
+    t.index ["organization_id", "bank_account_id", "posted_on", "amount", "description"], name: "idx_bank_txns_dedupe", unique: true
+    t.index ["organization_id", "status"], name: "index_bank_transactions_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_bank_transactions_on_organization_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -233,6 +252,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_043512) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bank_transactions", "organizations"
   add_foreign_key "contacts", "organizations"
   add_foreign_key "expenses", "contacts"
   add_foreign_key "expenses", "organizations"
