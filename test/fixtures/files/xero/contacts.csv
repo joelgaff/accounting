@@ -1,0 +1,4 @@
+*ContactName,EmailAddress,FirstName,LastName,POAttentionTo,POAddressLine1,POAddressLine2,POAddressLine3,POAddressLine4,POCity,PORegion,POPostalCode,POCountry,SAAttentionTo,SAAddressLine1,SAAddressLine2,SAAddressLine3,SAAddressLine4,SACity,SARegion,SAPostalCode,SACountry,PhoneNumber,FaxNumber,MobileNumber,DDIPhoneNumber,SkypeName,BankAccountName,BankAccountNumber,BankAccountParticulars,TaxNumber,AccountNumber,PurchasesAccount,SalesAccount,PurchasesTrackingName1,PurchasesTrackingOption1,PurchasesTrackingName2,PurchasesTrackingOption2,SalesTrackingName1,SalesTrackingOption1,SalesTrackingName2,SalesTrackingOption2,Website
+Acme Widgets,billing@acme.example,Jane,Doe,,123 Main St,,,,Springfield,IL,12345,USA,,,,,,,,,,555-0100,,,,,,,,,ACME-01,,,,,,,,,,,https://acme.example
+Bob's Consulting,bob@example.com,Bob,Smith,,,,,,Portland,OR,,USA,,,,,,,,,,555-0200,,,,,,,,,BOB-01,,,,,,,,,,,
+,should be skipped — no name,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,

@@ -1,0 +1,70 @@
+<%= form_with model: contact, class: "app-form" do |f| %>
+  <% if contact.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% contact.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name, autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :kind %>
+    <%= f.select :kind, Contact::KINDS.map { |k| [k.titleize, k] } %>
+  </div>
+
+  <div class="field">
+    <%= f.label :email %>
+    <%= f.email_field :email %>
+  </div>
+
+  <div class="field">
+    <%= f.label :phone %>
+    <%= f.text_field :phone %>
+  </div>
+
+  <fieldset style="border:0;padding:0;margin:16px 0;">
+    <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Address</legend>
+    <div class="field">
+      <%= f.label :address %>
+      <%= f.text_area :address, rows: 2 %>
+    </div>
+    <div class="field">
+      <%= f.label :city %>
+      <%= f.text_field :city %>
+    </div>
+    <div class="field">
+      <%= f.label :region, "State/Region" %>
+      <%= f.text_field :region %>
+    </div>
+    <div class="field">
+      <%= f.label :postal_code %>
+      <%= f.text_field :postal_code %>
+    </div>
+    <div class="field">
+      <%= f.label :country %>
+      <%= f.text_field :country %>
+    </div>
+  </fieldset>
+
+  <div class="field">
+    <%= f.label :tax_number, "Tax number" %>
+    <%= f.text_field :tax_number %>
+  </div>
+
+  <div class="field">
+    <%= f.label :notes %>
+    <%= f.text_area :notes, rows: 3 %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit (contact.new_record? ? "Create contact" : "Update contact"), class: "btn btn-primary" %>
+    <%= link_to "Cancel", contacts_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

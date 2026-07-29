@@ -24,9 +24,10 @@ class InvoicesController < ApplicationController
   def load_accounts
     @receivable_accounts = Plutus::Asset.where(tenant: Current.organization).order(:name)
     @revenue_accounts    = Plutus::Revenue.where(tenant: Current.organization).order(:name)
+    @customers           = Current.organization.contacts.customers.ordered
   end
 
   def invoice_params
-    params.require(:invoice).permit(:client_name, :amount, :due_date, :receivable_account_id, :revenue_account_id)
+    params.require(:invoice).permit(:contact_id, :client_name, :amount, :due_date, :receivable_account_id, :revenue_account_id)
   end
 end

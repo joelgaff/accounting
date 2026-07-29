@@ -1,0 +1,22 @@
+<header class="page-header">
+  <h1><%= @contact.name %></h1>
+  <%= link_to "Edit", edit_contact_path(@contact), class: "btn btn-secondary" %>
+</header>
+
+<dl class="app-form" style="display:grid;grid-template-columns:auto 1fr;gap:8px 20px;">
+  <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Kind</dt>       <dd style="margin:0;"><%= @contact.kind %></dd>
+  <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Email</dt>      <dd style="margin:0;"><%= @contact.email %></dd>
+  <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Phone</dt>      <dd style="margin:0;"><%= @contact.phone %></dd>
+  <% if [@contact.address, @contact.city, @contact.postal_code].any?(&:present?) %>
+    <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Address</dt>
+    <dd style="margin:0;">
+      <%= simple_format [@contact.address, [@contact.city, @contact.region, @contact.postal_code].compact_blank.join(", "), @contact.country].compact_blank.join("\n") %>
+    </dd>
+  <% end %>
+  <% if @contact.tax_number.present? %>
+    <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Tax #</dt>    <dd style="margin:0;"><%= @contact.tax_number %></dd>
+  <% end %>
+  <% if @contact.notes.present? %>
+    <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Notes</dt>    <dd style="margin:0;"><%= simple_format @contact.notes %></dd>
+  <% end %>
+</dl>
