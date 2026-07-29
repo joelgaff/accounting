@@ -7,6 +7,10 @@ class Organization < ApplicationRecord
   has_one  :settings, class_name: "OrganizationSettings", dependent: :destroy
   validates :name, presence: true
 
+  def plutus_accounts
+    Plutus::Account.where(tenant: self)
+  end
+
   def settings
     super || build_settings
   end

@@ -21,7 +21,19 @@ Rails.application.routes.draw do
   resources :contacts
   resource  :contact_import,           only: %i[new create]
   resource  :chart_of_accounts_import, only: %i[new create]
-  resource  :import,   only: %i[new create]
+
+  # Xero-migration landing page + per-format Xero importers.
+  # /imports              → index (landing page listing each importer)
+  # /imports/invoices/new → Xero sales invoices CSV
+  # /imports/bills/new    → Xero bills (purchases) CSV
+  # /imports/bank/new     → bank statement CSV (both plain and Xero shape)
+  resources :imports, only: :index
+  namespace :imports do
+    resource :invoices, only: %i[new create]
+    resource :bills,    only: %i[new create]
+    resource :bank,     only: %i[new create]
+  end
+
   resource  :settings, only: %i[show update]
   resources :tax_rates
 

@@ -31,7 +31,7 @@
             <%= link_to "Expenses",  expenses_path,    class: ("active" if controller_name == "expenses") %>
             <%= link_to "Accounts",  accounts_path,    class: ("active" if %w[accounts chart_of_accounts_imports].include?(controller_name)) %>
             <%= link_to "Reports",   reports_path,     class: ("active" if controller_name == "reports") %>
-            <%= link_to "Import",    new_import_path,  class: ("active" if controller_name == "imports") %>
+            <%= link_to "Import",    imports_path,     class: ("active" if controller_path.start_with?("imports")) %>
           </div>
           <div class="nav-user">
             <%= link_to "Tax", tax_rates_path, class: ("active" if controller_name == "tax_rates"), style: "padding:8px 12px;color:var(--text);border-radius:var(--radius-sm);" %>

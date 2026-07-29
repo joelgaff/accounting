@@ -1,0 +1,19 @@
+<header class="page-header">
+  <h1>Import sales invoices from Xero</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Upload Xero's <strong>Sales Invoices CSV</strong> (Business → Invoices → Export). One row per line item, keyed by <code>*InvoiceNumber</code>. Re-import is safe — matches on invoice number and updates in place.</p>
+  <p>Requires: your Chart of Accounts + Tax Rates imported first, and a receivable account picked under <%= link_to "Settings", settings_path %>.</p>
+</div>
+
+<%= form_with url: imports_invoices_path, multipart: true, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :file, "Xero Sales Invoices CSV" %>
+    <%= f.file_field :file, accept: "text/csv,.csv" %>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Import", class: "btn btn-primary" %>
+    <%= link_to "Cancel", imports_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>
