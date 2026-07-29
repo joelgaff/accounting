@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_235720) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_005414) do
   create_table "expenses", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -56,13 +56,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_235720) do
   end
 
   create_table "plutus_accounts", force: :cascade do |t|
+    t.string "code"
     t.boolean "contra", default: false
     t.datetime "created_at", precision: nil
+    t.text "description"
     t.string "name"
     t.integer "tenant_id"
     t.string "type"
     t.datetime "updated_at", precision: nil
+    t.string "xero_type"
     t.index ["name", "type"], name: "index_plutus_accounts_on_name_and_type"
+    t.index ["tenant_id", "code"], name: "index_plutus_accounts_on_tenant_id_and_code", unique: true, where: "code IS NOT NULL"
     t.index ["tenant_id"], name: "index_plutus_accounts_on_tenant_id"
   end
 
