@@ -1,0 +1,43 @@
+<%= tag.tr id: dom_id(txn), data: { controller: "reveal" } do %>
+  <td><%= txn.posted_on.iso8601 %></td>
+  <td class="muted"><%= txn.bank_account.name %></td>
+  <td><%= txn.description %></td>
+  <td class="muted"><%= txn.reference %></td>
+  <td class="num" style="color:<%= txn.deposit? ? 'var(--success)' : 'var(--danger)' %>;">
+    <%= txn.deposit? ? "+" : "" %>$<%= number_with_precision(txn.amount, precision: 2, delimiter: ",") %>
+  </td>
+  <td><span class="badge badge-<%= { 'unmatched' => 'open', 'matched' => 'paid', 'ignored' => 'partial' }[txn.status] %>"><%= txn.status %></span></td>
+  <td>
+    <% if txn.status == "unmatched" %>
+      <% if txn.deposit? %>
+        <%# Match to invoice — deposit received %>
+        <% candidates = Current.organization.invoices.where("(amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.payable_type = 'Invoice' AND payments.payable_id = invoices.id), 0)) BETWEEN ? AND ?", txn.amount.abs * 0.95, txn.amount.abs * 1.05).limit(20) %>
+        <%= form_with url: match_invoice_bank_transaction_path(txn), method: :post, class: "inline-form" do |f| %>
+          <%= f.select :invoice_id, candidates.map { |i| ["#{i.customer_display} — $#{format('%.2f', i.balance_due)} (##{i.id})", i.id] }, { include_blank: "Match to invoice…" }, style: "font-size:12px;" %>
+          <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
+        <% end %>
+      <% else %>
+        <%# Match to expense OR categorize as new expense %>
+        <% candidates = Current.organization.expenses.where(paid_from_account: Current.organization.settings.payable_account).where("(amount - COALESCE((SELECT SUM(amount) FROM payments WHERE payments.payable_type = 'Expense' AND payments.payable_id = expenses.id), 0)) BETWEEN ? AND ?", txn.amount.abs * 0.95, txn.amount.abs * 1.05).limit(20) if Current.organization.settings.payable_account %>
+        <% if candidates&.any? %>
+          <%= form_with url: match_expense_bank_transaction_path(txn), method: :post, class: "inline-form" do |f| %>
+            <%= f.select :expense_id, candidates.map { |e| ["#{e.vendor_display} — $#{format('%.2f', e.balance_due)} (##{e.id})", e.id] }, { include_blank: "Match to bill…" }, style: "font-size:12px;" %>
+            <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
+          <% end %>
+        <% end %>
+        <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "inline-form", style: "margin-top:4px;" do |f| %>
+          <%= f.collection_select :expense_account_id, expense_accts, :id, ->(a) { "#{a.code} #{a.name}" }, { include_blank: "Or new expense…" }, style: "font-size:12px;" %>
+          <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
+        <% end %>
+      <% end %>
+      <%= button_to "Ignore", ignore_bank_transaction_path(txn), method: :post, class: "btn btn-secondary",
+          form: { style: "display:inline-block;margin-top:4px;" }, style: "padding:2px 8px;font-size:12px;" %>
+    <% else %>
+      <span class="muted">
+        <% if txn.matched %>
+          → <%= txn.matched_type %> #<%= txn.matched_id %>
+        <% end %>
+      </span>
+    <% end %>
+  </td>
+<% end %>
