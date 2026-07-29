@@ -22,9 +22,16 @@
   </div>
 
   <div class="field">
-    <%= f.label :amount %>
+    <%= f.label :amount, "Amount (subtotal, before tax)" %>
     <%= f.number_field :amount, step: 0.01, min: 0 %>
   </div>
+
+  <% if tax_rates.any? %>
+    <div class="field">
+      <%= f.label :tax_rate_id, "Tax rate" %>
+      <%= f.collection_select :tax_rate_id, tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, include_blank: "— no tax —" %>
+    </div>
+  <% end %>
 
   <div class="field">
     <%= f.label :due_date, "Due date" %>

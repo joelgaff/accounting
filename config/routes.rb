@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   resource  :chart_of_accounts_import, only: %i[new create]
   resource  :import,   only: %i[new create]
   resource  :settings, only: %i[show update]
+  resources :tax_rates
 
   get "reports"                => "reports#index",           as: :reports
   get "reports/profit_and_loss" => "reports#profit_and_loss", as: :profit_and_loss_report

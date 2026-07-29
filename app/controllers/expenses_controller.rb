@@ -30,9 +30,11 @@ class ExpensesController < ApplicationController
     @expense_accounts   = scope.where(type: "Plutus::Expense").order(:name)
     @paid_from_accounts = scope.where(type: %w[Plutus::Asset Plutus::Liability]).order(:type, :name)
     @vendors            = Current.organization.contacts.vendors.ordered
+    @tax_rates          = Current.organization.tax_rates.ordered
   end
 
   def expense_params
-    params.require(:expense).permit(:contact_id, :vendor, :amount, :incurred_on, :memo, :expense_account_id, :paid_from_account_id)
+    params.require(:expense).permit(:contact_id, :vendor, :amount, :incurred_on, :memo,
+                                    :expense_account_id, :paid_from_account_id, :tax_rate_id)
   end
 end
