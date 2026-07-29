@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :accounts, only: %i[index]
   resource  :chart_of_accounts_import, only: %i[new create]
   resource  :import,   only: %i[new create]
+  resource  :settings, only: %i[show update]
 
   get "up" => "rails/health#show", as: :rails_health_check
 end

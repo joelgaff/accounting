@@ -1,11 +1,22 @@
 class DashboardController < ApplicationController
   before_action :require_login
 
-  KPI_ACCOUNT_NAMES = ["Operating Bank", "Accounts Receivable", "Accounts Payable"].freeze
+  KPI_SLOTS = [
+    ["Operating Bank",       :bank_account],
+    ["Accounts Receivable",  :receivable_account],
+    ["Accounts Payable",     :payable_account]
+  ].freeze
 
   def index
-    @kpis = KPI_ACCOUNT_NAMES.index_with { |name| Ledger.balance(name) }
-    @missing_accounts = KPI_ACCOUNT_NAMES.reject { |name| Ledger.lookup(name) }
+    settings = Current.organization.settings
+
+    @kpis = KPI_SLOTS.map do |label, attr|
+      account = settings.public_send(attr)
+      [label, account, account&.balance || BigDecimal("0")]
+    end
+
+    @missing_slots = KPI_SLOTS.select { |_, attr| settings.public_send(attr).nil? }.map(&:first)
+
     @recent_entries = Plutus::Entry
                         .joins(debit_amounts: :account)
                         .where(plutus_accounts: { tenant_id: Current.organization.id })

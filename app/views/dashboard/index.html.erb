@@ -2,23 +2,26 @@
   <h1>Dashboard</h1>
 </header>
 
-<% if @missing_accounts.any? %>
+<% if @missing_slots.any? %>
   <div class="notice">
-    <p>The following KPI accounts don't exist yet in your Chart of Accounts:</p>
+    <p>These KPI cards aren't wired to an account yet:</p>
     <ul>
-      <% @missing_accounts.each do |name| %>
-        <li><strong><%= name %></strong></li>
+      <% @missing_slots.each do |label| %>
+        <li><strong><%= label %></strong></li>
       <% end %>
     </ul>
-    <p><%= link_to "Import your Chart of Accounts", new_chart_of_accounts_import_path %> to see live balances here.</p>
+    <p><%= link_to "Pick the accounts in Settings", settings_path %> — or <%= link_to "import your Chart of Accounts", new_chart_of_accounts_import_path %> first if it's empty.</p>
   </div>
 <% end %>
 
 <section class="kpi-grid">
-  <% @kpis.each do |name, balance| %>
+  <% @kpis.each do |label, account, balance| %>
     <article class="kpi-card">
-      <div class="kpi-label"><%= name %></div>
+      <div class="kpi-label"><%= label %></div>
       <div class="kpi-value">$<%= number_with_precision(balance, precision: 2, delimiter: ",") %></div>
+      <% if account %>
+        <div class="muted" style="font-size:12px;margin-top:4px;"><%= account.code %> <%= account.name %></div>
+      <% end %>
     </article>
   <% end %>
 </section>
