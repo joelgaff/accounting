@@ -1,0 +1,7 @@
+<header class="page-header">
+  <h1>Edit recurring invoice</h1>
+  <%= button_to "Delete", recurring_invoice_path(@recurring_invoice), method: :delete, class: "btn btn-secondary",
+      form: { data: { turbo_confirm: "Delete this recurring invoice?" }, style: "display:inline" } %>
+</header>
+<%= render "form", recurring_invoice: @recurring_invoice, receivable_accounts: @receivable_accounts,
+                   revenue_accounts: @revenue_accounts, customers: @customers, tax_rates: @tax_rates %>

@@ -1,0 +1,3 @@
+<li>
+  <%= link_to "Invoice ##{invoice.id}", invoice_path(invoice) %> — <%= invoice.customer_display %> — $<%= number_with_precision(invoice.amount, precision: 2, delimiter: ",") %> (due <%= invoice.due_date.iso8601 %>)
+</li>

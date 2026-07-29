@@ -27,7 +27,7 @@
           <div class="nav-links">
             <%= link_to "Dashboard", root_path,        class: ("active" if current_page?(root_path)) %>
             <%= link_to "Contacts",  contacts_path,    class: ("active" if %w[contacts contact_imports].include?(controller_name)) %>
-            <%= link_to "Invoices",  invoices_path,    class: ("active" if controller_name == "invoices") %>
+            <%= link_to "Invoices",  invoices_path,    class: ("active" if %w[invoices recurring_invoices].include?(controller_name)) %>
             <%= link_to "Expenses",  expenses_path,    class: ("active" if controller_name == "expenses") %>
             <%= link_to "Journal",   journal_entries_path, class: ("active" if controller_name == "journal_entries") %>
             <%= link_to "Accounts",  accounts_path,    class: ("active" if %w[accounts chart_of_accounts_imports].include?(controller_name)) %>

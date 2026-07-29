@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_045431) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_045755) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -248,6 +248,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_045431) do
     t.index ["date"], name: "index_plutus_entries_on_date"
   end
 
+  create_table "recurring_invoices", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "client_name", null: false
+    t.integer "contact_id"
+    t.datetime "created_at", null: false
+    t.boolean "email_on_generate", default: false, null: false
+    t.date "end_on"
+    t.string "frequency", null: false
+    t.integer "interval", default: 1, null: false
+    t.integer "net_days", default: 30, null: false
+    t.date "next_run_on", null: false
+    t.integer "organization_id", null: false
+    t.integer "receivable_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_recurring_invoices_on_contact_id"
+    t.index ["organization_id", "active", "next_run_on"], name: "idx_on_organization_id_active_next_run_on_c143cc789f"
+    t.index ["organization_id"], name: "index_recurring_invoices_on_organization_id"
+    t.index ["receivable_account_id"], name: "index_recurring_invoices_on_receivable_account_id"
+  end
+
   create_table "tax_rates", force: :cascade do |t|
     t.integer "asset_account_id"
     t.datetime "created_at", null: false
@@ -287,6 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_045431) do
   add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "organization_settings", "organizations"
   add_foreign_key "payments", "organizations"
+  add_foreign_key "recurring_invoices", "organizations"
   add_foreign_key "tax_rates", "organizations"
   add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"

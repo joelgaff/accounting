@@ -1,0 +1,25 @@
+<header class="page-header">
+  <h1>Recurring invoices</h1>
+  <%= link_to "New recurring invoice", new_recurring_invoice_path, class: "btn btn-primary" %>
+</header>
+
+<% if @recurring_invoices.any? %>
+  <table class="data-table">
+    <thead>
+      <tr><th>Customer</th><th>Frequency</th><th>Next run</th><th>Active</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% @recurring_invoices.each do |ri| %>
+        <tr>
+          <td><%= link_to ri.customer_display, recurring_invoice_path(ri) %></td>
+          <td>every <%= ri.interval %> <%= ri.frequency.chomp("ly") + (ri.interval > 1 ? "s" : "") %></td>
+          <td><%= ri.next_run_on.iso8601 %></td>
+          <td><%= ri.active? ? "yes" : "paused" %></td>
+          <td><%= link_to "Edit", edit_recurring_invoice_path(ri) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No recurring invoices. <%= link_to "Set one up", new_recurring_invoice_path %>.</p>
+<% end %>

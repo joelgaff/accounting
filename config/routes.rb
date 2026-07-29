@@ -20,6 +20,9 @@ Rails.application.routes.draw do
   resources :accounts, only: %i[index]
   resources :contacts
   resources :journal_entries, only: %i[index show new create]
+  resources :recurring_invoices do
+    member { post :run_now }
+  end
   resources :bank_transactions, only: %i[index] do
     member do
       post :match_invoice

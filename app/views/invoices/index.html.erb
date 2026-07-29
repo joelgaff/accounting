@@ -1,6 +1,9 @@
 <header class="page-header">
   <h1>Invoices</h1>
-  <%= link_to "New invoice", new_invoice_path, class: "btn btn-primary" %>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "Recurring", recurring_invoices_path, class: "btn btn-secondary" %>
+    <%= link_to "New invoice", new_invoice_path, class: "btn btn-primary" %>
+  </div>
 </header>
 
 <% if @invoices.any? %>
