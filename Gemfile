@@ -71,3 +71,6 @@ gem "bcrypt", "~> 3.1"
 
 # Double-entry accounting ledger [https://github.com/mbulat/plutus]
 gem "plutus", "~> 0.18"
+
+# CSV was removed from Ruby 3.4 default gems; used by BankImportService
+gem "csv"

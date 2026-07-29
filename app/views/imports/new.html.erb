@@ -1,0 +1,36 @@
+<header class="page-header">
+  <h1>Import bank statement</h1>
+</header>
+
+<% if @asset_accounts.empty? || @all_accounts.empty? %>
+  <div class="notice">
+    <p>You need at least one Asset account (the bank) before importing.</p>
+  </div>
+<% else %>
+  <div class="notice notice-info">
+    <p>Upload a CSV with columns <code>Date</code>, <code>Description</code>, <code>Amount</code>. Positive amounts are treated as deposits, negative as withdrawals.</p>
+    <p>Each row is posted as a balanced entry: bank ↔ paired account. Use a suspense/holding account for the paired side; you can re-categorize later.</p>
+  </div>
+
+  <%= form_with url: import_path, multipart: true, class: "app-form" do |f| %>
+    <div class="field">
+      <%= f.label :bank_account_id, "Bank account (deposits debit, withdrawals credit)" %>
+      <%= f.collection_select :bank_account_id, @asset_accounts, :id, :name, prompt: "Select bank account" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :paired_account_id, "Paired account" %>
+      <%= f.collection_select :paired_account_id, @all_accounts, :id, ->(a) { "#{a.name} (#{a.type.demodulize})" }, prompt: "Select paired account" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :file, "CSV file" %>
+      <%= f.file_field :file, accept: "text/csv" %>
+    </div>
+
+    <div class="form-actions">
+      <%= f.submit "Import", class: "btn btn-primary" %>
+      <%= link_to "Cancel", root_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+<% end %>
