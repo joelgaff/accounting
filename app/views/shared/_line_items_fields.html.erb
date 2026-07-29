@@ -1,0 +1,57 @@
+<%#
+  Locals:
+    form:         the parent form_with builder
+    accounts:     collection for the account dropdown (Plutus::Revenue for invoices, Plutus::Expense for expenses)
+    tax_rates:    collection for optional per-line tax rate
+%>
+
+<fieldset class="line-items"
+          data-controller="line-items"
+          data-line-items-index-value="<%= form.object.line_items.size %>"
+          style="border:0;padding:0;margin:20px 0;">
+  <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Line items</legend>
+
+  <table class="data-table" style="margin-bottom:8px;">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th class="num" style="width:80px;">Qty</th>
+        <th class="num" style="width:100px;">Unit</th>
+        <th style="width:180px;">Account</th>
+        <% if tax_rates.any? %><th style="width:140px;">Tax</th><% end %>
+        <th class="num" style="width:100px;">Amount</th>
+        <th style="width:40px;"></th>
+      </tr>
+    </thead>
+    <tbody data-line-items-target="rows">
+      <%= form.fields_for :line_items do |li_form| %>
+        <%= render "shared/line_item_row", li_form: li_form, accounts: accounts, tax_rates: tax_rates %>
+      <% end %>
+    </tbody>
+    <tfoot>
+      <tr style="font-weight:600;background:#fafbfc;">
+        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Subtotal</td>
+        <td class="num" data-line-items-target="subtotal">$0.00</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;" class="muted">Tax</td>
+        <td class="num" data-line-items-target="tax">$0.00</td>
+        <td></td>
+      </tr>
+      <tr style="font-weight:700;font-size:15px;">
+        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Total</td>
+        <td class="num" data-line-items-target="total">$0.00</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <template data-line-items-target="template">
+    <%= form.fields_for :line_items, LineItem.new, child_index: "NEW_RECORD" do |li_form| %>
+      <%= render "shared/line_item_row", li_form: li_form, accounts: accounts, tax_rates: tax_rates %>
+    <% end %>
+  </template>
+
+  <button type="button" class="btn btn-secondary" data-action="line-items#add">+ Add line</button>
+</fieldset>

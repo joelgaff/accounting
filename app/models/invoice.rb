@@ -2,17 +2,19 @@ class Invoice < ApplicationRecord
   belongs_to :organization
   belongs_to :contact,            optional: true
   belongs_to :receivable_account, class_name: "Plutus::Asset"
-  belongs_to :revenue_account,    class_name: "Plutus::Revenue"
-  belongs_to :tax_rate,           optional: true
+  belongs_to :revenue_account,    class_name: "Plutus::Revenue", optional: true  # deprecated; carried by line items now
+  belongs_to :tax_rate,           optional: true                                  # deprecated; carried by line items now
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
   has_many_attached :attachments
   include HasBalanceDue
+  include HasLineItems
 
   before_validation :sync_client_name_from_contact
-  before_validation :compute_totals
-  validates :client_name, :amount, :due_date, presence: true
+  before_validation :default_line_from_flat_amount
+  before_validation :sync_amount_from_lines
+  validates :client_name, :due_date, presence: true
   validates :amount, numericality: { greater_than: 0 }
-  validate  :tax_rate_has_liability_account, if: -> { tax_rate.present? }
+  validate  :must_have_line_items
 
   after_create :post_to_ledger
 
@@ -30,27 +32,35 @@ class Invoice < ApplicationRecord
     self.client_name = contact.name if contact && client_name.blank?
   end
 
-  # `amount` in the form is the SUBTOTAL. We compute tax on it and store the
-  # inclusive total back into `amount` so payments etc. see the full figure.
-  def compute_totals
-    return if amount.blank?
-    if tax_rate && !tax_rate.zero?
-      self.subtotal   = amount if subtotal.blank? || subtotal == amount
-      self.tax_amount = (subtotal * tax_rate.rate).round(2)
-      self.amount     = subtotal + tax_amount
-    else
-      self.subtotal   = amount
-      self.tax_amount = 0
-    end
+  # Legacy convenience: if the caller passed a top-level `amount` (subtotal)
+  # and no line items, generate a single line from it. Preserves the pre-Slice-H
+  # API used across existing tests and imports.
+  def default_line_from_flat_amount
+    return if line_items.any? || amount.blank? || revenue_account.blank?
+    line_items.build(
+      description: "Services rendered",
+      quantity:    1,
+      unit_amount: attributes["subtotal"].presence || amount,
+      account:     revenue_account,
+      tax_rate:    tax_rate
+    )
   end
 
-  def tax_rate_has_liability_account
-    errors.add(:tax_rate, "needs a liability account for sales tax") if tax_rate.liability_account.blank?
+  def sync_amount_from_lines
+    return if line_items.empty?
+    self.subtotal   = subtotal
+    self.tax_amount = tax_amount
+    self.amount     = total
+  end
+
+  def must_have_line_items
+    errors.add(:base, "must have at least one line item") if line_items.empty?
   end
 
   def post_to_ledger
-    credits = [{ account: revenue_account, amount: subtotal }]
-    credits << { account: tax_rate.liability_account, amount: tax_amount } if tax_amount.positive?
+    legs = line_ledger_legs
+    credits  = legs[:accounts].map { |acct, amt| { account: acct, amount: amt } }
+    credits += legs[:taxes].map    { |tax, amt| { account: tax.liability_account, amount: amt } }
 
     Ledger.post(
       description: "Invoice ##{id} — #{client_name}",

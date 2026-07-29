@@ -1,4 +1,4 @@
-<%= form_with model: invoice, class: "app-form" do |f| %>
+<%= form_with model: invoice, class: "app-form", style: "max-width:none;" do |f| %>
   <% if invoice.errors.any? %>
     <div class="form-errors">
       <ul>
@@ -22,18 +22,6 @@
   </div>
 
   <div class="field">
-    <%= f.label :amount, "Amount (subtotal, before tax)" %>
-    <%= f.number_field :amount, step: 0.01, min: 0 %>
-  </div>
-
-  <% if tax_rates.any? %>
-    <div class="field">
-      <%= f.label :tax_rate_id, "Tax rate" %>
-      <%= f.collection_select :tax_rate_id, tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, include_blank: "— no tax —" %>
-    </div>
-  <% end %>
-
-  <div class="field">
     <%= f.label :due_date, "Due date" %>
     <%= f.date_field :due_date %>
   </div>
@@ -43,10 +31,8 @@
     <%= f.collection_select :receivable_account_id, receivable_accounts, :id, :name, prompt: "Select an asset account" %>
   </div>
 
-  <div class="field">
-    <%= f.label :revenue_account_id, "Revenue account (credit)" %>
-    <%= f.collection_select :revenue_account_id, revenue_accounts, :id, :name, prompt: "Select a revenue account" %>
-  </div>
+  <%# Line items — one row per service line, each with its own revenue account + optional tax. %>
+  <%= render "shared/line_items_fields", form: f, accounts: revenue_accounts, tax_rates: tax_rates %>
 
   <div class="field">
     <%= f.label :attachments, "Attachments (PDF, images)" %>
