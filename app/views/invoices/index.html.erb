@@ -10,16 +10,20 @@
         <th>Created</th>
         <th>Client</th>
         <th>Due</th>
+        <th>Status</th>
         <th class="num">Amount</th>
+        <th class="num">Balance due</th>
       </tr>
     </thead>
     <tbody>
       <% @invoices.each do |invoice| %>
         <tr>
           <td><%= invoice.created_at.to_date.iso8601 %></td>
-          <td><%= invoice.client_name %></td>
+          <td><%= link_to invoice.customer_display, invoice_path(invoice) %></td>
           <td><%= invoice.due_date.iso8601 %></td>
+          <td><span class="badge badge-<%= invoice.status %>"><%= invoice.status %></span></td>
           <td class="num">$<%= number_with_precision(invoice.amount, precision: 2, delimiter: ",") %></td>
+          <td class="num">$<%= number_with_precision(invoice.balance_due, precision: 2, delimiter: ",") %></td>
         </tr>
       <% end %>
     </tbody>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_011055) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_011515) do
   create_table "contacts", force: :cascade do |t|
     t.text "address"
     t.string "city"
@@ -94,6 +94,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_011055) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "payments", force: :cascade do |t|
+    t.decimal "amount", precision: 20, scale: 2, null: false
+    t.integer "bank_account_id", null: false
+    t.datetime "created_at", null: false
+    t.text "memo"
+    t.integer "organization_id", null: false
+    t.date "paid_on", null: false
+    t.integer "payable_id", null: false
+    t.string "payable_type", null: false
+    t.string "reference"
+    t.datetime "updated_at", null: false
+    t.index ["bank_account_id"], name: "index_payments_on_bank_account_id"
+    t.index ["organization_id", "paid_on"], name: "index_payments_on_organization_id_and_paid_on"
+    t.index ["organization_id"], name: "index_payments_on_organization_id"
+    t.index ["payable_type", "payable_id"], name: "index_payments_on_payable"
+  end
+
   create_table "plutus_accounts", force: :cascade do |t|
     t.string "code"
     t.boolean "contra", default: false
@@ -146,6 +163,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_011055) do
   add_foreign_key "invoices", "contacts"
   add_foreign_key "invoices", "organizations"
   add_foreign_key "organization_settings", "organizations"
+  add_foreign_key "payments", "organizations"
   add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"
 end

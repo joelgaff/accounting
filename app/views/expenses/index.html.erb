@@ -11,17 +11,21 @@
         <th>Vendor</th>
         <th>Category</th>
         <th>Paid from</th>
+        <th>Status</th>
         <th class="num">Amount</th>
+        <th class="num">Balance due</th>
       </tr>
     </thead>
     <tbody>
       <% @expenses.each do |expense| %>
         <tr>
           <td><%= expense.incurred_on.iso8601 %></td>
-          <td><%= expense.vendor %></td>
+          <td><%= link_to expense.vendor_display, expense_path(expense) %></td>
           <td><%= expense.expense_account.name %></td>
           <td><%= expense.paid_from_account.name %></td>
+          <td><span class="badge badge-<%= expense.status %>"><%= expense.status %></span></td>
           <td class="num">$<%= number_with_precision(expense.amount, precision: 2, delimiter: ",") %></td>
+          <td class="num">$<%= number_with_precision(expense.balance_due, precision: 2, delimiter: ",") %></td>
         </tr>
       <% end %>
     </tbody>

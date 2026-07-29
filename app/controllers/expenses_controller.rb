@@ -6,6 +6,10 @@ class ExpensesController < ApplicationController
     @expenses = Current.organization.expenses.order(incurred_on: :desc, created_at: :desc)
   end
 
+  def show
+    @expense = Current.organization.expenses.find(params[:id])
+  end
+
   def new
     @expense = Current.organization.expenses.build(incurred_on: Date.current)
   end

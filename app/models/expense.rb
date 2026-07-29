@@ -4,6 +4,7 @@ class Expense < ApplicationRecord
   belongs_to :expense_account,   class_name: "Plutus::Expense"
   belongs_to :paid_from_account, class_name: "Plutus::Account"
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
+  has_many   :payments, as: :payable, dependent: :restrict_with_error
 
   before_validation :sync_vendor_from_contact
   validates :vendor, :amount, :incurred_on, presence: true
@@ -13,6 +14,15 @@ class Expense < ApplicationRecord
   after_create :post_to_ledger
 
   def vendor_display = contact&.name.presence || vendor
+
+  def paid_amount = payments.sum(:amount)
+  def balance_due = amount - paid_amount
+  def paid?       = balance_due <= 0
+  def status
+    return "paid"    if paid?
+    return "partial" if paid_amount.positive?
+    "open"
+  end
 
   private
 
