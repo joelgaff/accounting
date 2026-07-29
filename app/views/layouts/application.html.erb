@@ -32,6 +32,7 @@
             <%= link_to "Import",    new_import_path,  class: ("active" if controller_name == "imports") %>
           </div>
           <div class="nav-user">
+            <%= link_to "Settings", settings_path, class: ("active" if controller_name == "settings"), style: "padding:8px 12px;color:var(--text);border-radius:var(--radius-sm);" %>
             <span><%= current_user.email %></span>
             <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
           </div>

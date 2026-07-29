@@ -1,0 +1,39 @@
+<header class="page-header">
+  <h1>Settings</h1>
+</header>
+
+<%= form_with model: @settings, url: settings_path, method: :patch, class: "app-form" do |f| %>
+  <% if @settings.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% @settings.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <fieldset style="border:0;padding:0;margin:0 0 20px">
+    <legend style="font-weight:600;padding:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);">Dashboard KPIs</legend>
+    <p class="muted" style="margin:0 0 16px;font-size:13px;">Pick which accounts back each KPI card on the dashboard. Only accounts in your Chart of Accounts show up.</p>
+
+    <div class="field">
+      <%= f.label :bank_account_id, "Operating bank account" %>
+      <%= f.collection_select :bank_account_id, @asset_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :receivable_account_id, "Accounts receivable" %>
+      <%= f.collection_select :receivable_account_id, @asset_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :payable_account_id, "Accounts payable" %>
+      <%= f.collection_select :payable_account_id, @liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <%= f.submit "Save settings", class: "btn btn-primary" %>
+  </div>
+<% end %>

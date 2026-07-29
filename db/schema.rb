@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_005414) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_29_010754) do
   create_table "expenses", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.datetime "created_at", null: false
@@ -47,6 +47,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_005414) do
     t.index ["organization_id"], name: "index_invoices_on_organization_id"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
+  end
+
+  create_table "organization_settings", force: :cascade do |t|
+    t.integer "bank_account_id"
+    t.datetime "created_at", null: false
+    t.integer "organization_id", null: false
+    t.integer "payable_account_id"
+    t.integer "receivable_account_id"
+    t.datetime "updated_at", null: false
+    t.index ["bank_account_id"], name: "index_organization_settings_on_bank_account_id"
+    t.index ["organization_id"], name: "index_organization_settings_on_organization_id", unique: true
+    t.index ["payable_account_id"], name: "index_organization_settings_on_payable_account_id"
+    t.index ["receivable_account_id"], name: "index_organization_settings_on_receivable_account_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -103,6 +116,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_005414) do
 
   add_foreign_key "expenses", "organizations"
   add_foreign_key "invoices", "organizations"
+  add_foreign_key "organization_settings", "organizations"
   add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"
 end
