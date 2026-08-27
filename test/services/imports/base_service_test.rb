@@ -3,7 +3,7 @@ require "test_helper"
 class Imports::BaseServiceTest < ActiveSupport::TestCase
   test "csv normalizes headers: strip *, downcase, remove whitespace" do
     csv = Imports::BaseService.csv("*Contact Name,EmailAddress\nAcme,x@y.com\n")
-    assert_equal ["contactname", "emailaddress"], csv.headers
+    assert_equal [ "contactname", "emailaddress" ], csv.headers
     assert_equal "Acme", csv.first["contactname"]
   end
 

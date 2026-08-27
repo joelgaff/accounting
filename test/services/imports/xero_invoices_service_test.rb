@@ -18,7 +18,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
 
     assert_equal 3, result.created
     assert_equal 0, result.skipped, result.errors.inspect
-    assert_empty  result.errors
+    assert_empty result.errors
 
     # INV-1001 has two lines summing to 10*150 + 20*150 = 4500, +10% tax = 4950
     inv = @org.invoices.find_by!(xero_invoice_number: "INV-1001")

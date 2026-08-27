@@ -13,8 +13,8 @@ class LedgerTest < ActiveSupport::TestCase
       Ledger.post(
         description: "test",
         commercial_document: nil,
-        debits:  [{ account: @bank,    amount: 100 }],
-        credits: [{ account: @revenue, amount: 100 }]
+        debits:  [ { account: @bank,    amount: 100 } ],
+        credits: [ { account: @revenue, amount: 100 } ]
       )
     end
 
@@ -28,8 +28,8 @@ class LedgerTest < ActiveSupport::TestCase
         Ledger.post(
           description: "bad",
           commercial_document: nil,
-          debits:  [{ account: @bank,    amount: 100 }],
-          credits: [{ account: @revenue, amount: 50 }]
+          debits:  [ { account: @bank,    amount: 100 } ],
+          credits: [ { account: @revenue, amount: 50 } ]
         )
       end
     end
@@ -37,7 +37,7 @@ class LedgerTest < ActiveSupport::TestCase
 
   test "lookup and balance are tenant-scoped and forgiving of missing names" do
     assert_equal @bank, Ledger.lookup("Bank")
-    assert_nil    Ledger.lookup("Nope")
+    assert_nil Ledger.lookup("Nope")
     assert_equal BigDecimal("0"), Ledger.balance("Nope")
   end
 end

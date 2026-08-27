@@ -14,6 +14,6 @@ class CreateRecurringInvoices < ActiveRecord::Migration[8.1]
       t.boolean    :email_on_generate,   default: false, null: false
       t.timestamps
     end
-    add_index :recurring_invoices, [:organization_id, :active, :next_run_on]
+    add_index :recurring_invoices, [ :organization_id, :active, :next_run_on ]
   end
 end

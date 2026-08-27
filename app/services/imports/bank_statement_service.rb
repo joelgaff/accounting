@@ -22,7 +22,7 @@ module Imports
       rows    = self.class.csv(@source)
       missing = REQUIRED - rows.headers.compact
       return LegacyResult.new(imported: 0, duplicates: 0,
-                              errors: ["Missing required columns: #{missing.map(&:capitalize).join(", ")}"]) if missing.any?
+                              errors: [ "Missing required columns: #{missing.map(&:capitalize).join(", ")}" ]) if missing.any?
 
       rows.each.with_index(2) do |row, line|
         begin
@@ -59,7 +59,7 @@ module Imports
     private
 
     def compose_description(row)
-      [row["payee"], row["description"]].compact.map { |s| s.to_s.strip }.reject(&:blank?).join(" — ").presence || "(no description)"
+      [ row["payee"], row["description"] ].compact.map { |s| s.to_s.strip }.reject(&:blank?).join(" — ").presence || "(no description)"
     end
   end
 end

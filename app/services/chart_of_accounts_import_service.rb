@@ -52,11 +52,11 @@ class ChartOfAccountsImportService < Imports::BaseService
     rows = self.class.csv(@source)
 
     if rows.headers.compact.empty?
-      return Result.new(errors: ["CSV has no header row"])
+      return Result.new(errors: [ "CSV has no header row" ])
     end
 
     unless rows.headers.include?("name") && rows.headers.include?("type")
-      return Result.new(errors: ["CSV must have at least Name and Type columns (Code, Description optional)"])
+      return Result.new(errors: [ "CSV must have at least Name and Type columns (Code, Description optional)" ])
     end
 
     ActiveRecord::Base.transaction do

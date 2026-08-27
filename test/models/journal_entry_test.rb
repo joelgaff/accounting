@@ -40,7 +40,7 @@ class JournalEntryTest < ActiveSupport::TestCase
   test "single-line entry is invalid" do
     je = @org.journal_entries.build(
       posted_on: Date.current, narrative: "Only one line",
-      lines_attributes: [{ account_id: @office.id, debit_amount: 100 }]
+      lines_attributes: [ { account_id: @office.id, debit_amount: 100 } ]
     )
     assert_not je.valid?
     assert_includes je.errors[:base].join, "at least two lines"

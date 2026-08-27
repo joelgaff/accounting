@@ -9,7 +9,7 @@ class CreateTaxRatesAndAddTaxToTransactions < ActiveRecord::Migration[8.1]
       t.references :asset_account,          null: true      # for input/purchase tax (recoverable)
       t.timestamps
     end
-    add_index :tax_rates, [:organization_id, :name], unique: true
+    add_index :tax_rates, [ :organization_id, :name ], unique: true
 
     add_reference :invoices, :tax_rate, foreign_key: true
     add_column    :invoices, :subtotal,   :decimal, precision: 20, scale: 2

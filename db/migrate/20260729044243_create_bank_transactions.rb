@@ -11,8 +11,8 @@ class CreateBankTransactions < ActiveRecord::Migration[8.1]
       t.string     :status, null: false, default: "unmatched"
       t.timestamps
     end
-    add_index :bank_transactions, [:organization_id, :bank_account_id, :posted_on, :amount, :description],
+    add_index :bank_transactions, [ :organization_id, :bank_account_id, :posted_on, :amount, :description ],
               unique: true, name: "idx_bank_txns_dedupe"
-    add_index :bank_transactions, [:organization_id, :status]
+    add_index :bank_transactions, [ :organization_id, :status ]
   end
 end
