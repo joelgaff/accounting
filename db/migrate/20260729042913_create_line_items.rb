@@ -10,6 +10,6 @@ class CreateLineItems < ActiveRecord::Migration[8.1]
       t.integer :position,    default: 0, null: false
       t.timestamps
     end
-    add_index :line_items, [:lineable_type, :lineable_id, :position]
+    add_index :line_items, [ :lineable_type, :lineable_id, :position ]
   end
 end

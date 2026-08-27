@@ -13,9 +13,9 @@ module Reports
         debits  = Plutus::DebitAmount.where(account_id: account.id).includes(:entry)
         credits = Plutus::CreditAmount.where(account_id: account.id).includes(:entry)
 
-        rows = (debits.map { |a| [:debit, a] } + credits.map { |a| [:credit, a] })
+        rows = (debits.map { |a| [ :debit, a ] } + credits.map { |a| [ :credit, a ] })
                  .filter { |_, a| in_window?(a.entry) }
-                 .sort_by { |_, a| [a.entry.date || a.entry.created_at.to_date, a.entry.id] }
+                 .sort_by { |_, a| [ a.entry.date || a.entry.created_at.to_date, a.entry.id ] }
 
         running = opening_balance
         rows.map do |side, amount|

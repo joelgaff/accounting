@@ -2,9 +2,9 @@ class DashboardController < ApplicationController
   before_action :require_login
 
   KPI_SLOTS = [
-    ["Operating Bank",       :bank_account],
-    ["Accounts Receivable",  :receivable_account],
-    ["Accounts Payable",     :payable_account]
+    [ "Operating Bank",       :bank_account ],
+    [ "Accounts Receivable",  :receivable_account ],
+    [ "Accounts Payable",     :payable_account ]
   ].freeze
 
   def index
@@ -12,7 +12,7 @@ class DashboardController < ApplicationController
 
     @kpis = KPI_SLOTS.map do |label, attr|
       account = settings.public_send(attr)
-      [label, account, account&.balance || BigDecimal("0")]
+      [ label, account, account&.balance || BigDecimal("0") ]
     end
 
     @missing_slots = KPI_SLOTS.select { |_, attr| settings.public_send(attr).nil? }.map(&:first)

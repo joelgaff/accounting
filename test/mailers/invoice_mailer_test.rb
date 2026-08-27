@@ -12,7 +12,7 @@ class InvoiceMailerTest < ActionMailer::TestCase
 
   test "renders default subject and address" do
     mail = InvoiceMailer.send_invoice(@invoice, to: "billing@acme.example")
-    assert_equal ["billing@acme.example"], mail.to
+    assert_equal [ "billing@acme.example" ], mail.to
     assert_match(/Invoice ##{@invoice.id}/, mail.subject)
     assert_match(/500\.00/, mail.body.encoded)
     assert_match(/Acme/, mail.body.encoded)

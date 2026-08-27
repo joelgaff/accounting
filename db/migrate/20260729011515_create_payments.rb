@@ -10,6 +10,6 @@ class CreatePayments < ActiveRecord::Migration[8.1]
       t.text       :memo
       t.timestamps
     end
-    add_index :payments, [:organization_id, :paid_on]
+    add_index :payments, [ :organization_id, :paid_on ]
   end
 end

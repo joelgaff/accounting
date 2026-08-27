@@ -26,12 +26,12 @@ module Imports
       errors  = []
 
       unless settings_ready?
-        return Result.new(errors: [settings_error_message])
+        return Result.new(errors: [ settings_error_message ])
       end
 
       rows = self.class.csv(@source)
       missing = REQUIRED - rows.headers.compact
-      return Result.new(errors: ["Missing required columns: #{missing.join(", ")}"]) if missing.any?
+      return Result.new(errors: [ "Missing required columns: #{missing.join(", ")}" ]) if missing.any?
 
       rows.group_by { |r| r["invoicenumber"].to_s.strip }.each do |number, group|
         if number.blank?

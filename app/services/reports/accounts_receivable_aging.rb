@@ -1,6 +1,6 @@
 module Reports
   class AccountsReceivableAging < BaseReport
-    BUCKETS = ["Current", "1-30", "31-60", "61-90", "90+"].freeze
+    BUCKETS = [ "Current", "1-30", "31-60", "61-90", "90+" ].freeze
 
     Row = Struct.new(:contact_name, :buckets, :total, keyword_init: true)
 

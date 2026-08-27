@@ -81,7 +81,7 @@ class Expense < ApplicationRecord
       date: incurred_on,
       commercial_document: self,
       debits:  debits,
-      credits: [{ account: paid_from_account, amount: amount }]
+      credits: [ { account: paid_from_account, amount: amount } ]
     )
   end
 end

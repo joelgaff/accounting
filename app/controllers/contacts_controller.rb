@@ -4,7 +4,7 @@ class ContactsController < ApplicationController
 
   def index
     @contacts = Current.organization.contacts.ordered
-    @contacts = @contacts.where(kind: [params[:kind], "both"]) if Contact::KINDS.include?(params[:kind])
+    @contacts = @contacts.where(kind: [ params[:kind], "both" ]) if Contact::KINDS.include?(params[:kind])
   end
 
   def show
