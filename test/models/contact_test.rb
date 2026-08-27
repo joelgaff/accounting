@@ -18,8 +18,8 @@ class ContactTest < ActiveSupport::TestCase
     b = @org.contacts.create!(name: "B", kind: "vendor")
     c = @org.contacts.create!(name: "C", kind: "both")
 
-    assert_equal [a, c].sort, @org.contacts.customers.to_a.sort_by(&:id)
-    assert_equal [b, c].sort, @org.contacts.vendors.to_a.sort_by(&:id)
+    assert_equal [ a, c ].sort, @org.contacts.customers.to_a.sort_by(&:id)
+    assert_equal [ b, c ].sort, @org.contacts.vendors.to_a.sort_by(&:id)
   end
 
   test "invoice with contact syncs client_name" do

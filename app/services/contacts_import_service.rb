@@ -17,7 +17,7 @@ class ContactsImportService < Imports::BaseService
     rows = self.class.csv(@source)
 
     unless rows.headers.include?("contactname")
-      return Result.new(errors: ["CSV must have a ContactName column (Xero exports it as *ContactName)"])
+      return Result.new(errors: [ "CSV must have a ContactName column (Xero exports it as *ContactName)" ])
     end
 
     ActiveRecord::Base.transaction do

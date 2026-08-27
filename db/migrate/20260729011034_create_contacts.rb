@@ -18,6 +18,6 @@ class CreateContacts < ActiveRecord::Migration[8.1]
       t.text    :notes
       t.timestamps
     end
-    add_index :contacts, [:organization_id, :name]
+    add_index :contacts, [ :organization_id, :name ]
   end
 end

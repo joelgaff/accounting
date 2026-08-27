@@ -22,7 +22,7 @@ class ChartOfAccountsImportServiceTest < ActiveSupport::TestCase
     assert_equal 6, result.created
     assert_equal 0, result.updated
     assert_equal 0, result.skipped
-    assert_empty  result.errors
+    assert_empty result.errors
 
     scope = Plutus::Account.where(tenant: @org)
     assert_equal "Plutus::Asset",     scope.find_by(code: "090").type

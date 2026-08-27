@@ -1,7 +1,6 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-
 # Magic-link emails open in the browser in development.
 config.action_mailer.delivery_method = :letter_opener
 config.action_mailer.perform_deliveries = true

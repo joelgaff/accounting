@@ -36,8 +36,8 @@ class Payment < ApplicationRecord
       description: description,
       date: paid_on,
       commercial_document: self,
-      debits:  [{ account: debit,  amount: amount }],
-      credits: [{ account: credit, amount: amount }]
+      debits:  [ { account: debit,  amount: amount } ],
+      credits: [ { account: credit, amount: amount } ]
     )
   end
 
@@ -46,9 +46,9 @@ class Payment < ApplicationRecord
   def ledger_legs
     case payable
     when Invoice
-      [bank_account, payable.receivable_account]
+      [ bank_account, payable.receivable_account ]
     when Expense
-      [payable.paid_from_account, bank_account]
+      [ payable.paid_from_account, bank_account ]
     end
   end
 
