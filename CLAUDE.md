@@ -39,3 +39,17 @@
 
 ## Build the domain on top
 Add domain models/controllers/views. The foundation (auth, tenancy, mail) is done.
+
+## Run CI locally before pushing
+
+To avoid failing on GitHub Actions, get this repo's CI green locally first. Work in this order; stop and show any change that isn't purely mechanical.
+
+1. **Lint** (`rubocop-rails-omakase`) — `bin/rubocop`. If it reports offenses, run the SAFE autocorrect only: `bin/rubocop -a` (never `-A` / unsafe). These are style-only (single vs double quotes, array-bracket spacing, trailing whitespace, final newlines); confirm `bin/rubocop` then reports zero offenses. No logic changes.
+2. **Tests** — `bin/rails db:test:prepare test`. Two recurring failures have test-env-only fixes (never touch production paths):
+   - *"Missing Active Record encryption credential: primary_key"* → add dummy AR encryption keys in `config/environments/test.rb` (real keys still come from credentials/ENV when present).
+   - *"Google API error: request denied" / geocoding failures* → route Geocoder through its built-in `:test` lookup in the test environment so no real Google call is made.
+   - A genuine missing-coverage gap or real code bug gets fixed here, not papered over.
+3. **Security / deps** — `bundle exec bundler-audit check --update` (fix real CVEs by bumping the gem, don't hand-edit the lockfile to hide a vuln), `bin/brakeman --no-pager` (triage low-confidence pre-existing warnings, don't blindly silence), `bin/importmap audit`.
+4. **System tests** (only if asked) — `bin/rails test:system` is browser-based and app-specific (e.g. a location picker not populating in headless mode). Report as a separate known-red item; don't chase unless asked.
+
+Rules: one small commit per concern (lint separate from test-config separate from deps). The bar is: lint clean, unit + integration tests green with NO real secrets required, deps audited.
