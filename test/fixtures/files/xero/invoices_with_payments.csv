@@ -1,0 +1,5 @@
+*ContactName,EmailAddress,*InvoiceNumber,Reference,*InvoiceDate,*DueDate,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,AmountPaid,FullyPaidOnDate
+Acme Widgets,billing@acme.example,INV-2001,,15 Jul 2026,15 Aug 2026,Consulting,10,100,200,,1000,20 Jul 2026
+Bob's Consulting,bob@example.com,INV-2002,,16 Jul 2026,16 Aug 2026,Retainer,1,500,210,,250,25 Jul 2026
+Acme Widgets,billing@acme.example,INV-2003,,17 Jul 2026,17 Aug 2026,Consulting,1,300,200,,0,
+Acme Widgets,billing@acme.example,INV-2004,,18 Jul 2026,18 Aug 2026,Consulting,1,100,200,,999,20 Jul 2026

@@ -6,6 +6,11 @@ module Imports
   #   Total, InventoryItemCode, *Description, *Quantity, *UnitAmount, Discount, *AccountCode, *TaxType, TaxAmount,
   #   TrackingName1, TrackingOption1, TrackingName2, TrackingOption2, Currency, BrandingTheme
   #
+  # Two optional columns beyond Xero's own export carry settlement across:
+  # AmountPaid and FullyPaidOnDate. Xero's CSV doesn't include them, but its API
+  # does, so a pull from the API can record the payment in the same pass. Files
+  # without the columns import exactly as before.
+  #
   # Rows are grouped by *InvoiceNumber; each group becomes one Invoice
   # (Sales) or Expense (Bills), each row within the group becomes one
   # LineItem. Idempotent: matches on invoice number and replaces line
@@ -15,6 +20,10 @@ module Imports
   # scaffold from group metadata.
   class XeroTransactionsService < BaseService
     REQUIRED = %w[contactname invoicenumber invoicedate duedate description quantity unitamount accountcode].freeze
+
+    # Stamped on payments this importer creates, so a re-import corrects its own
+    # figure and never touches a payment somebody entered by hand.
+    PAYMENT_REFERENCE = "Xero import".freeze
 
     def initialize(source, organization:)
       @source       = source
@@ -46,6 +55,8 @@ module Imports
             existed = @organization.public_send(transaction_class.model_name.collection).exists?(xero_invoice_number: number)
 
             record = upsert_record!(number: number, header_row: group.first, lines: resolved_lines)
+            warning = sync_payment!(record, group.first)
+            errors << "invoice #{number}: #{warning}" if warning
 
             existed ? updated += 1 : created += 1
           end
@@ -71,6 +82,42 @@ module Imports
     # Subclass hook. Given the header row (any row from the group) and the resolved lines,
     # build/find the Invoice or Expense and replace its line items.
     def upsert_record!(number:, header_row:, lines:) = raise NotImplementedError
+
+    # Mirrors Xero's settlement onto the record: one payment for the amount Xero
+    # reports as paid, dated the day it was fully settled. Returns a warning
+    # string when the payment can't be recorded, nil when there's nothing to do.
+    def sync_payment!(record, header_row)
+      return nil unless header_row.headers.include?("amountpaid")
+
+      record.payments.where(reference: PAYMENT_REFERENCE).each do |payment|
+        Ledger.reset_for(payment)
+        payment.destroy!
+      end
+
+      paid = BigDecimal(header_row["amountpaid"].to_s.presence || "0")
+      return nil if paid <= 0
+
+      bank = @organization.settings.bank_account
+      return "paid amount ignored — set a bank account under Settings first" if bank.nil?
+
+      if paid > record.amount
+        return "Xero reports #{'%.2f' % paid} paid but the imported lines total " \
+               "#{'%.2f' % record.amount} — payment not recorded"
+      end
+
+      paid_on = BaseService.parse_xero_date(header_row["fullypaidondate"]) ||
+                BaseService.parse_xero_date(header_row["paidon"]) ||
+                BaseService.parse_xero_date(header_row["invoicedate"])
+
+      record.payments.create!(
+        organization: @organization,
+        amount:       paid,
+        paid_on:      paid_on,
+        bank_account: bank,
+        reference:    PAYMENT_REFERENCE
+      )
+      nil
+    end
 
     def resolve_line(row, header_row)
       account = @organization.plutus_accounts.find_by(code: row["accountcode"].to_s.strip)

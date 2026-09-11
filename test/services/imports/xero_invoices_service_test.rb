@@ -9,6 +9,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     @sales2    = Plutus::Revenue.create!(tenant: @org, name: "Retainer",   code: "210")
     @tax_liab  = Plutus::Liability.create!(tenant: @org, name: "Sales Tax")
     @output    = @org.tax_rates.create!(name: "GST 10%", rate: 0.10, xero_tax_type: "OUTPUT", liability_account: @tax_liab)
+    @bank = Plutus::Asset.create!(tenant: @org, name: "Business Bank Account", code: "090")
     @org.settings.update!(receivable_account: @ar)
   end
 
@@ -60,5 +61,83 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
     assert_match(/receivable/i, result.errors.first)
     assert_equal 0, result.created
+  end
+
+  # --- payments carried across from the Xero API pull -------------------------
+
+  test "records a payment when the CSV carries AmountPaid" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/invoices_with_payments.csv").read
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    assert_equal 4, result.created
+
+    paid = @org.invoices.find_by!(xero_invoice_number: "INV-2001")
+    assert_equal BigDecimal("1000"), paid.paid_amount
+    assert paid.paid?
+    assert_equal Date.new(2026, 7, 20), paid.payments.sole.paid_on
+
+    part = @org.invoices.find_by!(xero_invoice_number: "INV-2002")
+    assert_equal BigDecimal("250"), part.paid_amount
+    assert_equal "partial", part.status
+
+    unpaid = @org.invoices.find_by!(xero_invoice_number: "INV-2003")
+    assert_equal 0, unpaid.payments.count
+
+    assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
+  end
+
+  test "re-import replaces its own payment instead of stacking a second one" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/invoices_with_payments.csv").read
+    Imports::XeroInvoicesService.new(csv, organization: @org).call
+    Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    paid = @org.invoices.find_by!(xero_invoice_number: "INV-2001")
+    assert_equal 1, paid.payments.count
+    assert_equal BigDecimal("1000"), paid.paid_amount
+    assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
+  end
+
+  test "leaves a hand-entered payment alone on re-import" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/invoices_with_payments.csv").read
+    Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    part = @org.invoices.find_by!(xero_invoice_number: "INV-2002")
+    part.payments.create!(organization: @org, amount: 100, paid_on: Date.new(2026, 8, 1), bank_account: @bank)
+
+    Imports::XeroInvoicesService.new(csv, organization: @org).call
+    assert_equal 2, part.payments.count
+    assert_equal BigDecimal("350"), part.reload.paid_amount
+  end
+
+  test "reports rather than records a paid amount larger than the invoice" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/invoices_with_payments.csv").read
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    over = @org.invoices.find_by!(xero_invoice_number: "INV-2004")
+    assert_equal 0, over.payments.count
+    assert(result.errors.any? { |e| e.include?("INV-2004") && e.match?(/lines total/) })
+  end
+
+  test "warns when a paid amount arrives with no bank account configured" do
+    @org.settings.update!(bank_account: nil)
+    csv = file_fixture("xero/invoices_with_payments.csv").read
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    assert_equal 0, Payment.count
+    assert(result.errors.any? { |e| e.match?(/set a bank account/i) })
+  end
+
+  test "a CSV without the payment columns imports exactly as before" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/invoices.csv").read
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    assert_equal 3, result.created
+    assert_empty result.errors
+    assert_equal 0, Payment.count
   end
 end
