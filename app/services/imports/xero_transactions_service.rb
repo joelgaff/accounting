@@ -6,10 +6,12 @@ module Imports
   #   Total, InventoryItemCode, *Description, *Quantity, *UnitAmount, Discount, *AccountCode, *TaxType, TaxAmount,
   #   TrackingName1, TrackingOption1, TrackingName2, TrackingOption2, Currency, BrandingTheme
   #
-  # Two optional columns beyond Xero's own export carry settlement across:
-  # AmountPaid and FullyPaidOnDate. Xero's CSV doesn't include them, but its API
-  # does, so a pull from the API can record the payment in the same pass. Files
-  # without the columns import exactly as before.
+  # Three optional columns beyond Xero's own export carry settlement across:
+  # AmountPaid, FullyPaidOnDate and BankAccount (a code or name from the Chart
+  # of Accounts). Xero's CSV doesn't include them, but its API does, so a pull
+  # from the API can record the payment in the same pass. A row without
+  # BankAccount settles against the bank account in Settings; files without
+  # any of the columns import exactly as before.
   #
   # Rows are grouped by *InvoiceNumber; each group becomes one Invoice
   # (Sales) or Expense (Bills), each row within the group becomes one
@@ -97,8 +99,8 @@ module Imports
       paid = BigDecimal(header_row["amountpaid"].to_s.presence || "0")
       return nil if paid <= 0
 
-      bank = @organization.settings.bank_account
-      return "paid amount ignored — set a bank account under Settings first" if bank.nil?
+      bank, problem = resolve_bank_account(header_row)
+      return problem if problem
 
       if paid > record.amount
         return "Xero reports #{'%.2f' % paid} paid but the imported lines total " \
@@ -117,6 +119,22 @@ module Imports
         reference:    PAYMENT_REFERENCE
       )
       nil
+    end
+
+    # The row's BankAccount wins; Settings is the fallback. Returns [account, nil]
+    # or [nil, warning] — a bad bank never blocks the invoice itself.
+    def resolve_bank_account(header_row)
+      key = header_row["bankaccount"].to_s.strip
+      if key.present?
+        assets = @organization.plutus_accounts.where(type: "Plutus::Asset")
+        bank   = assets.find_by(code: key) || assets.find_by(name: key)
+        return [ bank, nil ] if bank
+        return [ nil, "bank account #{key.inspect} not found in the Chart of Accounts — payment not recorded" ]
+      end
+
+      bank = @organization.settings.bank_account
+      return [ nil, "paid amount ignored — set a bank account under Settings first" ] if bank.nil?
+      [ bank, nil ]
     end
 
     def resolve_line(row, header_row)
