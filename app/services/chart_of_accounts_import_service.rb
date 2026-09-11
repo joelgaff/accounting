@@ -1,5 +1,10 @@
 class ChartOfAccountsImportService < Imports::BaseService
-  # Xero's *Type values → plutus STI class
+  # Xero's *Type values → plutus STI class.
+  #
+  # Two spellings reach us for the same type: the API returns enum codes
+  # (CURRLIAB, DIRECTCOSTS), while the Chart of Accounts CSV export writes the
+  # display labels a person sees in Xero ("Current Liability", "Direct Costs").
+  # Keys are matched with punctuation and spacing squeezed out, so both land.
   XERO_TYPE_MAP = {
     # Assets
     "BANK"            => Plutus::Asset,
@@ -9,16 +14,30 @@ class ChartOfAccountsImportService < Imports::BaseService
     "PREPAYMENT"      => Plutus::Asset,
     "NONCURRENT"      => Plutus::Asset,
     "ASSET"           => Plutus::Asset,
+    "CURRENTASSET"    => Plutus::Asset,
+    "FIXEDASSET"      => Plutus::Asset,
+    "NONCURRENTASSET" => Plutus::Asset,
+    "ACCOUNTSRECEIVABLE" => Plutus::Asset,
     # Liabilities
     "CURRLIAB"        => Plutus::Liability,
     "LIABILITY"       => Plutus::Liability,
     "TERMLIAB"        => Plutus::Liability,
     "NONCURRLIAB"     => Plutus::Liability,
     "PAYGLIABILITY"   => Plutus::Liability,
+    "CURRENTLIABILITY"    => Plutus::Liability,
+    "NONCURRENTLIABILITY" => Plutus::Liability,
+    "ACCOUNTSPAYABLE"     => Plutus::Liability,
+    "SALESTAX"            => Plutus::Liability,
+    "UNPAIDEXPENSECLAIMS" => Plutus::Liability,
+    "WAGESPAYABLELIABILITY" => Plutus::Liability,
+    "SUPERANNUATIONLIABILITY" => Plutus::Liability,
     # Equity
     "EQUITY"          => Plutus::Equity,
     "RETAINEDEARNINGS"=> Plutus::Equity,
     "HISTORICAL"      => Plutus::Equity,
+    "HISTORICALADJUSTMENT" => Plutus::Equity,
+    # Xero's system clearing account for moves between tracking categories.
+    "TRACKING"        => Plutus::Equity,
     # Revenue
     "REVENUE"         => Plutus::Revenue,
     "SALES"           => Plutus::Revenue,
@@ -27,8 +46,17 @@ class ChartOfAccountsImportService < Imports::BaseService
     "EXPENSE"         => Plutus::Expense,
     "DIRECTCOSTS"     => Plutus::Expense,
     "OVERHEADS"       => Plutus::Expense,
-    "DEPRECIATN"      => Plutus::Expense
+    "DEPRECIATN"      => Plutus::Expense,
+    "DEPRECIATION"    => Plutus::Expense,
+    "WAGESEXPENSE"    => Plutus::Expense,
+    "SUPERANNUATIONEXPENSE" => Plutus::Expense,
+    # Xero's system rounding account lives in the P&L.
+    "ROUNDING"        => Plutus::Expense
   }.freeze
+
+  # Punctuation and spacing carry no meaning in a type name: "Direct Costs",
+  # "direct-costs" and "DIRECTCOSTS" are the same type.
+  SQUEEZE = ->(s) { s.to_s.upcase.gsub(/[^A-Z0-9]/, "") }
 
   # Plain-English fallback (e.g. hand-rolled CSV without Xero codes)
   PLAIN_TYPE_MAP = {
@@ -107,8 +135,8 @@ class ChartOfAccountsImportService < Imports::BaseService
   private
 
   def classify(raw)
-    key = raw.strip
-    XERO_TYPE_MAP[key.upcase] || PLAIN_TYPE_MAP[key.downcase]
+    key = raw.to_s.strip
+    XERO_TYPE_MAP[SQUEEZE.call(key)] || PLAIN_TYPE_MAP[key.downcase]
   end
 
   def find_existing(code:, name:)

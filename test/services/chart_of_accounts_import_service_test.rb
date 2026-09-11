@@ -105,4 +105,46 @@ class ChartOfAccountsImportServiceTest < ActiveSupport::TestCase
     assert_equal 1, result.created
     assert_equal "Cash", Plutus::Account.where(tenant: @org, code: "100").first.name
   end
+
+  # Xero's CSV export writes display labels ("Current Liability"), not the API's
+  # enum codes ("CURRLIAB"). Both spellings have to classify the same way.
+  test "classifies Xero's display-label account types" do
+    csv = file_fixture("xero/chart_of_accounts_labels.csv").read
+    result = ChartOfAccountsImportService.new(csv, organization: @org).call
+
+    assert_equal 19, result.created
+    assert_equal 0,  result.skipped, result.errors.inspect
+    assert_empty result.errors
+
+    by_name = @org.plutus_accounts.index_by(&:name)
+    {
+      "Accounts Receivable"       => Plutus::Asset,
+      "PNC Checking"              => Plutus::Asset,
+      "Chase Business Checking"   => Plutus::Asset,
+      "RDE Contract Receivable"   => Plutus::Asset,
+      "Accumulated Depreciation"  => Plutus::Asset,
+      "Accounts Payable"          => Plutus::Liability,
+      "Deferred Gain"             => Plutus::Liability,
+      "Cherryland Loans"          => Plutus::Liability,
+      "Sales Tax"                 => Plutus::Liability,
+      "Unpaid Expense Claims"     => Plutus::Liability,
+      "Opening Balance Equity"    => Plutus::Equity,
+      "Retained Earnings3"        => Plutus::Equity,
+      "Historical Adjustment"     => Plutus::Equity,
+      "Tracking Transfers"        => Plutus::Equity,
+      "Rounding"                  => Plutus::Expense,
+      "Timing Services"           => Plutus::Revenue,
+      "Stripe Fees Reimbursement" => Plutus::Revenue,
+      "Merch COGS"                => Plutus::Expense,
+      "Travel"                    => Plutus::Expense
+    }.each do |name, klass|
+      assert_equal klass.name, by_name.fetch(name).type, "#{name} classified wrong"
+    end
+  end
+
+  test "imports an account that has no code" do
+    csv = file_fixture("xero/chart_of_accounts_labels.csv").read
+    ChartOfAccountsImportService.new(csv, organization: @org).call
+    assert_nil @org.plutus_accounts.find_by!(name: "Chase Business Checking").code
+  end
 end
