@@ -28,7 +28,7 @@ module ApplicationHelper
     sections = Array(sections || icon)
     active = sections.any? { |s| controller_path == s.to_s || controller_path.start_with?("#{s}/") }
     link_to(path, class: ("active" if active), "aria-current": ("page" if active)) do
-      safe_join([nav_icon(icon), tag.span(label)])
+      safe_join([ nav_icon(icon), tag.span(label) ])
     end
   end
 end
