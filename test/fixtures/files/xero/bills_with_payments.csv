@@ -1,0 +1,2 @@
+*ContactName,EmailAddress,*InvoiceNumber,Reference,*InvoiceDate,*DueDate,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,AmountPaid,FullyPaidOnDate
+Gusto,billing@gusto.example,BILL-900,,05 Jan 2026,05 Jan 2026,Regular payroll Q1,1,6657,400,,6657,06 Jan 2026

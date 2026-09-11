@@ -10,6 +10,7 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     @tax_asset = Plutus::Asset.create!(tenant: @org, name: "GST Recoverable")
     @input     = @org.tax_rates.create!(name: "GST 10%", rate: 0.10, xero_tax_type: "INPUT",
                                         liability_account: @tax_liab, asset_account: @tax_asset)
+    @bank = Plutus::Asset.create!(tenant: @org, name: "Business Bank Account", code: "090")
     @org.settings.update!(payable_account: @ap)
   end
 
@@ -31,5 +32,24 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     # Ledger: AP credited 154 (+ BILL-501's 25 = 179 total), Hosting debited subtotals, recoverable asset debited tax
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
     assert_equal BigDecimal("179"), @ap.balance  # 154 + 25
+  end
+
+  test "a paid bill settles AP against the bank" do
+    @org.settings.update!(bank_account: @bank)
+    csv = file_fixture("xero/bills_with_payments.csv").read
+    result = Imports::XeroBillsService.new(csv, organization: @org).call
+
+    assert_equal 1, result.created
+    assert_empty result.errors
+
+    bill = @org.expenses.find_by!(xero_invoice_number: "BILL-900")
+    assert bill.paid?
+    assert_equal BigDecimal("6657"), bill.paid_amount
+    assert_equal Date.new(2026, 1, 6), bill.payments.sole.paid_on
+
+    # Accrued to AP, then settled out of it — AP nets to zero, bank is down 6657.
+    assert_equal BigDecimal("0"),    @ap.balance
+    assert_equal BigDecimal("6657"), @bank.balance * -1 if @bank.balance.negative?
+    assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
   end
 end
