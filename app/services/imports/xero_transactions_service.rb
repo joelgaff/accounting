@@ -52,7 +52,7 @@ module Imports
         end
 
         begin
-          ActiveRecord::Base.transaction do
+          ActiveRecord::Base.transaction(requires_new: true) do
             resolved_lines = group.map.with_index { |row, i| resolve_line(row, group.first) }
             existed = @organization.public_send(transaction_class.model_name.collection).exists?(xero_invoice_number: number)
 
