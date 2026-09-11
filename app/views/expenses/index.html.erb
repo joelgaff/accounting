@@ -21,7 +21,7 @@
         <tr>
           <td><%= expense.incurred_on.iso8601 %></td>
           <td><%= link_to expense.vendor_display, expense_path(expense) %></td>
-          <td><%= expense.expense_account.name %></td>
+          <td><%= expense.category_display %></td>
           <td><%= expense.paid_from_account.name %></td>
           <td><span class="badge badge-<%= expense.status %>"><%= expense.status %></span></td>
           <td class="num">$<%= number_with_precision(expense.amount, precision: 2, delimiter: ",") %></td>

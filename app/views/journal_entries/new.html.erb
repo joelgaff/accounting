@@ -2,7 +2,7 @@
   <h1>New journal entry</h1>
 </header>
 
-<%= form_with model: @journal_entry, class: "app-form", style: "max-width:none;" do |f| %>
+<%= form_with model: @journal_entry, class: "app-form app-form-wide" do |f| %>
   <% if @journal_entry.errors.any? %>
     <div class="form-errors">
       <ul>
@@ -30,9 +30,9 @@
             data-controller="journal-lines"
             data-journal-lines-index-value="<%= @journal_entry.lines.size %>"
             style="border:0;padding:0;margin:20px 0;">
-    <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Lines</legend>
+    <legend>Lines</legend>
 
-    <table class="data-table" style="margin-bottom:8px;">
+    <table class="data-table sheet">
       <thead>
         <tr>
           <th>Account</th>
@@ -48,7 +48,7 @@
         <% end %>
       </tbody>
       <tfoot>
-        <tr style="font-weight:600;background:#fafbfc;">
+        <tr class="subtotal">
           <td colspan="2" style="text-align:right;">Totals</td>
           <td class="num" data-journal-lines-target="debitTotal">$0.00</td>
           <td class="num" data-journal-lines-target="creditTotal">$0.00</td>

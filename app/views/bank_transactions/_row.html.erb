@@ -25,7 +25,7 @@
             <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
           <% end %>
         <% end %>
-        <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "inline-form", style: "margin-top:4px;" do |f| %>
+        <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "inline-form" do |f| %>
           <%= f.collection_select :expense_account_id, expense_accts, :id, ->(a) { "#{a.code} #{a.name}" }, { include_blank: "Or new expense…" }, style: "font-size:12px;" %>
           <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
         <% end %>

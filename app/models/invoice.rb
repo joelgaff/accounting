@@ -20,6 +20,12 @@ class Invoice < ApplicationRecord
 
   def customer_display = contact&.name.presence || client_name
 
+  # Tax rates come from the line items now; fall back to the deprecated column.
+  def tax_rate_display
+    names = line_items.filter_map { |li| li.tax_rate&.name }.uniq
+    names.presence&.to_sentence || tax_rate&.name || "Tax"
+  end
+
   def status
     return "paid"    if paid?
     return "partial" if paid_amount.positive?

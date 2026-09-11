@@ -1,5 +1,12 @@
 <header class="page-header">
-  <h1>Dashboard</h1>
+  <div>
+    <h1>Dashboard</h1>
+    <p class="lede"><%= Current.organization.name %> — position as at <%= Date.current.strftime("%b %-d, %Y") %></p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "New invoice", new_invoice_path, class: "btn btn-primary" %>
+    <%= link_to "New expense", new_expense_path, class: "btn btn-secondary" %>
+  </div>
 </header>
 
 <% if @missing_slots.any? %>
@@ -19,15 +26,23 @@
     <article class="kpi-card">
       <div class="kpi-label"><%= label %></div>
       <div class="kpi-value">$<%= number_with_precision(balance, precision: 2, delimiter: ",") %></div>
-      <% if account %>
-        <div class="muted" style="font-size:12px;margin-top:4px;"><%= account.code %> <%= account.name %></div>
-      <% end %>
+      <div class="kpi-source">
+        <% if account %>
+          <code><%= account.code %></code> <%= account.name %>
+        <% else %>
+          <span class="muted">No account linked</span>
+        <% end %>
+      </div>
     </article>
   <% end %>
 </section>
 
-<section class="audit-log">
-  <h2>Recent activity</h2>
+<section class="panel">
+  <div class="panel-head">
+    <h2 class="panel-title">Recent activity</h2>
+    <span class="meta">Last 10 entries</span>
+  </div>
+
   <% if @recent_entries.any? %>
     <table class="data-table">
       <thead>
@@ -41,11 +56,11 @@
       <tbody>
         <% @recent_entries.each do |entry| %>
           <tr>
-            <td><%= entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+            <td class="muted"><%= entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
             <td><%= entry.description %></td>
             <td>
               <% if entry.commercial_document %>
-                <%= entry.commercial_document_type %> #<%= entry.commercial_document_id %>
+                <span class="muted"><%= entry.commercial_document_type %></span> #<%= entry.commercial_document_id %>
               <% else %>
                 <span class="muted">—</span>
               <% end %>
@@ -56,6 +71,6 @@
       </tbody>
     </table>
   <% else %>
-    <p class="empty-state">No ledger entries yet.</p>
+    <p class="empty-state">No ledger entries yet. Raise an invoice or record an expense to start the books.</p>
   <% end %>
 </section>

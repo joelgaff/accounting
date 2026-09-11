@@ -26,7 +26,7 @@
     </tr>
     <% if @invoice.tax_amount.positive? %>
       <tr>
-        <td>Tax (<%= @invoice.tax_rate.name %>)</td>
+        <td>Tax (<%= @invoice.tax_rate_display %>)</td>
         <td align="right">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
       </tr>
     <% end %>

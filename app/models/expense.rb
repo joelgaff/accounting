@@ -21,6 +21,13 @@ class Expense < ApplicationRecord
 
   def vendor_display = contact&.name.presence || vendor
 
+  # Categories come from the line items now; fall back to the deprecated column
+  # for rows imported before line items existed.
+  def category_display
+    names = line_items.filter_map { |li| li.account&.name }.uniq
+    names.presence&.to_sentence || expense_account&.name || "Uncategorised"
+  end
+
   def status
     return "paid"    if paid?
     return "partial" if paid_amount.positive?
