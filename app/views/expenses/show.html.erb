@@ -11,7 +11,7 @@
 <div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
   <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Vendor</div><div><%= @expense.vendor_display %></div></div>
   <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Incurred</div><div><%= @expense.incurred_on.strftime("%b %-d, %Y") %></div></div>
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Category</div><div><%= @expense.expense_account.name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Category</div><div><%= @expense.category_display %></div></div>
   <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid from</div><div><%= @expense.paid_from_account.name %></div></div>
   <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div>$<%= number_with_precision(@expense.amount, precision: 2, delimiter: ",") %></div></div>
   <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid</div><div>$<%= number_with_precision(@expense.paid_amount, precision: 2, delimiter: ",") %></div></div>

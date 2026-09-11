@@ -1,56 +1,96 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Accounting" %></title>
+    <title><%= content_for(:title) || "Ledger" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Accounting">
+    <meta name="application-name" content="Ledger">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#060a12">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
-    <%= yield :head %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <%# After the app stylesheet so page-level overrides (the invoice print sheet) win. %>
+    <%= yield :head %>
   </head>
 
   <body>
-    <div class="app-shell">
-      <% if logged_in? %>
-        <nav class="app-nav">
-          <div class="brand">Ledger</div>
-          <div class="nav-links">
-            <%= link_to "Dashboard", root_path,        class: ("active" if current_page?(root_path)) %>
-            <%= link_to "Contacts",  contacts_path,    class: ("active" if %w[contacts contact_imports].include?(controller_name)) %>
-            <%= link_to "Invoices",  invoices_path,    class: ("active" if %w[invoices recurring_invoices].include?(controller_name)) %>
-            <%= link_to "Expenses",  expenses_path,    class: ("active" if controller_name == "expenses") %>
-            <%= link_to "Journal",   journal_entries_path, class: ("active" if controller_name == "journal_entries") %>
-            <%= link_to "Accounts",  accounts_path,    class: ("active" if %w[accounts chart_of_accounts_imports].include?(controller_name)) %>
-            <%= link_to "Reports",   reports_path,     class: ("active" if controller_name == "reports") %>
-            <%= link_to "Reconcile", bank_transactions_path, class: ("active" if controller_name == "bank_transactions") %>
-            <%= link_to "Import",    imports_path,     class: ("active" if controller_path.start_with?("imports")) %>
+    <% if logged_in? %>
+      <div class="app-shell">
+        <header class="app-titlebar">
+          <div class="tb-brand">
+            <span class="tb-mark">[·]</span>LEDGER<span class="tb-version">v0.1</span>
           </div>
-          <div class="nav-user">
-            <%= link_to "Tax", tax_rates_path, class: ("active" if controller_name == "tax_rates"), style: "padding:8px 12px;color:var(--text);border-radius:var(--radius-sm);" %>
-            <%= link_to "Settings", settings_path, class: ("active" if controller_name == "settings"), style: "padding:8px 12px;color:var(--text);border-radius:var(--radius-sm);" %>
+          <div class="tb-tagline">Double-entry bookkeeping <em>//</em> Every line balanced.</div>
+          <div class="tb-session">
             <span><%= current_user.email %></span>
             <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
           </div>
-        </nav>
-      <% end %>
+        </header>
 
-      <main class="<%= logged_in? ? "app-main" : "" %>">
-        <% flash.each do |type, message| %>
-          <div class="flash flash-<%= type == "notice" ? "notice" : "alert" %>"><%= message %></div>
-        <% end %>
+        <div class="app-body">
+          <nav class="app-nav">
+            <div class="nav-links">
+              <%= nav_item "Dashboard", root_path,             icon: :dashboard %>
+              <%= nav_item "Contacts",  contacts_path,         icon: :contacts,  sections: %w[contacts contact_imports] %>
+              <%= nav_item "Invoices",  invoices_path,         icon: :invoices,  sections: %w[invoices recurring_invoices] %>
+              <%= nav_item "Expenses",  expenses_path,         icon: :expenses %>
+              <%= nav_item "Journal",   journal_entries_path,  icon: :journal,   sections: %w[journal_entries] %>
+              <%= nav_item "Accounts",  accounts_path,         icon: :accounts,  sections: %w[accounts chart_of_accounts_imports] %>
+              <%= nav_item "Reports",   reports_path,          icon: :reports %>
+              <%= nav_item "Reconcile", bank_transactions_path, icon: :reconcile, sections: %w[bank_transactions] %>
+              <%= nav_item "Import",    imports_path,          icon: :imports %>
+            </div>
 
-        <%= yield %>
-      </main>
-    </div>
+            <div class="nav-links nav-secondary">
+              <%= nav_item "Tax rates", tax_rates_path, icon: :tax,      sections: %w[tax_rates] %>
+              <%= nav_item "Settings",  settings_path,  icon: :settings %>
+            </div>
+
+            <div class="nav-footer">
+              <span class="mark">[·]</span>
+              <span>
+                <strong>LEDGER</strong>
+                Books for <%= Current.organization.name %>
+              </span>
+            </div>
+          </nav>
+
+          <main class="app-main">
+            <% flash.each do |type, message| %>
+              <div class="flash flash-<%= type == "notice" ? "notice" : "alert" %>"><%= message %></div>
+            <% end %>
+
+            <%= yield %>
+          </main>
+        </div>
+
+        <footer class="app-statusbar">
+          <span><span class="live">●</span> <%= Current.organization.name %> — books as at <%= Date.current.strftime("%b %-d, %Y") %></span>
+          <span>LEDGER v0.1</span>
+        </footer>
+      </div>
+    <% else %>
+      <div class="guest-shell">
+        <main>
+          <% flash.each do |type, message| %>
+            <div class="flash flash-<%= type == "notice" ? "notice" : "alert" %>"><%= message %></div>
+          <% end %>
+
+          <%= yield %>
+        </main>
+      </div>
+    <% end %>
   </body>
 </html>

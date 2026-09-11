@@ -1,8 +1,6 @@
 <div class="guest-card">
-  <h1>Enter your code</h1>
-  <p style="text-align:center;color:var(--text-muted);font-size:13px;margin:-8px 0 20px;">
-    We emailed a 6-digit code to <strong><%= @identity.email %></strong>.
-  </p>
+  <div class="guest-brand"><span>[·]</span>LEDGER</div>
+  <h1>We emailed a 6-digit code to <%= @identity.email %>.</h1>
   <%= form_with url: confirm_session_path, method: :post, class: "app-form" do |f| %>
     <%= f.hidden_field :identity_id, value: @identity.id %>
     <div class="field">

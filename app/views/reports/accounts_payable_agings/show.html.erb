@@ -37,7 +37,7 @@
           <td class="num"><strong>$<%= number_with_precision(row.total, precision: 2, delimiter: ",") %></strong></td>
         </tr>
       <% end %>
-      <tr style="font-weight:600;background:#fafbfc;">
+      <tr class="subtotal">
         <td>Totals</td>
         <% Reports::AccountsPayableAging::BUCKETS.each do |b| %>
           <td class="num">$<%= number_with_precision(@report.totals_by_bucket[b], precision: 2, delimiter: ",") %></td>

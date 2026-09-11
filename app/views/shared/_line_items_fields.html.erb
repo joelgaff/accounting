@@ -8,10 +8,10 @@
 <fieldset class="line-items"
           data-controller="line-items"
           data-line-items-index-value="<%= form.object.line_items.size %>"
-          style="border:0;padding:0;margin:20px 0;">
-  <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Line items</legend>
+          >
+  <legend>Line items</legend>
 
-  <table class="data-table" style="margin-bottom:8px;">
+  <table class="data-table sheet">
     <thead>
       <tr>
         <th>Description</th>
@@ -29,7 +29,7 @@
       <% end %>
     </tbody>
     <tfoot>
-      <tr style="font-weight:600;background:#fafbfc;">
+      <tr class="subtotal">
         <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Subtotal</td>
         <td class="num" data-line-items-target="subtotal">$0.00</td>
         <td></td>
@@ -39,7 +39,7 @@
         <td class="num" data-line-items-target="tax">$0.00</td>
         <td></td>
       </tr>
-      <tr style="font-weight:700;font-size:15px;">
+      <tr class="grand-total">
         <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Total</td>
         <td class="num" data-line-items-target="total">$0.00</td>
         <td></td>

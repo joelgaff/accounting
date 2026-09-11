@@ -3,7 +3,7 @@
   <span class="muted"><%= @from.strftime("%b %-d, %Y") %> — <%= @to.strftime("%b %-d, %Y") %></span>
 </header>
 
-<%= render "date_range_form", url: reports_trial_balance_path, from: @from, to: @to %>
+<%= render "reports/date_range_form", url: reports_trial_balance_path, from: @from, to: @to %>
 
 <table class="data-table">
   <thead>
@@ -25,7 +25,7 @@
         <td class="num"><%= r.credit.positive? ? "$#{number_with_precision(r.credit, precision: 2, delimiter: ',')}" : "" %></td>
       </tr>
     <% end %>
-    <tr style="font-weight:600;background:#fafbfc;">
+    <tr class="subtotal">
       <td colspan="3">Totals</td>
       <td class="num">$<%= number_with_precision(@report.total_debit,  precision: 2, delimiter: ",") %></td>
       <td class="num">$<%= number_with_precision(@report.total_credit, precision: 2, delimiter: ",") %></td>
