@@ -1,6 +1,6 @@
 class JournalEntriesController < ApplicationController
   before_action :require_login
-  before_action :load_accounts, only: %i[new create edit update]
+  before_action :load_accounts, only: %i[new create]
 
   def index
     @journal_entries = Current.organization.journal_entries.order(posted_on: :desc, id: :desc)
