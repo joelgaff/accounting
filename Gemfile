@@ -41,7 +41,10 @@ gem "thruster", require: false
 gem "image_processing", "~> 2.0"
 # Active Storage's variant processor defaults to vips, and since activestorage
 # 8.1.3.1 the transformer requires it at boot rather than on first variant.
-gem "ruby-vips", "~> 2.0"
+# require: false keeps Bundler.require from FFI-loading libvips in processes
+# that only load config/application.rb and never run the engine initializers
+# (bin/importmap, and so the scan_js CI job, which has no libvips installed).
+gem "ruby-vips", "~> 2.0", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
