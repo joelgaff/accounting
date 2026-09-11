@@ -151,4 +151,22 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     # …and the ledger entry is dated then too, so period reports line up.
     assert_equal Date.new(2026, 7, 15), inv.entries.sole.date
   end
+
+  test "a row's BankAccount column picks the bank by code or name, Settings is the fallback" do
+    @org.settings.update!(bank_account: @bank)
+    chase = Plutus::Asset.create!(tenant: @org, name: "Chase Business Checking")   # no code, like Xero
+    csv = file_fixture("xero/invoices_with_bank.csv").read
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    assert_equal 4, result.created
+    by_number = ->(n) { @org.invoices.find_by!(xero_invoice_number: n) }
+
+    assert_equal @bank, by_number.("INV-3001").payments.sole.bank_account    # by code
+    assert_equal chase, by_number.("INV-3002").payments.sole.bank_account    # by name
+    assert_equal @bank, by_number.("INV-3004").payments.sole.bank_account    # blank → Settings
+
+    # Unknown bank: the invoice still lands, the payment does not, and it says so.
+    assert_equal 0, by_number.("INV-3003").payments.count
+    assert(result.errors.any? { |e| e.include?("INV-3003") && e.include?("Closed Account") })
+  end
 end
