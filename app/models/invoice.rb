@@ -9,10 +9,11 @@ class Invoice < ApplicationRecord
   include HasBalanceDue
   include HasLineItems
 
+  before_validation :default_issued_on
   before_validation :sync_client_name_from_contact
   before_validation :default_line_from_flat_amount
   before_validation :sync_amount_from_lines
-  validates :client_name, :due_date, presence: true
+  validates :client_name, :due_date, :issued_on, presence: true
   validates :amount, numericality: { greater_than: 0 }
   validate  :must_have_line_items
 
@@ -33,6 +34,10 @@ class Invoice < ApplicationRecord
   end
 
   private
+
+  def default_issued_on
+    self.issued_on ||= Date.current
+  end
 
   def sync_client_name_from_contact
     self.client_name = contact.name if contact && client_name.blank?
@@ -70,7 +75,7 @@ class Invoice < ApplicationRecord
 
     Ledger.post(
       description: "Invoice ##{id} — #{client_name}",
-      date: created_at&.to_date || Date.current,
+      date: issued_on,
       commercial_document: self,
       debits:  [ { account: receivable_account, amount: amount } ],
       credits: credits

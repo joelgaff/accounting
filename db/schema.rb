@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_29_045755) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_214318) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -119,6 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_045755) do
     t.integer "contact_id"
     t.datetime "created_at", null: false
     t.date "due_date", null: false
+    t.date "issued_on", null: false
     t.integer "organization_id", null: false
     t.integer "receivable_account_id", null: false
     t.string "reference"
@@ -129,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_29_045755) do
     t.datetime "updated_at", null: false
     t.string "xero_invoice_number"
     t.index ["contact_id"], name: "index_invoices_on_contact_id"
+    t.index ["organization_id", "issued_on"], name: "index_invoices_on_organization_id_and_issued_on"
     t.index ["organization_id", "xero_invoice_number"], name: "index_invoices_on_organization_id_and_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
     t.index ["organization_id"], name: "index_invoices_on_organization_id"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
