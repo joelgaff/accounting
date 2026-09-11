@@ -10,7 +10,7 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th>Created</th>
+        <th>Issued</th>
         <th>Client</th>
         <th>Due</th>
         <th>Status</th>
@@ -21,7 +21,7 @@
     <tbody>
       <% @invoices.each do |invoice| %>
         <tr>
-          <td><%= invoice.created_at.to_date.iso8601 %></td>
+          <td><%= invoice.issued_on.iso8601 %></td>
           <td><%= link_to invoice.customer_display, invoice_path(invoice) %></td>
           <td><%= invoice.due_date.iso8601 %></td>
           <td><span class="badge badge-<%= invoice.status %>"><%= invoice.status %></span></td>

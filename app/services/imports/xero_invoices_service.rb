@@ -22,6 +22,7 @@ module Imports
       invoice.assign_attributes(
         contact:            contact,
         client_name:        contact.name,
+        issued_on:          BaseService.parse_xero_date(header_row["invoicedate"]),
         due_date:           BaseService.parse_xero_date(header_row["duedate"]),
         receivable_account: @organization.settings.receivable_account,
         reference:          header_row["reference"].to_s.strip.presence

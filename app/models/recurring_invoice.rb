@@ -24,6 +24,7 @@ class RecurringInvoice < ApplicationRecord
       invoice = organization.invoices.build(
         contact:            contact,
         client_name:        client_name,
+        issued_on:          as_of,
         due_date:           as_of + net_days.days,
         receivable_account: receivable_account,
         reference:          "Recurring ##{id}"

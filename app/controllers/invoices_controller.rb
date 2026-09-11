@@ -3,7 +3,7 @@ class InvoicesController < ApplicationController
   before_action :load_accounts, only: %i[new create]
 
   def index
-    @invoices = Current.organization.invoices.order(created_at: :desc)
+    @invoices = Current.organization.invoices.order(issued_on: :desc, id: :desc)
   end
 
   def show
@@ -29,7 +29,7 @@ class InvoicesController < ApplicationController
   end
 
   def new
-    @invoice = Current.organization.invoices.build(due_date: Date.current + 30.days)
+    @invoice = Current.organization.invoices.build(issued_on: Date.current, due_date: Date.current + 30.days)
   end
 
   def create
@@ -52,7 +52,7 @@ class InvoicesController < ApplicationController
 
   def invoice_params
     params.require(:invoice).permit(
-      :contact_id, :client_name, :amount, :due_date,
+      :contact_id, :client_name, :amount, :issued_on, :due_date,
       :receivable_account_id, :revenue_account_id, :tax_rate_id,
       attachments: [],
       line_items_attributes: %i[id description quantity unit_amount account_id tax_rate_id _destroy]

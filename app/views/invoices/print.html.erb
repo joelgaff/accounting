@@ -44,7 +44,7 @@
   </div>
   <div class="invoice-meta">
     <strong><%= @invoice.organization.name %></strong><br>
-    Issued <%= @invoice.created_at.strftime("%b %-d, %Y") %><br>
+    Issued <%= @invoice.issued_on.strftime("%b %-d, %Y") %><br>
     Due <%= @invoice.due_date.strftime("%b %-d, %Y") %>
   </div>
 </div>

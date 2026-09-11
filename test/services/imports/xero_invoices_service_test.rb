@@ -140,4 +140,15 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     assert_empty result.errors
     assert_equal 0, Payment.count
   end
+
+  test "takes the issue date from Xero rather than the import date" do
+    csv = file_fixture("xero/invoices.csv").read
+    Imports::XeroInvoicesService.new(csv, organization: @org).call
+
+    inv = @org.invoices.find_by!(xero_invoice_number: "INV-1001")
+    assert_equal Date.new(2026, 7, 15), inv.issued_on
+
+    # …and the ledger entry is dated then too, so period reports line up.
+    assert_equal Date.new(2026, 7, 15), inv.entries.sole.date
+  end
 end
