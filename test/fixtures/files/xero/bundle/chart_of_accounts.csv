@@ -1,0 +1,7 @@
+*Code,*Name,*Type,*Tax Code,Description,Dashboard,Expense Claims,Enable Payments,Balance
+1200,Accounts Receivable,Accounts Receivable,Tax Exempt (0%),,No,No,No,
+2000,Accounts Payable,Accounts Payable,Tax Exempt (0%),,No,No,No,
+090,Old Bank,Bank,Tax Exempt (0%),,No,No,No,
+,Main Checking,Bank,Tax Exempt (0%),,No,No,No,
+200,Consulting,Revenue,Tax Exempt (0%),,No,No,No,
+400,Hosting,Expense,Tax Exempt (0%),,No,No,No,

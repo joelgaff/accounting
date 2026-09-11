@@ -1,0 +1,2 @@
+*ContactName,EmailAddress,*InvoiceNumber,Reference,*InvoiceDate,*DueDate,*Description,*Quantity,*UnitAmount,*AccountCode,*TaxType,AmountPaid,FullyPaidOnDate,BankAccount
+Hetzner,,BILL-1,,2026-01-05,2026-01-05,Hosting,1,120,400,,120,2026-01-06,
