@@ -1,5 +1,4 @@
 class Imports::BankController < ApplicationController
-  before_action :require_login
   before_action :load_accounts
 
   def new

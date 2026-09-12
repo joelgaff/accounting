@@ -1,9 +1,0 @@
-one:
-  email: one@example.com
-  login_code_digest: <%= BCrypt::Password.create("000000", cost: 4) %>
-  login_code_expires_at: <%= 1.hour.from_now %>
-
-two:
-  email: two@example.com
-  login_code_digest: <%= BCrypt::Password.create("000000", cost: 4) %>
-  login_code_expires_at: <%= 1.hour.from_now %>

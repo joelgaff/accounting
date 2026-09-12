@@ -1,6 +1,4 @@
 class SettingsController < ApplicationController
-  before_action :require_login
-
   def show
     @settings        = Current.organization.settings
     @asset_accounts     = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)

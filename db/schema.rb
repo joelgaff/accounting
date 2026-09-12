@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_214318) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_142759) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -102,15 +102,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_214318) do
     t.index ["organization_id"], name: "index_expenses_on_organization_id"
     t.index ["paid_from_account_id"], name: "index_expenses_on_paid_from_account_id"
     t.index ["tax_rate_id"], name: "index_expenses_on_tax_rate_id"
-  end
-
-  create_table "identities", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "email"
-    t.string "login_code_digest"
-    t.datetime "login_code_expires_at"
-    t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_identities_on_email", unique: true
   end
 
   create_table "invoices", force: :cascade do |t|
@@ -287,11 +278,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_214318) do
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.integer "identity_id", null: false
+    t.string "email_address"
+    t.string "launchpad_public_id"
     t.string "name"
     t.integer "organization_id", null: false
     t.datetime "updated_at", null: false
-    t.index ["identity_id"], name: "index_users_on_identity_id"
+    t.index ["launchpad_public_id"], name: "index_users_on_launchpad_public_id", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
@@ -311,6 +303,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_214318) do
   add_foreign_key "payments", "organizations"
   add_foreign_key "recurring_invoices", "organizations"
   add_foreign_key "tax_rates", "organizations"
-  add_foreign_key "users", "identities"
   add_foreign_key "users", "organizations"
 end

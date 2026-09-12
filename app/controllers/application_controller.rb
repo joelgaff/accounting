@@ -1,13 +1,14 @@
 class ApplicationController < ActionController::Base
-  include Authentication
+  # Adds before_action :require_launchpad_authentication.
+  include LaunchpadAuthentication
 
-  before_action :set_organization
+  # Must resolve the tenant BEFORE the SSO user is synced (a first-time user is
+  # attached to it), so prepend it ahead of the concern's auth filter.
+  before_action :set_organization, prepend: true
 
   private
 
-  # SINGLE-TENANT today: the one tenant. (.sole raises if a 2nd appears — a useful guard.)
-  # MULTI-TENANT later: resolve by subdomain/session, e.g.
-  #   Organization.find_by!(subdomain: request.subdomain)
+  # SINGLE-TENANT today: the one tenant.
   def set_organization
     Current.organization = Organization.first
   end

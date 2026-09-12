@@ -1,6 +1,5 @@
 class Imports::BillsController < ApplicationController
   include CsvUpload
-  before_action :require_login
 
   def new
   end

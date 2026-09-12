@@ -1,6 +1,4 @@
 class AccountsController < ApplicationController
-  before_action :require_login
-
   TYPE_ORDER = %w[Plutus::Asset Plutus::Liability Plutus::Equity Plutus::Revenue Plutus::Expense].freeze
 
   def index
