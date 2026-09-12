@@ -1,5 +1,6 @@
 class ApplicationMailer < ActionMailer::Base
-  # Override with MAIL_FROM env var (Hatchbox sets it in prod).
-  default from: ENV.fetch("MAIL_FROM", "no-reply@example.com")
+  # The sending address lives with the SMTP credentials (smtp.from); MAIL_FROM
+  # remains as an override, and the example address only ever shows in dev.
+  default from: Rails.application.credentials.dig(:smtp, :from) || ENV.fetch("MAIL_FROM", "no-reply@example.com")
   layout "mailer"
 end
