@@ -1,6 +1,4 @@
 class DashboardController < ApplicationController
-  before_action :require_login
-
   KPI_SLOTS = [
     [ "Operating Bank",       :bank_account ],
     [ "Accounts Receivable",  :receivable_account ],

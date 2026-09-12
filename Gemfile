@@ -80,3 +80,6 @@ gem "plutus", "~> 0.18"
 
 # CSV was removed from Ruby 3.4 default gems; used by BankImportService
 gem "csv"
+
+# JWT validation for Launchpad SSO (shared secret, HS256).
+gem "jwt", "~> 3.2"

@@ -1,6 +1,11 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # --- Launchpad SSO (local, via lvh.me wildcard DNS) ---
+  config.x.launchpad_base_url = "http://launchpad.lvh.me:3000"
+  config.x.jwt_cookie_domain  = ".lvh.me"
+  config.hosts << /.*\.lvh\.me/
+
 # Magic-link emails open in the browser in development.
 config.action_mailer.delivery_method = :letter_opener
 config.action_mailer.perform_deliveries = true

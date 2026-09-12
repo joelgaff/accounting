@@ -1,6 +1,4 @@
 class Reports::BaseController < ApplicationController
-  before_action :require_login
-
   protected
 
   def parse_range(default_from:)

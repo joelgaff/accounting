@@ -1,5 +1,4 @@
 class RecurringInvoicesController < ApplicationController
-  before_action :require_login
   before_action :load_form_collections, only: %i[new create edit update]
   before_action :load_recurring, only: %i[show edit update destroy run_now]
 

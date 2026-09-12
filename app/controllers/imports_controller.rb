@@ -1,7 +1,5 @@
 # Landing page listing every Xero-migration importer with its status.
 class ImportsController < ApplicationController
-  before_action :require_login
-
   def index
     org = Current.organization
     @importers = [

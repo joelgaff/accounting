@@ -1,5 +1,4 @@
 class BankTransactionsController < ApplicationController
-  before_action :require_login
   before_action :load_transaction, only: %i[match_invoice match_expense categorize ignore]
 
   def index

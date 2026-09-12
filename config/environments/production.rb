@@ -1,6 +1,10 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # --- Launchpad SSO ---
+  config.x.launchpad_base_url = "https://launchpad.enduranceevolution.com"
+  config.x.jwt_cookie_domain  = ".enduranceevolution.com"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

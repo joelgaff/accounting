@@ -1,11 +1,7 @@
 Rails.application.routes.draw do
   root "dashboard#index"
 
-  resource :session, only: %i[new create destroy] do
-    get  :verify
-    post :confirm
-  end
-
+  # Auth lives entirely at the Launchpad hub (see LaunchpadAuthentication).
   resources :invoices, only: %i[index show new create] do
     resources :payments, only: %i[new create]
     member do

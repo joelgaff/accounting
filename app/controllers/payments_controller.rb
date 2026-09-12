@@ -1,5 +1,4 @@
 class PaymentsController < ApplicationController
-  before_action :require_login
   before_action :load_payable
 
   def new
