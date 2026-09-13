@@ -1,0 +1,4 @@
+# bin/dev runs this. Launchpad (SSO hub) owns port 3000 locally; this app takes 3001.
+# Open http://accounting.lvh.me:3001 — the SSO cookie is scoped to .lvh.me.
+launchpad: cd "${LAUNCHPAD_DIR:-../launchpad}" && bin/rails server -p 3000
+web: bin/rails server -p 3001

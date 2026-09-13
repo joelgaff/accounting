@@ -33,6 +33,12 @@
   normalization strips leading `*` and lowercases. Xero fixtures live in
   `test/fixtures/files/xero/` and drive service tests.
 
+## Run locally
+- `bin/dev` boots the Launchpad SSO hub (`../launchpad`, port 3000) and this app (port 3001)
+  together via `Procfile.dev`. Open **http://accounting.lvh.me:3001** — the SSO cookie is scoped
+  to `.lvh.me`, so `localhost` never signs in (a dev-only middleware redirects it for you).
+- Override the hub checkout with `LAUNCHPAD_DIR=/path bin/dev`.
+
 ## Deferred until actually needed
 - Multi-tenant membership/roles/switching (single-tenant now; structure is ready).
 - Stripe billing (add when the app monetizes).

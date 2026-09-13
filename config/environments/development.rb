@@ -9,7 +9,7 @@ Rails.application.configure do
 # Magic-link emails open in the browser in development.
 config.action_mailer.delivery_method = :letter_opener
 config.action_mailer.perform_deliveries = true
-config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+config.action_mailer.default_url_options = { host: "accounting.lvh.me", port: 3001 }
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.
@@ -47,7 +47,7 @@ config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
   config.action_mailer.perform_caching = false
 
   # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  config.action_mailer.default_url_options = { host: "accounting.lvh.me", port: 3001 }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

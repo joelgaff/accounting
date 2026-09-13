@@ -1,2 +1,20 @@
-#!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+#!/usr/bin/env bash
+# Boots the Launchpad SSO hub (port 3000) and this app (port 3001) together.
+# Sign in at http://accounting.lvh.me:3001. Override the hub checkout with LAUNCHPAD_DIR.
+set -e
+cd "$(dirname "$0")/.."
+
+LAUNCHPAD_DIR="${LAUNCHPAD_DIR:-../launchpad}"
+if [ ! -x "$LAUNCHPAD_DIR/bin/rails" ]; then
+  echo "Launchpad checkout not found at $LAUNCHPAD_DIR (set LAUNCHPAD_DIR)" >&2
+  exit 1
+fi
+export LAUNCHPAD_DIR
+
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
+echo "==> http://accounting.lvh.me:3001  (Launchpad hub: http://launchpad.lvh.me:3000)"
+exec foreman start -f Procfile.dev "$@"
