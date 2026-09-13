@@ -109,6 +109,9 @@ class ChartOfAccountsImportService < Imports::BaseService
           end
 
           account = find_existing(code: code, name: name)
+          # Xero exports every bank account as "Bank"; one we've reclassified as a
+          # credit card lives in liabilities and should stay there.
+          klass = Plutus::Liability if bank?(type) && account&.bank_account&.credit_card?
 
           if account
             if account.type != klass.name
@@ -119,9 +122,10 @@ class ChartOfAccountsImportService < Imports::BaseService
             account.update!(name: name, code: code, description: desc, xero_type: type.upcase)
             updated += 1
           else
-            klass.create!(tenant: @organization, name: name, code: code, description: desc, xero_type: type.upcase)
+            account = klass.create!(tenant: @organization, name: name, code: code, description: desc, xero_type: type.upcase)
             created += 1
           end
+          ensure_bank_account(account) if bank?(type)
         rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
           skipped += 1
           errors << "row #{line}: #{e.message}"
@@ -133,6 +137,14 @@ class ChartOfAccountsImportService < Imports::BaseService
   end
 
   private
+
+  def bank?(raw) = SQUEEZE.call(raw) == "BANK"
+
+  def ensure_bank_account(account)
+    return if account.bank_account
+    kind = account.is_a?(Plutus::Liability) ? "credit_card" : "checking"
+    @organization.bank_accounts.create!(account: account, kind: kind)
+  end
 
   def classify(raw)
     key = raw.to_s.strip

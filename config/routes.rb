@@ -14,6 +14,12 @@ Rails.application.routes.draw do
     resources :payments, only: %i[new create]
   end
   resources :accounts, only: %i[index]
+  resources :bank_accounts, except: %i[show destroy] do
+    member do
+      post :archive
+      post :restore
+    end
+  end
   resources :contacts
   resources :journal_entries, only: %i[index show new create]
   resources :recurring_invoices do
@@ -39,7 +45,7 @@ Rails.application.routes.draw do
   namespace :imports do
     resource :invoices, only: %i[new create]
     resource :bills,    only: %i[new create]
-    resource :bank,     only: %i[new create]
+    resource :bank,     only: %i[new create], controller: "bank"
   end
 
   resource  :settings, only: %i[show update]

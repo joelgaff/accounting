@@ -11,7 +11,7 @@ class OrganizationSettingsTest < ActiveSupport::TestCase
   end
 
   test "wires KPI account slots" do
-    bank = Plutus::Asset.create!(tenant: @org, name: "Bank")
+    bank = create_bank_account(@org, name: "Bank")
     ar   = Plutus::Asset.create!(tenant: @org, name: "AR")
     ap   = Plutus::Liability.create!(tenant: @org, name: "AP")
 

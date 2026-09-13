@@ -24,7 +24,12 @@
           <% accounts.each do |account| %>
             <tr>
               <td><%= account.code || content_tag(:span, "—", class: "muted") %></td>
-              <td><%= account.name %></td>
+              <td>
+                <%= account.name %>
+                <% if account.bank_account %>
+                  <%= link_to account.bank_account.kind_label, edit_bank_account_path(account.bank_account), class: "badge badge-open", style: "margin-left:6px;text-decoration:none;" %>
+                <% end %>
+              </td>
               <td class="muted"><%= account.description %></td>
               <td class="num">$<%= number_with_precision(account.balance, precision: 2, delimiter: ",") %></td>
             </tr>

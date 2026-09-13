@@ -1,0 +1,18 @@
+<tr id="<%= dom_id(bank_account) %>" class="<%= 'muted' if bank_account.archived? %>">
+  <td><%= bank_account.code || content_tag(:span, "—", class: "muted") %></td>
+  <td><%= link_to bank_account.name, edit_bank_account_path(bank_account) %></td>
+  <td><span class="badge <%= bank_account.credit_card? ? 'badge-overdue' : 'badge-open' %>"><%= bank_account.kind_label %></span></td>
+  <td><%= bank_account.institution.presence || content_tag(:span, "—", class: "muted") %></td>
+  <td><%= bank_account.last_four.present? ? "•••• #{bank_account.last_four}" : content_tag(:span, "—", class: "muted") %></td>
+  <td class="num">
+    $<%= number_with_precision(bank_account.balance, precision: 2, delimiter: ",") %>
+    <% if bank_account.credit_card? %><span class="muted" style="font-size:11px;">owed</span><% end %>
+  </td>
+  <td class="num">
+    <% if bank_account.archived? %>
+      <%= button_to "Restore", restore_bank_account_path(bank_account), class: "btn btn-secondary", form: { data: { turbo_stream: true } } %>
+    <% else %>
+      <%= button_to "Archive", archive_bank_account_path(bank_account), class: "btn btn-secondary", form: { data: { turbo_stream: true } } %>
+    <% end %>
+  </td>
+</tr>

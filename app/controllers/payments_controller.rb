@@ -32,7 +32,7 @@ class PaymentsController < ApplicationController
   end
 
   def load_bank_options
-    @bank_accounts = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
+    @bank_accounts = Current.organization.bank_accounts.active.ordered
   end
 
   def redirect_target

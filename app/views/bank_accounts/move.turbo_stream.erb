@@ -1,0 +1,9 @@
+<%# The row leaves one table and lands in the other; the empty-state rows come and go with it. %>
+<%= turbo_stream.remove @bank_account %>
+<% if @bank_account.archived? %>
+  <%= turbo_stream.remove dom_id(Current.organization, :no_archived_bank_accounts) %>
+  <%= turbo_stream.append dom_id(Current.organization, :archived_bank_accounts), partial: "bank_accounts/row", locals: { bank_account: @bank_account } %>
+<% else %>
+  <%= turbo_stream.remove dom_id(Current.organization, :no_active_bank_accounts) %>
+  <%= turbo_stream.append dom_id(Current.organization, :active_bank_accounts), partial: "bank_accounts/row", locals: { bank_account: @bank_account } %>
+<% end %>

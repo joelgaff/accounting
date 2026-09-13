@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_142759) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_13_220000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -37,6 +37,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_142759) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "bank_accounts", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.string "institution"
+    t.string "kind", default: "checking", null: false
+    t.string "last_four"
+    t.integer "organization_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_bank_accounts_on_account_id", unique: true
+    t.index ["organization_id"], name: "index_bank_accounts_on_organization_id"
   end
 
   create_table "bank_transactions", force: :cascade do |t|
@@ -289,6 +302,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_142759) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bank_accounts", "organizations"
+  add_foreign_key "bank_accounts", "plutus_accounts", column: "account_id"
   add_foreign_key "bank_transactions", "organizations"
   add_foreign_key "contacts", "organizations"
   add_foreign_key "expenses", "contacts"

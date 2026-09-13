@@ -1,0 +1,45 @@
+<%= form_with model: bank_account, class: "app-form" do |f| %>
+  <% if bank_account.errors.any? %>
+    <div class="form-errors">
+      <ul>
+        <% bank_account.errors.full_messages.each do |m| %><li><%= m %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name, placeholder: "Chase Business Checking", autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :kind %>
+    <%= f.select :kind, BankAccount::KINDS.map { |k| [ k.humanize, k ] } %>
+    <p class="muted" style="margin:6px 0 0;font-size:12px;">Checking and savings are assets. A credit card is a liability; changing the kind moves the ledger account.</p>
+  </div>
+
+  <div class="field">
+    <%= f.label :code, "Account code (optional)" %>
+    <%= f.text_field :code, placeholder: "1140" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :institution, "Bank or card issuer (optional)" %>
+    <%= f.text_field :institution, placeholder: "Chase" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :last_four, "Last four digits (optional)" %>
+    <%= f.text_field :last_four, maxlength: 4, inputmode: "numeric", placeholder: "4821" %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description, "Description (optional)" %>
+    <%= f.text_area :description, rows: 2 %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit bank_account.new_record? ? "Add bank account" : "Save changes", class: "btn btn-primary" %>
+    <%= link_to "Cancel", bank_accounts_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

@@ -1,0 +1,50 @@
+<header class="page-header">
+  <h1>Bank accounts</h1>
+  <%= link_to "New bank account", new_bank_account_path, class: "btn btn-primary" %>
+</header>
+
+<p class="muted" style="margin:0 0 16px;font-size:13px;">
+  Checking, savings and credit cards. Each one is also an entry in the
+  <%= link_to "Chart of Accounts", accounts_path %>; credit cards sit in liabilities.
+</p>
+
+<section class="account-group">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:80px">Code</th>
+        <th>Name</th>
+        <th>Kind</th>
+        <th>Institution</th>
+        <th>Last four</th>
+        <th class="num">Balance</th>
+        <th style="width:160px"></th>
+      </tr>
+    </thead>
+    <tbody id="<%= dom_id(Current.organization, :active_bank_accounts) %>">
+      <% if @active.empty? %>
+        <tr id="<%= dom_id(Current.organization, :no_active_bank_accounts) %>">
+          <td colspan="7" class="empty-state">
+            No bank accounts yet. <%= link_to "Add one", new_bank_account_path %>, or
+            <%= link_to "import your Chart of Accounts", new_chart_of_accounts_import_path %> and its Bank rows land here.
+          </td>
+        </tr>
+      <% end %>
+      <%= render partial: "bank_accounts/row", collection: @active, as: :bank_account %>
+    </tbody>
+  </table>
+</section>
+
+<section class="account-group" style="margin-top:32px">
+  <h2>Archived</h2>
+  <table class="data-table">
+    <tbody id="<%= dom_id(Current.organization, :archived_bank_accounts) %>">
+      <% if @archived.empty? %>
+        <tr id="<%= dom_id(Current.organization, :no_archived_bank_accounts) %>">
+          <td colspan="7" class="muted">Nothing archived. Archiving hides an account from pickers without touching its ledger.</td>
+        </tr>
+      <% end %>
+      <%= render partial: "bank_accounts/row", collection: @archived, as: :bank_account %>
+    </tbody>
+  </table>
+</section>

@@ -10,7 +10,7 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     @tax_asset = Plutus::Asset.create!(tenant: @org, name: "GST Recoverable")
     @input     = @org.tax_rates.create!(name: "GST 10%", rate: 0.10, xero_tax_type: "INPUT",
                                         liability_account: @tax_liab, asset_account: @tax_asset)
-    @bank = Plutus::Asset.create!(tenant: @org, name: "Business Bank Account", code: "090")
+    @bank = create_bank_account(@org, name: "Business Bank Account", code: "090")
     @org.settings.update!(payable_account: @ap)
   end
 

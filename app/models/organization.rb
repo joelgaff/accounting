@@ -4,6 +4,7 @@ class Organization < ApplicationRecord
   has_many :invoices,  dependent: :restrict_with_error
   has_many :expenses,  dependent: :restrict_with_error
   has_many :tax_rates,          dependent: :destroy
+  has_many :bank_accounts,      dependent: :destroy
   has_many :bank_transactions,  dependent: :destroy
   has_many :journal_entries,    dependent: :destroy
   has_many :recurring_invoices, dependent: :destroy

@@ -44,7 +44,7 @@ module Imports
     SETTINGS_KEYS = {
       "receivable_account" => Plutus::Asset,
       "payable_account"    => Plutus::Liability,
-      "bank_account"       => Plutus::Asset
+      "bank_account"       => BankAccount
     }.freeze
 
     class Fatal < StandardError; end
@@ -113,9 +113,14 @@ module Imports
 
       settings = @organization.settings || @organization.create_settings!
       attrs = wanted.to_h do |key, ref|
-        scope   = SETTINGS_KEYS.fetch(key).where(tenant_id: @organization.id)
-        account = scope.find_by(code: ref.to_s) || scope.find_by(name: ref.to_s)
-        raise Fatal, "settings.yml: no #{SETTINGS_KEYS[key].name.demodulize.downcase} account matching #{ref.inspect} for #{key}" unless account
+        klass   = SETTINGS_KEYS.fetch(key)
+        account = if klass == BankAccount
+          @organization.bank_accounts.find_by_code_or_name(ref.to_s)
+        else
+          scope = klass.where(tenant_id: @organization.id)
+          scope.find_by(code: ref.to_s) || scope.find_by(name: ref.to_s)
+        end
+        raise Fatal, "settings.yml: no #{klass.name.demodulize.underscore.humanize.downcase} matching #{ref.inspect} for #{key}" unless account
         [ key, account ]
       end
       settings.update!(attrs)

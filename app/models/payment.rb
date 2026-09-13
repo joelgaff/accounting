@@ -1,7 +1,7 @@
 class Payment < ApplicationRecord
   belongs_to :organization
   belongs_to :payable, polymorphic: true
-  belongs_to :bank_account, class_name: "Plutus::Asset"
+  belongs_to :bank_account
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
 
   validates :amount, numericality: { greater_than: 0 }
@@ -46,9 +46,9 @@ class Payment < ApplicationRecord
   def ledger_legs
     case payable
     when Invoice
-      [ bank_account, payable.receivable_account ]
+      [ bank_account.account, payable.receivable_account ]
     when Expense
-      [ payable.paid_from_account, bank_account ]
+      [ payable.paid_from_account, bank_account.account ]
     end
   end
 

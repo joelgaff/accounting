@@ -6,7 +6,7 @@ class Imports::BankController < ApplicationController
 
   def create
     file         = params[:file]
-    bank_account = @asset_accounts.find { |a| a.id.to_s == params[:bank_account_id].to_s }
+    bank_account = @bank_accounts.find { |a| a.id.to_s == params[:bank_account_id].to_s }
 
     if file.blank? || bank_account.nil?
       flash.now[:alert] = "Choose a CSV file and a bank account."
@@ -25,6 +25,6 @@ class Imports::BankController < ApplicationController
   private
 
   def load_accounts
-    @asset_accounts = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
+    @bank_accounts = Current.organization.bank_accounts.active.ordered
   end
 end

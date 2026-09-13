@@ -74,7 +74,7 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
       report = Imports::BundleService.new(dir, organization: @org).call
 
       assert report.failed?
-      assert_match(/no asset account matching "Closed Account"/, report.fatal)
+      assert_match(/no bank account matching "Closed Account"/, report.fatal)
       assert_equal 0, @org.plutus_accounts.count, "fatal settings should roll back the chart of accounts too"
     end
   end

@@ -8,6 +8,7 @@ module ApplicationHelper
     expenses:  %(<path d="M2.5 4.5h11v7h-11z"/><path d="M2.5 7h11"/><path d="M10.5 9.5h1.5"/>),
     journal:   %(<path d="M4 2.5h8v11H4z"/><path d="M4 5h-1.5M4 8h-1.5M4 11h-1.5"/><path d="M6.5 6h3M6.5 9h3"/>),
     accounts:  %(<path d="M8 2 14 5.5H2z"/><path d="M4 7v4.5M8 7v4.5M12 7v4.5"/><path d="M2.5 13.5h11"/>),
+    banking:   %(<rect x="2" y="4" width="12" height="8.5" rx="1.5"/><path d="M2 7h12"/><path d="M4.5 10.5h3"/>),
     reports:   %(<path d="M2.5 2.5v11h11"/><path d="M5 11 7.5 7.5l2.5 2 3-4.5"/>),
     reconcile: %(<path d="M2.5 5.5h8l-2-2M13.5 10.5h-8l2 2"/>),
     imports:   %(<path d="M8 2.5v7M5.5 7 8 9.5 10.5 7"/><path d="M2.5 11.5v2h11v-2"/>),

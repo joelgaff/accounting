@@ -126,10 +126,9 @@ module Imports
     def resolve_bank_account(header_row)
       key = header_row["bankaccount"].to_s.strip
       if key.present?
-        assets = @organization.plutus_accounts.where(type: "Plutus::Asset")
-        bank   = assets.find_by(code: key) || assets.find_by(name: key)
+        bank = @organization.bank_accounts.find_by_code_or_name(key)
         return [ bank, nil ] if bank
-        return [ nil, "bank account #{key.inspect} not found in the Chart of Accounts — payment not recorded" ]
+        return [ nil, "bank account #{key.inspect} not found among your bank accounts — payment not recorded" ]
       end
 
       bank = @organization.settings.bank_account

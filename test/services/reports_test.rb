@@ -4,7 +4,7 @@ class ReportsTest < ActiveSupport::TestCase
   setup do
     @org = organizations(:one)
     Current.organization = @org
-    @bank    = Plutus::Asset.create!(tenant: @org, name: "Bank")
+    @bank    = create_bank_account(@org, name: "Bank")
     @ar      = Plutus::Asset.create!(tenant: @org, name: "AR")
     @ap      = Plutus::Liability.create!(tenant: @org, name: "AP")
     @equity  = Plutus::Equity.create!(tenant: @org, name: "Owner Capital")
@@ -14,7 +14,7 @@ class ReportsTest < ActiveSupport::TestCase
     inv = @org.invoices.create!(client_name: "Acme", amount: 1_000, due_date: Date.current + 30,
                                 receivable_account: @ar, revenue_account: @sales)
     @org.expenses.create!(vendor: "AWS", amount: 200, incurred_on: Date.current,
-                          expense_account: @hosting, paid_from_account: @bank)
+                          expense_account: @hosting, paid_from_account: @bank.account)
     inv.payments.create!(organization: @org, amount: 400, paid_on: Date.current, bank_account: @bank)
   end
 

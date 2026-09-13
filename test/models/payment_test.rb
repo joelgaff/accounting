@@ -4,7 +4,7 @@ class PaymentTest < ActiveSupport::TestCase
   setup do
     @org = organizations(:one)
     Current.organization = @org
-    @bank    = Plutus::Asset.create!(tenant: @org, name: "Bank")
+    @bank    = create_bank_account(@org, name: "Bank")
     @ar      = Plutus::Asset.create!(tenant: @org, name: "AR")
     @sales   = Plutus::Revenue.create!(tenant: @org, name: "Sales")
     @ap      = Plutus::Liability.create!(tenant: @org, name: "AP")
@@ -48,7 +48,7 @@ class PaymentTest < ActiveSupport::TestCase
                                 expense_account: @hosting, paid_from_account: @ap)
     # After creation: hosting balance = +45, AP balance = +45
     @bank.destroy  # not used yet
-    @bank = Plutus::Asset.create!(tenant: @org, name: "Bank2")
+    @bank = create_bank_account(@org, name: "Bank2")
 
     exp.payments.create!(organization: @org, amount: 45, paid_on: Date.current, bank_account: @bank)
 

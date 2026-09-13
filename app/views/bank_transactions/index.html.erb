@@ -10,7 +10,7 @@
 <%= form_with url: bank_transactions_path, method: :get, class: "app-form filter-bar" do |f| %>
   <div class="field">
     <%= f.label :bank_account_id, "Bank account" %>
-    <%= f.collection_select :bank_account_id, @bank_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, { include_blank: "All" }, selected: params[:bank_account_id] %>
+    <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, { include_blank: "All" }, selected: params[:bank_account_id] %>
   </div>
   <div class="field">
     <%= f.label :status %>

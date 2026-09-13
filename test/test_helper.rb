@@ -10,6 +10,9 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
-    # Add more helper methods to be used by all tests here...
+    # A bank account plus its ledger account in one line, the way the form makes them.
+    def create_bank_account(org, name:, code: nil, kind: "checking")
+      BankAccount.create!(organization: org, name: name, code: code, kind: kind)
+    end
   end
 end

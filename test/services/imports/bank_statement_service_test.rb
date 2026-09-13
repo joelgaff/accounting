@@ -4,7 +4,7 @@ class Imports::BankStatementServiceTest < ActiveSupport::TestCase
   setup do
     @org = organizations(:one)
     Current.organization = @org
-    @bank = Plutus::Asset.create!(tenant: @org, name: "Bank")
+    @bank = create_bank_account(@org, name: "Bank")
   end
 
   test "imports plain-shape CSV, one row per BankTransaction, no ledger post" do

@@ -2,9 +2,9 @@
   <h1>Import bank statement</h1>
 </header>
 
-<% if @asset_accounts.empty? %>
+<% if @bank_accounts.empty? %>
   <div class="notice">
-    <p>You need at least one Asset account (the bank) before importing. <%= link_to "Import your Chart of Accounts first", new_chart_of_accounts_import_path %>.</p>
+    <p>You need a bank account before importing. <%= link_to "Add one under Banking", new_bank_account_path %>, or <%= link_to "import your Chart of Accounts", new_chart_of_accounts_import_path %> and its Bank rows will become bank accounts.</p>
   </div>
 <% else %>
   <div class="notice notice-info">
@@ -15,7 +15,7 @@
   <%= form_with url: imports_bank_path, multipart: true, class: "app-form" do |f| %>
     <div class="field">
       <%= f.label :bank_account_id, "Bank account" %>
-      <%= f.collection_select :bank_account_id, @asset_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, prompt: "Select bank account" %>
+      <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, prompt: "Select bank account" %>
     </div>
     <div class="field">
       <%= f.label :file, "CSV file" %>

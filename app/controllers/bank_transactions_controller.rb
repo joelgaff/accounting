@@ -6,7 +6,7 @@ class BankTransactionsController < ApplicationController
     scope = scope.where(status: params[:status]) if params[:status].in?(BankTransaction::STATUSES)
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
     @transactions   = scope.order(posted_on: :desc, id: :desc)
-    @bank_accounts  = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
+    @bank_accounts  = Current.organization.bank_accounts.active.ordered
     @expense_accts  = Plutus::Expense.where(tenant: Current.organization).order(:code, :name)
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
   end
@@ -45,7 +45,7 @@ class BankTransactionsController < ApplicationController
     expense = Current.organization.expenses.create!(
       vendor:            @txn.description.presence || "(bank import)",
       incurred_on:       @txn.posted_on,
-      paid_from_account: @txn.bank_account,
+      paid_from_account: @txn.bank_account.account,
       expense_account:   expense_account,
       amount:            @txn.amount.abs
     )

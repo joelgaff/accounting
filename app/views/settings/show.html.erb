@@ -19,7 +19,8 @@
 
     <div class="field">
       <%= f.label :bank_account_id, "Operating bank account" %>
-      <%= f.collection_select :bank_account_id, @asset_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+      <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, include_blank: "—" %>
+      <p class="muted" style="margin:6px 0 0;font-size:12px;">Manage these under <%= link_to "Banking", bank_accounts_path %>.</p>
     </div>
 
     <div class="field">

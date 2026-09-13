@@ -35,7 +35,7 @@
 
   <div class="field">
     <%= f.label :bank_account_id, is_invoice ? "Deposit into" : "Paid from bank" %>
-    <%= f.collection_select :bank_account_id, @bank_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, prompt: "Select bank account" %>
+    <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, prompt: "Select bank account" %>
   </div>
 
   <div class="field">

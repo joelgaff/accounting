@@ -9,7 +9,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     @sales2    = Plutus::Revenue.create!(tenant: @org, name: "Retainer",   code: "210")
     @tax_liab  = Plutus::Liability.create!(tenant: @org, name: "Sales Tax")
     @output    = @org.tax_rates.create!(name: "GST 10%", rate: 0.10, xero_tax_type: "OUTPUT", liability_account: @tax_liab)
-    @bank = Plutus::Asset.create!(tenant: @org, name: "Business Bank Account", code: "090")
+    @bank = create_bank_account(@org, name: "Business Bank Account", code: "090")
     @org.settings.update!(receivable_account: @ar)
   end
 
@@ -154,7 +154,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
 
   test "a row's BankAccount column picks the bank by code or name, Settings is the fallback" do
     @org.settings.update!(bank_account: @bank)
-    chase = Plutus::Asset.create!(tenant: @org, name: "Chase Business Checking")   # no code, like Xero
+    chase = create_bank_account(@org, name: "Chase Business Checking")   # no code, like Xero
     csv = file_fixture("xero/invoices_with_bank.csv").read
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
 
