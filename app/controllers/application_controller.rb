@@ -8,8 +8,10 @@ class ApplicationController < ActionController::Base
 
   private
 
-  # SINGLE-TENANT today: the one tenant.
+  # SINGLE-TENANT today: the one tenant, self-healing on a fresh database so a
+  # first SSO sign-in has an organization to attach the synced user to (a fresh
+  # deploy otherwise 422s when sync_user hits the required organization).
   def set_organization
-    Current.organization = Organization.first
+    Current.organization = Organization.first || Organization.create!(name: "Default")
   end
 end

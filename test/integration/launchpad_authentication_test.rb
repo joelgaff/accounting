@@ -24,6 +24,16 @@ class LaunchpadAuthenticationTest < ActionDispatch::IntegrationTest
     assert_includes response.location, CGI.escape("http://www.example.com/")
   end
 
+  test "first sign-in on a fresh database creates the tenant instead of 422ing" do
+    Organization.destroy_all
+    set_jwt(ee_jwt(sub: "fresh-1", email: "joel@example.com", name: "Joel"))
+
+    get "/"
+    assert_response :success
+    assert_equal 1, Organization.count
+    assert_equal Organization.first, User.find_by!(launchpad_public_id: "fresh-1").organization
+  end
+
   test "a valid JWT that grants accounting serves the page and syncs the user" do
     token = ee_jwt(sub: "abc-123", email: "joel@example.com", name: "Joel Gaff")
     set_jwt(token)
