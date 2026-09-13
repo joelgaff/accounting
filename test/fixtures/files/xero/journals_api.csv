@@ -1,0 +1,7 @@
+JournalDate,JournalNumber,SourceType,SourceID,Reference,Description,AccountCode,AccountName,NetAmount,TaxAmount,TaxType
+2019-04-01,41,CASHPAID,abc,,Fuel,400,Office Supplies,55.5,0,NONE
+2019-04-01,41,CASHPAID,abc,,Fuel,090,Business Bank Account,-55.5,0,NONE
+2019-04-02,42,ACCREC,def,INV-10,,1200,Accounts Receivable,120,0,NONE
+2019-04-02,42,ACCREC,def,INV-10,,200,Sales,-120,0,NONE
+2019-04-03,43,TRANSFER,ghi,,,090,Business Bank Account,-500,0,NONE
+2019-04-03,43,TRANSFER,ghi,,,091,Savings,500,0,NONE

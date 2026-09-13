@@ -15,6 +15,10 @@ module Imports
   #     invoices.csv             optional — Xero sales invoices export (+ AmountPaid,
   #                                         FullyPaidOnDate, BankAccount if you have them)
   #     bills.csv                optional — Xero bills export, same extras
+  #     tax_rates.csv            optional — Name, TaxType, Rate (+ LiabilityAccount / AssetAccount)
+  #     journals.csv             optional — Xero Journal report export; posts everything the
+  #                                         document importers don't (spend/receive money,
+  #                                         transfers, manual journals, conversion balances)
   #
   # Every importer is idempotent, so re-running a bundle corrects rather than
   # duplicates. With dry_run: true the whole run happens inside a transaction
@@ -65,6 +69,10 @@ module Imports
 
         apply_settings!
 
+        if exists?("tax_rates.csv")
+          steps << step("tax rates", Imports::TaxRatesService.new(read!("tax_rates.csv"), organization: @organization))
+        end
+
         if exists?("contacts_customers.csv")
           steps << step("contacts (customers)", ContactsImportService.new(read!("contacts_customers.csv"), organization: @organization, default_kind: "customer"))
         end
@@ -76,6 +84,10 @@ module Imports
         end
         if exists?("bills.csv")
           steps << step("bills", Imports::XeroBillsService.new(read!("bills.csv"), organization: @organization))
+        end
+        if exists?("journals.csv")
+          documents = exists?("invoices.csv") || exists?("bills.csv") ? :skip : :include
+          steps << step("journals", Imports::XeroJournalsService.new(read!("journals.csv"), organization: @organization, documents: documents))
         end
 
         @summary = summarize
@@ -136,6 +148,7 @@ module Imports
         "invoices"       => @organization.invoices.count,
         "bills"          => @organization.expenses.count,
         "payments"       => Payment.where(organization: @organization).count,
+        "journals"       => @organization.journal_entries.count,
         "trial balance"  => format("debits %.2f  credits %.2f  %s", debits, credits, debits == credits ? "BALANCED" : "OUT OF BALANCE"),
         "receivable"     => balance_line(s&.receivable_account),
         "payable"        => balance_line(s&.payable_account),

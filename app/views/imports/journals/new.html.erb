@@ -1,0 +1,26 @@
+<header class="page-header">
+  <h1>Import the Journal report from Xero</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Upload Xero's <strong>Journal report</strong> export (Accounting → Reports → Journal report, date range set to everything, then Export → CSV). It holds every posting since your conversion date: spend and receive money, transfers, manual journals, conversion balances, credit notes, payroll.</p>
+  <p>Journals that came from a sales invoice, a bill, or a payment on one are <strong>skipped</strong> by default, because the invoice and bill importers already post those with full detail. Tick the box below only if you are not importing invoices and bills separately.</p>
+  <p>Requires your Chart of Accounts first. Re-import is safe: it matches on the journal number and replaces the entry in place.</p>
+</div>
+
+<%= form_with url: imports_journals_path, multipart: true, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :file, "Journal report CSV" %>
+    <%= f.file_field :file, accept: "text/csv,.csv" %>
+  </div>
+  <div class="field">
+    <label>
+      <%= f.check_box :documents, {}, "include", "skip" %>
+      Also post invoice, bill and payment journals (only if you are not importing those separately)
+    </label>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Import", class: "btn btn-primary" %>
+    <%= link_to "Cancel", imports_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

@@ -1,0 +1,42 @@
+require "test_helper"
+
+class ImportPagesTest < ActionDispatch::IntegrationTest
+  setup do
+    @org = organizations(:one)
+    Organization.where.not(id: @org.id).destroy_all
+    payload = { sub: "u-1", email: "joel@example.com", name: "Joel", apps: [ "accounting" ],
+                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
+    cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
+  end
+
+  test "imports index lists the journal report and tax rates importers" do
+    get imports_path
+    assert_response :success
+    assert_select "a[href=?]", new_imports_journals_path
+    assert_select "a[href=?]", new_imports_tax_rates_path
+  end
+
+  test "uploading a journal report posts journal entries" do
+    create_bank_account(@org, name: "Business Bank Account", code: "090")
+    Plutus::Equity.create!(tenant: @org, name: "Owner's Equity", code: "300")
+    Plutus::Expense.create!(tenant: @org, name: "Office Supplies", code: "400")
+    Plutus::Revenue.create!(tenant: @org, name: "Sales", code: "200")
+    Plutus::Liability.create!(tenant: @org, name: "Accounts Payable", code: "2000")
+
+    get new_imports_journals_path
+    assert_response :success
+
+    post imports_journals_path, params: { file: fixture_file_upload("xero/journals.csv", "text/csv") }
+    assert_redirected_to journal_entries_path
+    assert_equal 4, @org.journal_entries.count
+    assert_match(/Created 4/, flash[:notice])
+  end
+
+  test "uploading tax rates seeds them" do
+    Plutus::Liability.create!(tenant: @org, name: "Sales Tax Payable")
+    Plutus::Asset.create!(tenant: @org, name: "GST Recoverable")
+    post imports_tax_rates_path, params: { file: fixture_file_upload("xero/tax_rates.csv", "text/csv") }
+    assert_redirected_to tax_rates_path
+    assert_equal 3, @org.tax_rates.count
+  end
+end

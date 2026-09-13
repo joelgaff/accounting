@@ -1,0 +1,19 @@
+Date,Journal number,Source,Reference,Description,Account code,Account,Debit,Credit
+01 Jan 2019,1,Conversion Balance,Conversion,Opening balance,090,Business Bank Account,"5,000.00",
+01 Jan 2019,1,Conversion Balance,Conversion,Opening balance,300,Owner's Equity,,"5,000.00"
+15 Feb 2019,2,Spend Money,Chk 101,Office chairs,400,Office Supplies,240.00,
+15 Feb 2019,2,Spend Money,Chk 101,Office chairs,090,Business Bank Account,,240.00
+20 Feb 2019,3,Receive Money,,Sponsor deposit,090,Business Bank Account,"1,000.00",
+20 Feb 2019,3,Receive Money,,Sponsor deposit,200,Sales,,"1,000.00"
+28 Feb 2019,4,Manual Journal,Accrual,Accrue hosting,400,Office Supplies,50.00,
+28 Feb 2019,4,Manual Journal,Accrual,Accrue hosting,2000,Accounts Payable,,50.00
+05 Mar 2019,5,Accounts Receivable Invoice,INV-9,From invoice,1200,Accounts Receivable,300.00,
+05 Mar 2019,5,Accounts Receivable Invoice,INV-9,From invoice,200,Sales,,300.00
+06 Mar 2019,6,Accounts Payable Invoice,BILL-9,From bill,400,Office Supplies,80.00,
+06 Mar 2019,6,Accounts Payable Invoice,BILL-9,From bill,2000,Accounts Payable,,80.00
+07 Mar 2019,7,Accounts Receivable Payment,INV-9,Paid,090,Business Bank Account,300.00,
+07 Mar 2019,7,Accounts Receivable Payment,INV-9,Paid,1200,Accounts Receivable,,300.00
+10 Mar 2019,8,Spend Money,,Mystery account,999,Nope,10.00,
+10 Mar 2019,8,Spend Money,,Mystery account,090,Business Bank Account,,10.00
+11 Mar 2019,9,Manual Journal,,Lopsided,400,Office Supplies,10.00,
+11 Mar 2019,9,Manual Journal,,Lopsided,090,Business Bank Account,,12.00

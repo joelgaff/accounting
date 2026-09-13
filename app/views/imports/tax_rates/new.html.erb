@@ -1,0 +1,19 @@
+<header class="page-header">
+  <h1>Import tax rates</h1>
+</header>
+
+<div class="notice notice-info">
+  <p>Upload a CSV with <code>Name</code>, <code>TaxType</code> and <code>Rate</code> columns (the shape of Xero's tax rates). Rate can be <code>10</code>, <code>10%</code> or <code>0.10</code>. Optional <code>LiabilityAccount</code> (sales tax collected) and <code>AssetAccount</code> (recoverable purchase tax) name a chart account by code or name.</p>
+  <p>Re-import is safe: it matches on the name and updates in place.</p>
+</div>
+
+<%= form_with url: imports_tax_rates_path, multipart: true, class: "app-form" do |f| %>
+  <div class="field">
+    <%= f.label :file, "Tax rates CSV" %>
+    <%= f.file_field :file, accept: "text/csv,.csv" %>
+  </div>
+  <div class="form-actions">
+    <%= f.submit "Import", class: "btn btn-primary" %>
+    <%= link_to "Cancel", imports_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

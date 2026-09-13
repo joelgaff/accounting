@@ -1,0 +1,4 @@
+Name,TaxType,Rate,LiabilityAccount,AssetAccount
+Sales Tax 6%,OUTPUT,6%,Sales Tax Payable,
+GST on Purchases,INPUT,0.10,,GST Recoverable
+Tax Exempt,NONE,0,,

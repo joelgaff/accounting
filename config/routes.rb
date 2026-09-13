@@ -41,11 +41,15 @@ Rails.application.routes.draw do
   # /imports/invoices/new → Xero sales invoices CSV
   # /imports/bills/new    → Xero bills (purchases) CSV
   # /imports/bank/new     → bank statement CSV (both plain and Xero shape)
+  # /imports/journals/new → Xero Journal report (full ledger history)
+  # /imports/tax_rates/new → tax rates CSV
   resources :imports, only: :index
   namespace :imports do
     resource :invoices, only: %i[new create]
     resource :bills,    only: %i[new create]
     resource :bank,     only: %i[new create], controller: "bank"
+    resource :journals, only: %i[new create]
+    resource :tax_rates, only: %i[new create]
   end
 
   resource  :settings, only: %i[show update]

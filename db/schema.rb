@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_13_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -149,6 +149,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_220000) do
     t.date "posted_on", null: false
     t.string "reference"
     t.datetime "updated_at", null: false
+    t.string "xero_journal_number"
+    t.string "xero_source_type"
+    t.index ["organization_id", "xero_journal_number"], name: "idx_journal_entries_xero_number", unique: true, where: "xero_journal_number IS NOT NULL"
     t.index ["organization_id"], name: "index_journal_entries_on_organization_id"
   end
 

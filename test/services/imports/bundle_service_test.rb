@@ -11,7 +11,7 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     report = Imports::BundleService.new(@bundle, organization: @org).call
 
     assert_not report.failed?, report.to_s
-    assert_equal [ "chart of accounts", "contacts (customers)", "sales invoices", "bills" ], report.steps.map(&:name)
+    assert_equal [ "chart of accounts", "contacts (customers)", "sales invoices", "bills", "journals" ], report.steps.map(&:name)
 
     s = @org.settings.reload
     assert_equal "Accounts Receivable", s.receivable_account.name
@@ -26,6 +26,15 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     # BankAccount on the row wins; a blank one falls back to Settings.
     assert_equal "Old Bank",      @org.invoices.find_by!(xero_invoice_number: "INV-1").payments.sole.bank_account.name
     assert_equal "Main Checking", @org.invoices.find_by!(xero_invoice_number: "INV-2").payments.sole.bank_account.name
+
+    # journals.csv posts the conversion balance and spend money; the ACCREC journal
+    # is skipped because invoices.csv already carried INV-1.
+    journals = report.steps.find { |s| s.name == "journals" }.result
+    assert_equal 2, journals.created, journals.errors.inspect
+    assert_equal 1, journals.skipped
+    assert_equal 2, @org.journal_entries.count
+    assert_equal BigDecimal("460"), s.bank_account.balance     # 100 opening + 500 INV-2 - 120 BILL-1 - 20 domain
+    assert_equal 2, report.summary["journals"]
 
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
     assert_match(/BALANCED/, report.summary["trial balance"])

@@ -11,6 +11,10 @@ class ImportsController < ApplicationController
         run_before: org.invoices.where.not(xero_invoice_number: nil).exists? },
       { name: "Bills (Purchases)", path: new_imports_bills_path,
         run_before: org.expenses.where.not(xero_invoice_number: nil).exists? },
+      { name: "Journal Report (full history)", path: new_imports_journals_path,
+        run_before: org.journal_entries.where.not(xero_journal_number: nil).exists? },
+      { name: "Tax Rates",         path: new_imports_tax_rates_path,
+        run_before: org.tax_rates.exists? },
       { name: "Bank Statement",    path: new_imports_bank_path,
         run_before: false } # can't easily tell from a bank txn — leave for user
     ]

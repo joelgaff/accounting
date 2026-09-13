@@ -31,7 +31,10 @@
   `set_organization`. Keeps multi-tenancy a one-line change later.
 - **Xero-native imports.** Every CSV importer accepts Xero's export format as-is. Header
   normalization strips leading `*` and lowercases. Xero fixtures live in
-  `test/fixtures/files/xero/` and drive service tests.
+  `test/fixtures/files/xero/` and drive service tests. Full history comes from Xero's
+  Journal report (`Imports::XeroJournalsService`): it posts everything the invoice and
+  bill importers don't (spend/receive money, transfers, manual journals, conversion
+  balances) and skips ACCREC/ACCPAY/payment journals unless told otherwise.
 
 ## Run locally
 - `bin/dev` boots the Launchpad SSO hub (`../launchpad`, port 3000) and this app (port 3001)

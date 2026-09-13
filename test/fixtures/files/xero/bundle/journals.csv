@@ -1,0 +1,8 @@
+Date,Journal number,Source,Reference,Description,Account code,Account,Debit,Credit
+01 Jan 2026,1,Conversion Balance,,Opening,090,Old Bank,900.00,
+01 Jan 2026,1,Conversion Balance,,Opening,,Main Checking,100.00,
+01 Jan 2026,1,Conversion Balance,,Opening,1200,Accounts Receivable,,"1,000.00"
+10 Jan 2026,2,Accounts Receivable Invoice,INV-1,,1200,Accounts Receivable,"1,000.00",
+10 Jan 2026,2,Accounts Receivable Invoice,INV-1,,200,Consulting,,"1,000.00"
+12 Jan 2026,3,Spend Money,,Domain renewal,400,Hosting,20.00,
+12 Jan 2026,3,Spend Money,,Domain renewal,,Main Checking,,20.00
