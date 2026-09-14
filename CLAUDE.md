@@ -44,6 +44,19 @@
   bill importers don't (spend/receive money, transfers, manual journals, conversion
   balances) and skips ACCREC/ACCPAY/payment journals unless told otherwise.
 
+## Bank feeds and statements
+- **SimpleFIN** (`SimpleFin::Client`, `SimpleFin::Sync`, nightly `SimpleFinSyncJob`): one `BankFeed` per
+  organisation holds the encrypted access URL and the provider's account list; each `BankAccount`
+  maps to a feed account by `feed_account_id`. Setup token → claim → access URL happens on the
+  Settings → Bank feed page. Never render the access URL.
+- **Statements** (`Imports::BankStatementService`) take a CSV or an array of row hashes; OFX/QFX
+  files go through `Imports::OfxParser` (SGML 1.x and XML 2.x). Lines with the bank's own id
+  (`external_id`) dedupe on it and adopt an earlier id-less CSV row; id-less rows dedupe on
+  the composite index. Bank rules (`BankRule`, `Reconciliation::ApplyRules`) run after every import.
+- **Reconcile** (`app/services/reconciliation/`): a `Payment` carries the `bank_transaction` it
+  settled and a line carries at most one `document`; `Allocate` splits, `Unmatch` undoes,
+  `Suggester` ranks, `Summary` compares ledger to statement balance.
+
 ## Xero migration toolkit (rake)
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
   `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs

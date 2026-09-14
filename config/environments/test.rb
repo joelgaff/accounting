@@ -8,6 +8,12 @@ Rails.application.configure do
   config.x.launchpad_base_url = "https://launchpad.example.com"
   config.x.jwt_cookie_domain  = ".example.com"
 
+  # Dummy Active Record encryption keys so encrypted columns (bank feed
+  # credentials) work without real secrets. Production keys live in credentials.
+  config.active_record.encryption.primary_key         = "test-primary-key-0123456789abcdef"
+  config.active_record.encryption.deterministic_key   = "test-deterministic-key-0123456789"
+  config.active_record.encryption.key_derivation_salt = "test-key-derivation-salt-01234567"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # While tests run files are not watched, reloading is not necessary.

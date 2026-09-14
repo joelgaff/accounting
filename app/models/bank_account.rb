@@ -12,6 +12,7 @@ class BankAccount < ApplicationRecord
 
   belongs_to :organization
   belongs_to :account, class_name: "Plutus::Account", autosave: true
+  belongs_to :bank_feed, optional: true
   has_many   :payments,          dependent: :restrict_with_error
   has_many   :expenses,          dependent: :restrict_with_error
   has_many   :deposits,          dependent: :restrict_with_error

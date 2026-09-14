@@ -1,0 +1,49 @@
+<header class="page-header">
+  <h1>Bank feed</h1>
+  <%= link_to "← Settings", settings_path, class: "btn btn-secondary" %>
+</header>
+
+<% if @feed.nil? %>
+  <div class="notice notice-info">
+    <p><strong>SimpleFIN</strong> pulls your bank and card transactions in every night. It costs about a dollar and a half a month and covers most US banks.</p>
+    <p>Sign up at <a href="https://bridge.simplefin.org/simplefin/create" target="_blank" rel="noopener">bridge.simplefin.org</a>, connect your banks there, then create a <strong>Setup Token</strong> and paste it here. The token can be used once; this app exchanges it for its own access credential and stores that encrypted.</p>
+  </div>
+  <%= form_with url: bank_feed_path, method: :post, class: "app-form" do |f| %>
+    <div class="field">
+      <%= f.label :setup_token, "SimpleFIN setup token" %>
+      <%= f.text_area :setup_token, rows: 4, required: true, autocomplete: "off", placeholder: "aHR0cHM6Ly9icmlkZ2Uuc2ltcGxlZmluLm9yZy9zaW1wbGVmaW4vY2xhaW0v..." %>
+    </div>
+    <div class="form-actions">
+      <%= f.submit "Connect", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+<% else %>
+  <%= render "bank_feeds/status", feed: @feed %>
+
+  <h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Accounts</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">Map each account SimpleFIN sees onto one of yours. Unmapped accounts are ignored on sync.</p>
+  <%= form_with url: bank_feed_path, method: :patch, class: "app-form app-form-wide" do |f| %>
+    <table class="data-table">
+      <thead><tr><th>At the bank</th><th class="num">Balance</th><th>Maps to</th></tr></thead>
+      <tbody>
+        <% @feed.accounts.each do |acct| %>
+          <% current = @feed.bank_accounts.find { |b| b.feed_account_id == acct["id"] } %>
+          <tr>
+            <td><%= acct["name"] %> <span class="muted" style="font-size:12px;"><%= acct["currency"] %></span></td>
+            <td class="num"><%= money(BigDecimal(acct["balance"].to_s.presence || "0")) %></td>
+            <td>
+              <%= select_tag "mapping[#{acct['id']}]",
+                    options_for_select([ [ "— not synced —", "" ], [ "Create a new bank account", "new" ] ] + @bank_accounts.map { |b| [ b.display_name, b.id ] }, current&.id),
+                    style: "width:100%;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <div class="form-actions">
+      <%= f.submit "Save mapping", class: "btn btn-primary" %>
+      <%= button_to "Disconnect", bank_feed_path, method: :delete, class: "btn btn-secondary",
+            form: { style: "display:inline", data: { turbo_confirm: "Disconnect the bank feed? Accounts and transactions stay; syncing stops." } } %>
+    </div>
+  <% end %>
+<% end %>

@@ -17,3 +17,7 @@ production:
     class: GenerateRecurringInvoicesJob
     queue: default
     schedule: every day at 6am UTC
+  simplefin_sync:
+    class: SimpleFinSyncJob
+    queue: default
+    schedule: every day at 4am UTC

@@ -1,0 +1,59 @@
+{
+  "errors": [],
+  "accounts": [
+    {
+      "org": {
+        "domain": "chase.com",
+        "name": "Chase"
+      },
+      "id": "ACT-checking-4821",
+      "name": "Business Checking 4821",
+      "currency": "USD",
+      "balance": "4321.55",
+      "available-balance": "4321.55",
+      "balance-date": 1789041600,
+      "transactions": [
+        {
+          "id": "TXN-1",
+          "posted": 1788350400,
+          "amount": "-8.00",
+          "description": "CLOUDFLARE INC",
+          "payee": "Cloudflare",
+          "memo": "POS PURCHASE"
+        },
+        {
+          "id": "TXN-2",
+          "posted": 1788609600,
+          "amount": "1250.00",
+          "description": "ACME WIDGETS DEPOSIT"
+        },
+        {
+          "id": "TXN-3",
+          "posted": 0,
+          "amount": "-12.00",
+          "description": "PENDING COFFEE",
+          "pending": true
+        }
+      ]
+    },
+    {
+      "org": {
+        "domain": "pnc.com",
+        "name": "PNC"
+      },
+      "id": "ACT-card-2068",
+      "name": "Cash Rewards Card 2068",
+      "currency": "USD",
+      "balance": "-1200.00",
+      "balance-date": 1789041600,
+      "transactions": [
+        {
+          "id": "TXN-9",
+          "posted": 1788436800,
+          "amount": "-42.50",
+          "description": "HETZNER ONLINE"
+        }
+      ]
+    }
+  ]
+}

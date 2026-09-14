@@ -42,7 +42,8 @@ class BooksReset
   def wipe_transactions
     Payment.where(organization: @org).delete_all
     BankTransaction.where(organization: @org).delete_all
-    BankAccount.where(organization: @org).update_all(statement_balance: nil, statement_balance_at: nil)
+    BankAccount.where(organization: @org).update_all(statement_balance: nil, statement_balance_at: nil, feed_synced_at: nil)
+    BankFeed.where(organization: @org).update_all(last_synced_at: nil, last_summary: nil)
 
     docs    = Document.where(organization: @org)
     doc_ids = docs.pluck(:id)
@@ -73,6 +74,8 @@ class BooksReset
 
     OrganizationSettings.where(organization: @org).delete_all
     BankRule.where(organization: @org).delete_all
+    BankAccount.where(organization: @org).update_all(bank_feed_id: nil, feed_account_id: nil, feed_name: nil, feed_synced_at: nil)
+    BankFeed.where(organization: @org).delete_all
     TaxRate.where(organization: @org).delete_all
     BankAccount.where(organization: @org).delete_all
     Plutus::Account.where(tenant_id: @org.id).delete_all

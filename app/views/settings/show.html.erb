@@ -38,3 +38,15 @@
     <%= f.submit "Save settings", class: "btn btn-primary" %>
   </div>
 <% end %>
+
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Bank feed</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">
+    <% if Current.organization.bank_feed %>
+      Connected via SimpleFIN<%= Current.organization.bank_feed.last_synced_at ? ", last synced #{time_ago_in_words(Current.organization.bank_feed.last_synced_at)} ago" : "" %>.
+    <% else %>
+      Pull transactions from your bank every night instead of uploading statements.
+    <% end %>
+  </p>
+  <%= link_to "Manage bank feed", bank_feed_path, class: "btn btn-secondary" %>
+</section>

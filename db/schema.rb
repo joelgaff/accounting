@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_040000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -42,7 +42,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
   create_table "bank_accounts", force: :cascade do |t|
     t.integer "account_id", null: false
     t.datetime "archived_at"
+    t.integer "bank_feed_id"
     t.datetime "created_at", null: false
+    t.string "feed_account_id"
+    t.string "feed_name"
+    t.datetime "feed_synced_at"
     t.string "institution"
     t.string "kind", default: "checking", null: false
     t.string "last_four"
@@ -51,7 +55,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
     t.datetime "statement_balance_at"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_bank_accounts_on_account_id", unique: true
+    t.index ["bank_feed_id", "feed_account_id"], name: "index_bank_accounts_on_bank_feed_id_and_feed_account_id", unique: true, where: "feed_account_id IS NOT NULL"
+    t.index ["bank_feed_id"], name: "index_bank_accounts_on_bank_feed_id"
     t.index ["organization_id"], name: "index_bank_accounts_on_organization_id"
+  end
+
+  create_table "bank_feeds", force: :cascade do |t|
+    t.text "access_url", null: false
+    t.json "accounts", default: [], null: false
+    t.datetime "created_at", null: false
+    t.text "last_error"
+    t.text "last_summary"
+    t.datetime "last_synced_at"
+    t.integer "organization_id", null: false
+    t.string "provider", default: "simplefin", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "provider"], name: "index_bank_feeds_on_organization_id_and_provider", unique: true
+    t.index ["organization_id"], name: "index_bank_feeds_on_organization_id"
   end
 
   create_table "bank_rules", force: :cascade do |t|
@@ -87,16 +107,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
     t.datetime "created_at", null: false
     t.text "description"
     t.integer "document_id"
+    t.string "external_id"
     t.integer "organization_id", null: false
     t.string "payee", default: "", null: false
     t.date "posted_on", null: false
     t.string "reference"
     t.string "status", default: "unmatched", null: false
     t.datetime "updated_at", null: false
+    t.index ["bank_account_id", "external_id"], name: "index_bank_transactions_on_bank_account_id_and_external_id", unique: true, where: "external_id IS NOT NULL"
     t.index ["bank_account_id"], name: "index_bank_transactions_on_bank_account_id"
     t.index ["bank_rule_id"], name: "index_bank_transactions_on_bank_rule_id"
     t.index ["document_id"], name: "index_bank_transactions_on_document_id"
-    t.index ["organization_id", "bank_account_id", "posted_on", "amount", "payee", "description"], name: "idx_bank_txns_dedupe", unique: true
+    t.index ["organization_id", "bank_account_id", "posted_on", "amount", "payee", "description"], name: "idx_bank_txns_dedupe", unique: true, where: "external_id IS NULL"
     t.index ["organization_id", "status"], name: "index_bank_transactions_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_bank_transactions_on_organization_id"
   end
@@ -351,8 +373,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "bank_accounts", "bank_feeds"
   add_foreign_key "bank_accounts", "organizations"
   add_foreign_key "bank_accounts", "plutus_accounts", column: "account_id"
+  add_foreign_key "bank_feeds", "organizations"
   add_foreign_key "bank_rules", "bank_accounts"
   add_foreign_key "bank_rules", "bank_accounts", column: "transfer_bank_account_id"
   add_foreign_key "bank_rules", "contacts"

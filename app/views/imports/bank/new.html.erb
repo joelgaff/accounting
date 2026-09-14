@@ -8,18 +8,19 @@
   </div>
 <% else %>
   <div class="notice notice-info">
-    <p>Upload a CSV with columns <code>Date</code>, <code>Amount</code>, and optionally <code>Description</code>, <code>Payee</code>, <code>Reference</code>. Xero's bank statement export (<code>*Date, *Amount, Payee, Description, Reference</code>) works as-is.</p>
+    <p>Upload an <strong>OFX or QFX</strong> download from your bank (Chase, PNC and most others offer one under statements or activity download), or a CSV with columns <code>Date</code>, <code>Amount</code>, and optionally <code>Description</code>, <code>Payee</code>, <code>Reference</code>. Xero's bank statement export works as-is.</p>
+    <p>An OFX/QFX file names its account, so the bank account is picked by its last four digits when you leave the selector on "detect". Lines carry the bank's own ids, so re-importing the same file never duplicates.</p>
     <p>Rows land as <strong>unmatched</strong> bank transactions. Match each to an invoice/expense, categorize inline, or ignore — the ledger post happens then, not at import.</p>
   </div>
 
   <%= form_with url: imports_bank_path, multipart: true, class: "app-form" do |f| %>
     <div class="field">
       <%= f.label :bank_account_id, "Bank account" %>
-      <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, prompt: "Select bank account" %>
+      <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, include_blank: "Detect from file (OFX/QFX only)" %>
     </div>
     <div class="field">
-      <%= f.label :file, "CSV file" %>
-      <%= f.file_field :file, accept: "text/csv,.csv" %>
+      <%= f.label :file, "Statement file (OFX, QFX or CSV)" %>
+      <%= f.file_field :file, accept: ".csv,.ofx,.qfx,text/csv,application/x-ofx" %>
     </div>
     <div class="form-actions">
       <%= f.submit "Import", class: "btn btn-primary" %>

@@ -7,6 +7,8 @@ class GenerateRecurringInvoicesJob < ApplicationJob
       org.recurring_invoices.due(as_of).find_each do |ri|
         ri.generate!(as_of: as_of)
       end
+    ensure
+      Current.reset
     end
   end
 end

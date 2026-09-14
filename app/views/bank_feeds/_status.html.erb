@@ -1,0 +1,15 @@
+<%= tag.div id: dom_id(feed, :status), class: "notice #{feed.last_error ? '' : 'notice-info'}" do %>
+  <% if flash.now[:alert] %><p><strong><%= flash.now[:alert] %></strong></p><% end %>
+  <% if flash.now[:notice] %><p><strong><%= flash.now[:notice] %></strong></p><% end %>
+  <p>
+    <% if feed.last_synced_at %>
+      Last synced <%= time_ago_in_words(feed.last_synced_at) %> ago
+      <% if (s = feed.summary) %>· <%= s["imported"] %> new, <%= s["duplicates"] %> already there<%= s["unmapped"].to_a.any? ? ", #{s['unmapped'].size} unmapped" : "" %><% end %>
+    <% else %>
+      Never synced yet.
+    <% end %>
+    <% if feed.last_error.present? %><br><span class="neg">Last error: <%= feed.last_error %></span><% end %>
+  </p>
+  <%= button_to "Sync now", sync_bank_feed_path, class: "btn btn-primary", form: { style: "display:inline" } %>
+  <span class="muted" style="font-size:12px;">Runs on its own every night.</span>
+<% end %>

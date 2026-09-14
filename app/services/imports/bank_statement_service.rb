@@ -1,8 +1,10 @@
 module Imports
-  # Parses a bank statement CSV (plain shape or Xero's export) and creates
-  # BankTransaction records in the `unmatched` state, keeping payee apart from
-  # the description. Ledger posting waits until each line is reconciled; bank
-  # rules run over the new lines as a last step.
+  # Creates unmatched BankTransaction rows from a statement: a CSV (plain
+  # shape or Xero's export) or an array of row hashes from a feed or an OFX
+  # file. Lines with the bank's own id dedupe on it and adopt an earlier
+  # id-less CSV row for the same line; id-less rows dedupe on their shape.
+  # Ledger posting waits until each line is reconciled; bank rules run over
+  # the new lines as a last step.
   class BankStatementService < BaseService
     LegacyResult = Struct.new(:imported, :duplicates, :errors, :rules_applied, :rules_suggested, keyword_init: true)
 
@@ -15,37 +17,21 @@ module Imports
     end
 
     def call
-      imported   = 0
-      duplicates = 0
-      errors     = []
-      created    = []
+      rows = @source.is_a?(Array) ? @source : csv_rows
+      return rows if rows.is_a?(LegacyResult)   # header problem
 
-      rows    = self.class.csv(@source)
-      missing = REQUIRED - rows.headers.compact
-      return LegacyResult.new(imported: 0, duplicates: 0, rules_applied: 0, rules_suggested: 0,
-                              errors: [ "Missing required columns: #{missing.map(&:capitalize).join(", ")}" ]) if missing.any?
+      imported = duplicates = 0
+      errors   = []
+      created  = []
 
       rows.each.with_index(2) do |row, line|
+        row = row.to_h.symbolize_keys
         begin
-          date        = BaseService.parse_xero_date(row["date"])
-          payee       = row["payee"].to_s.strip
-          description = row["description"].to_s.strip.presence || payee.presence || "(no description)"
-          amount      = BigDecimal(row["amount"].to_s.strip)
-          reference   = row["reference"].to_s.strip.presence
-
-          txn = @organization.bank_transactions.build(
-            bank_account: @bank_account, posted_on: date, payee: payee,
-            description: description, amount: amount, reference: reference,
-            status: "unmatched"
-          )
-          if txn.save
-            imported += 1
-            created << txn
-          elsif @organization.bank_transactions.exists?(bank_account: @bank_account, posted_on: date, payee: payee,
-                                                        description: description, amount: amount)
-            duplicates += 1
-          else
-            errors << "row #{line}: #{txn.errors.full_messages.join(', ')}"
+          outcome = import_row(row)
+          case outcome
+          when BankTransaction then imported += 1; created << outcome
+          when :duplicate      then duplicates += 1
+          else                      errors << "row #{line}: #{outcome}"
           end
         rescue ActiveRecord::RecordNotUnique
           duplicates += 1
@@ -57,6 +43,46 @@ module Imports
       rules = Reconciliation::ApplyRules.new(@organization, created).call
       LegacyResult.new(imported: imported, duplicates: duplicates, errors: errors,
                        rules_applied: rules.applied, rules_suggested: rules.suggested)
+    end
+
+    private
+
+    def csv_rows
+      table   = self.class.csv(@source)
+      missing = REQUIRED - table.headers.compact
+      if missing.any?
+        return LegacyResult.new(imported: 0, duplicates: 0, rules_applied: 0, rules_suggested: 0,
+                                errors: [ "Missing required columns: #{missing.map(&:capitalize).join(", ")}" ])
+      end
+      table.map do |row|
+        payee = row["payee"].to_s.strip
+        { posted_on: BaseService.parse_xero_date(row["date"]), amount: BigDecimal(row["amount"].to_s.strip),
+          payee: payee, description: row["description"].to_s.strip.presence || payee.presence,
+          reference: row["reference"].to_s.strip.presence, external_id: row["externalid"].to_s.strip.presence }
+      end
+    end
+
+    def import_row(row)
+      posted_on   = row[:posted_on] || row[:date]
+      payee       = row[:payee].to_s.strip
+      description = row[:description].to_s.strip.presence || payee.presence || "(no description)"
+      amount      = BigDecimal(row[:amount].to_s)
+      external_id = row[:external_id].to_s.strip.presence
+      scope       = @organization.bank_transactions.where(bank_account: @bank_account)
+
+      if external_id
+        return :duplicate if scope.exists?(external_id: external_id)
+        if (orphan = scope.find_by(external_id: nil, posted_on: posted_on, amount: amount, description: description))
+          orphan.update!(external_id: external_id, payee: payee.presence || orphan.payee)
+          return :duplicate
+        end
+      elsif scope.exists?(external_id: nil, posted_on: posted_on, amount: amount, payee: payee, description: description)
+        return :duplicate
+      end
+
+      txn = scope.build(organization: @organization, posted_on: posted_on, payee: payee, description: description,
+                        amount: amount, reference: row[:reference].presence, external_id: external_id, status: "unmatched")
+      txn.save ? txn : txn.errors.full_messages.join(", ")
     end
   end
 end

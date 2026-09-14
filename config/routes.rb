@@ -65,6 +65,9 @@ Rails.application.routes.draw do
   end
 
   resource  :settings, only: %i[show update]
+  resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
+    post :sync
+  end
   resources :tax_rates
 
   get "reports" => "reports#index", as: :reports

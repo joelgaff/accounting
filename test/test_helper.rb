@@ -37,6 +37,22 @@ module DocumentBuilders
   end
 end
 
+module MethodStubbing
+  # Replace obj.name with the given proc for the duration of the block.
+  # Minitest 6 no longer bundles minitest/mock; this is the one thing we used.
+  def stub_method(obj, name, replacement)
+    singleton = obj.singleton_class
+    saved     = :"__stubbed_#{name}"
+    singleton.alias_method(saved, name)
+    singleton.define_method(name) { |*args, **kwargs, &blk| replacement.call(*args, **kwargs, &blk) }
+    yield
+  ensure
+    singleton.remove_method(name)
+    singleton.alias_method(name, saved)
+    singleton.remove_method(saved)
+  end
+end
+
 module LaunchpadSession
   # Forge the Launchpad JWT cookie for the app's single organisation.
   def sign_in_as_launchpad_user(org, email: "joel@example.com", name: "Joel")
@@ -56,6 +72,7 @@ module ActiveSupport
     fixtures :all
 
     include DocumentBuilders
+    include MethodStubbing
   end
 end
 
