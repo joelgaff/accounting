@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   end
   resources :payments, only: :destroy
   resources :accounts, only: %i[index]
-  resources :bank_accounts, except: %i[show destroy] do
+  resources :bank_accounts, except: :destroy do
     member do
       post :archive
       post :restore

@@ -1,0 +1,103 @@
+<% bank = @bank_account %>
+<header class="page-header">
+  <div>
+    <h1><%= bank.name %></h1>
+    <div class="muted" style="font-size:12px;margin-top:4px;">
+      <%= bank.kind_label %><%= " · #{bank.institution}" if bank.institution.present? %><%= " · •••• #{bank.last_four}" if bank.last_four.present? %><%= " · code #{bank.code}" if bank.code.present? %>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <%= link_to "Reconcile#{" (#{@unmatched_lines})" if @unmatched_lines.positive?}", bank_transactions_path(bank_account_id: bank.id, status: "unmatched"), class: "btn #{@unmatched_lines.positive? ? 'btn-primary' : 'btn-secondary'}" %>
+    <%= link_to "Statement lines", bank_transactions_path(bank_account_id: bank.id, status: "all"), class: "btn btn-secondary" %>
+    <%= link_to "Import", new_imports_bank_path, class: "btn btn-secondary" %>
+    <%= link_to "Edit", edit_bank_account_path(bank), class: "btn btn-secondary" %>
+    <%= link_to "← All banks", bank_accounts_path, class: "btn btn-secondary" %>
+  </div>
+</header>
+
+<div class="kpi-grid" style="margin-bottom:20px;">
+  <article class="kpi-card">
+    <div class="kpi-label">Balance in the books</div>
+    <div class="kpi-value"><%= money(bank.balance) %><% if bank.credit_card? %> <span class="muted" style="font-size:12px;">owed</span><% end %></div>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">Statement balance</div>
+    <div class="kpi-value"><%= bank.statement_balance ? money(bank.statement_balance) : "—" %></div>
+    <% if bank.statement_balance_at %><div class="muted" style="font-size:11px;">as of <%= bank.statement_balance_at.to_date.iso8601 %></div><% end %>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">Unreconciled in this view</div>
+    <div class="kpi-value"><%= @activity.unreconciled %></div>
+  </article>
+  <article class="kpi-card">
+    <div class="kpi-label">Statement lines to reconcile</div>
+    <div class="kpi-value"><%= @unmatched_lines %></div>
+  </article>
+</div>
+
+<%= form_with url: bank_account_path(bank), method: :get, class: "app-form filter-bar" do |f| %>
+  <div class="field" style="margin:0;">
+    <%= f.label :from, "From" %>
+    <%= f.date_field :from, value: @from %>
+  </div>
+  <div class="field" style="margin:0;">
+    <%= f.label :to, "To" %>
+    <%= f.date_field :to, value: @to %>
+  </div>
+  <%= f.submit "Show", class: "btn btn-primary" %>
+  <%= link_to "All time", bank_account_path(bank, from: "", to: ""), class: "btn btn-secondary" %>
+<% end %>
+
+<p class="muted" style="margin:0 0 12px;font-size:13px;">
+  Opening balance <strong><%= money(@activity.opening_balance) %></strong> ·
+  received <strong><%= money(@activity.total_received) %></strong> ·
+  spent <strong><%= money(@activity.total_spent) %></strong> ·
+  closing balance <strong><%= money(@activity.closing_balance) %></strong>
+</p>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Who / what</th>
+      <th>Reference</th>
+      <th class="num">Spent</th>
+      <th class="num">Received</th>
+      <th class="num">Balance</th>
+      <th>Reconciled</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @activity.rows.reverse_each do |row| %>
+      <tr>
+        <td><%= row.date.iso8601 %></td>
+        <td class="muted"><%= row.kind %></td>
+        <td>
+          <% if row.document %>
+            <%= link_to row.party, document_path_for(row.document) %>
+            <% if row.document.voided? %><%= status_badge("voided") %><% end %>
+          <% else %>
+            <%= row.party %>
+          <% end %>
+        </td>
+        <td class="muted"><%= row.reference %></td>
+        <td class="num"><%= row.spent?    ? money(row.spent)    : "" %></td>
+        <td class="num"><%= row.received? ? money(row.received) : "" %></td>
+        <td class="num"><%= money(row.balance) %></td>
+        <td>
+          <% if row.reconciled == true %>
+            <span class="badge badge-paid">reconciled</span>
+          <% elsif row.reconciled == false %>
+            <span class="badge badge-open">unreconciled</span>
+          <% else %>
+            <span class="muted">—</span>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+    <% if @activity.rows.empty? %>
+      <tr><td colspan="8" class="muted" style="text-align:center;">Nothing on this account in this window.</td></tr>
+    <% end %>
+  </tbody>
+</table>

@@ -50,3 +50,27 @@ class BankAccountsControllerTest < ActionDispatch::IntegrationTest
     assert_not bank.reload.archived?
   end
 end
+
+class BankAccountShowTest < ActionDispatch::IntegrationTest
+  setup do
+    @org = organizations(:one)
+    sign_in_as_launchpad_user(@org)
+    @bank    = create_bank_account(@org, name: "Checking")
+    @hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
+  end
+
+  test "shows the account's transactions with links to each document" do
+    exp = create_expense(@org, vendor: "DigitalOcean", amount: 30, category: @hosting, bank_account: @bank)
+    get bank_account_path(@bank)
+    assert_response :success
+    assert_select "h1", text: "Checking"
+    assert_select "a[href=?]", expense_path(exp), text: "DigitalOcean"
+    assert_select "td", text: "$30.00"
+    assert_select "span.badge", text: "unreconciled"
+
+    get bank_account_path(@bank, from: Date.current + 1)
+    assert_select "td", text: /Nothing on this account/
+    get bank_account_path(@bank, from: "", to: "")
+    assert_select "a[href=?]", expense_path(exp)
+  end
+end
