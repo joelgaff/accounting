@@ -59,10 +59,11 @@ class BankAccountActivity
     end.sort_by { |entry, _, _| [ entry.date || entry.created_at.to_date, entry.id ] }
   end
 
-  # One word; the Spent and Received columns already say which way money went.
+  # One word naming the document behind the movement: a payment is labelled
+  # by what it settled (Invoice or Bill), which also tells AR from AP.
   def kind_of(record)
     case record
-    when Payment  then "Payment"
+    when Payment  then record.document.documentable.model_name.human
     when Document then record.journal_entry? ? "Journal" : record.documentable.model_name.human
     else "Entry"
     end

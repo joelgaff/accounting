@@ -22,7 +22,7 @@ class BankAccountActivityTest < ActiveSupport::TestCase
 
     a = BankAccountActivity.new(@bank, from: Date.new(2026, 1, 1))
     assert_equal BigDecimal("1000"), a.opening_balance
-    assert_equal [ "Payment", "Expense", "Transfer" ], a.rows.map(&:kind)
+    assert_equal [ "Invoice", "Expense", "Transfer" ], a.rows.map(&:kind)
     assert_equal [ 500, 0, 0 ].map { BigDecimal(_1) }, a.rows.map(&:received)
     assert_equal [ 0, 30, 100 ].map { BigDecimal(_1) }, a.rows.map(&:spent)
     assert_equal [ 1500, 1470, 1370 ].map { BigDecimal(_1) }, a.rows.map(&:balance)
