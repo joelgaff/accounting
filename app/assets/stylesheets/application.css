@@ -145,7 +145,8 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   color: var(--ink-bright);
   font-size: 13px;
 }
-.tb-mark { color: var(--cyan); letter-spacing: 0; font-size: 14px; }
+.tb-mark { color: var(--cyan); letter-spacing: 0; display: inline-flex; align-self: center; }
+.logo-mark { display: block; }
 .tb-version { font-weight: 400; letter-spacing: 0.04em; color: var(--dimmer); font-size: 11px; }
 .tb-tagline {
   flex: 1;

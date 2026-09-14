@@ -1,0 +1,11 @@
+<%# The [·] mark as inline SVG so it matches the favicon exactly, at any size.
+    Locals: size (px, default 16), boxed (draw the dark rounded square, default false) %>
+<% size = local_assigns.fetch(:size, 16); boxed = local_assigns.fetch(:boxed, false) %>
+<svg class="logo-mark" viewBox="0 0 512 512" width="<%= size %>" height="<%= size %>" aria-hidden="true" focusable="false">
+  <% if boxed %><rect width="512" height="512" rx="104" fill="#0c1424"/><% end %>
+  <g fill="none" stroke="currentColor" stroke-width="<%= boxed ? 36 : 44 %>" stroke-linecap="square">
+    <path d="M176 126 H126 V386 H176"/>
+    <path d="M336 126 H386 V386 H336"/>
+  </g>
+  <circle cx="256" cy="256" r="<%= boxed ? 38 : 44 %>" fill="currentColor"/>
+</svg>

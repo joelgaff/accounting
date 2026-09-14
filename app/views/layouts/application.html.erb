@@ -10,9 +10,9 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
       <div class="app-shell">
         <header class="app-titlebar">
           <div class="tb-brand">
-            <span class="tb-mark">[·]</span>LEDGER<span class="tb-version">v0.1</span>
+            <span class="tb-mark"><%= render "shared/logo_mark", size: 18 %></span>LEDGER<span class="tb-version">v0.1</span>
           </div>
           <div class="tb-tagline">Double-entry bookkeeping <em>//</em> Every line balanced.</div>
           <div class="tb-session">
@@ -62,7 +62,7 @@
             </div>
 
             <div class="nav-footer">
-              <span class="mark">[·]</span>
+              <span class="mark"><%= render "shared/logo_mark", size: 14 %></span>
               <span>
                 <strong>LEDGER</strong>
                 Books for <%= Current.organization.name %>
