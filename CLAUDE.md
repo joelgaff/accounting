@@ -69,6 +69,9 @@
   to `.lvh.me`, so `localhost` never signs in (a dev-only middleware redirects it for you).
 - Override the hub checkout with `LAUNCHPAD_DIR=/path bin/dev`.
 
+## Backlog
+Open work lives in `BACKLOG.md`. Add to it rather than to this file.
+
 ## Deferred until actually needed
 - Multi-tenant membership/roles/switching (single-tenant now; structure is ready).
 - Stripe billing (add when the app monetizes).

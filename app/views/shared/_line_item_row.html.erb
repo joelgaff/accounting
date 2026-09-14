@@ -1,7 +1,7 @@
 <tr data-line-items-target="row">
   <td><%= li_form.text_field :description, placeholder: "Description", style: "width:100%;" %></td>
   <td class="num"><%= li_form.number_field :quantity, step: 0.0001, min: 0, value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
-  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
+  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
   <td><%= li_form.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, {}, { style: "width:100%;" } %></td>
   <% if tax_rates.any? %>
     <td>

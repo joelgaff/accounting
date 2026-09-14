@@ -16,6 +16,7 @@ class DocumentsController < ApplicationController
 
   def new
     @document = build_document
+    @document.line_items.build if @document.documentable.line_items? && @document.line_items.empty?
   end
 
   def create
@@ -25,6 +26,7 @@ class DocumentsController < ApplicationController
       redirect_to after_create_path, notice: created_notice
     else
       after_failed_create
+      @document.line_items.build if @document.documentable.line_items? && @document.live_line_items.empty?
       render :new, status: :unprocessable_entity
     end
   end
