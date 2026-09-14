@@ -11,6 +11,7 @@
     <%= f.label :subject %>
     <%= f.text_field :subject, value: "Invoice ##{@document.id} from #{@document.organization.name}" %>
   </div>
+  <p class="muted" style="font-size:13px;margin:0 0 16px;">The invoice is attached as a PDF (<%= link_to InvoicePdf.filename(@document), print_invoice_path(@document, format: :pdf), target: "_blank" %>) and summarised in the body.</p>
   <div class="field">
     <%= f.label :body, "Personal note (optional)" %>
     <%= f.text_area :body, rows: 5, placeholder: "Thanks for your business…" %>

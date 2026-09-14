@@ -32,7 +32,8 @@
 
 <% invoice = @document.invoice %>
 <div class="print-hide" style="margin-bottom:16px;">
-  <button onclick="window.print()" class="btn btn-primary">Print / Save as PDF</button>
+  <%= link_to "Download PDF", print_invoice_path(@document, format: :pdf), class: "btn btn-primary" %>
+  <button onclick="window.print()" class="btn btn-secondary">Print</button>
   <%= link_to "Email to customer", email_invoice_path(@document), class: "btn btn-secondary" %>
   <%= link_to "← Back", invoice_path(@document), class: "btn btn-secondary" %>
 </div>

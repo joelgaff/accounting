@@ -83,3 +83,6 @@ gem "csv"
 
 # JWT validation for Launchpad SSO (shared secret, HS256).
 gem "jwt", "~> 3.2"
+
+gem "prawn", "~> 2.4"
+gem "prawn-table", "~> 0.2.2"
