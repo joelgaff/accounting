@@ -11,6 +11,7 @@
           >
   <legend>Line items</legend>
 
+  <div class="sheet-scroll">
   <table class="data-table sheet">
     <thead>
       <tr>
@@ -47,6 +48,7 @@
       </tr>
     </tfoot>
   </table>
+  </div>
 
   <template data-line-items-target="template">
     <%= form.fields_for :line_items, LineItem.new, child_index: "NEW_RECORD" do |li_form| %>

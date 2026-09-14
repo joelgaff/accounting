@@ -1,7 +1,7 @@
 <tr data-line-items-target="row">
   <td><%= li_form.text_field :description, placeholder: "Description", style: "width:100%;" %></td>
-  <td class="num"><%= li_form.number_field :quantity, step: 0.0001, min: 0, value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
-  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
+  <td class="num"><%= li_form.number_field :quantity, step: 0.0001, min: 0, inputmode: "decimal", value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
+  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
   <td><%= li_form.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, {}, { style: "width:100%;" } %></td>
   <% if tax_rates.any? %>
     <td>
@@ -11,7 +11,7 @@
   <% tracking_categories.each do |c| %>
     <td><%= select_tag "#{li_form.object_name}[tracking_option_ids][]", options_for_select([ [ "—", "" ] ] + c.active_options.map { |o| [ o.name, o.id ] }, li_form.object.tracking_option_for(c)&.id), style: "width:100%;", "aria-label": c.name %></td>
   <% end %>
-  <td class="num" data-line-items-target="rowTotal">$0.00</td>
+  <td class="num"><%= number_field_tag nil, nil, id: nil, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", "aria-label": "Amount", data: { action: "input->line-items#amountChanged", line_items_target: "amount" } %></td>
   <td>
     <%= li_form.hidden_field :_destroy, data: { line_items_target: "destroy" } %>
     <button type="button" class="btn btn-secondary" data-action="line-items#remove" style="padding:2px 8px;">×</button>

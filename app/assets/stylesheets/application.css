@@ -528,7 +528,13 @@ textarea { resize: vertical; min-height: 60px; }
   color: var(--dim);
 }
 
+.sheet-scroll { overflow-x: auto; max-width: 100%; }
 .data-table.sheet { margin-bottom: 8px; table-layout: auto; }
+/* Cells that hold only a control have no intrinsic width; without a floor the
+   numeric columns collapse to nothing once the table is squeezed. */
+.data-table.sheet td > input[type="number"] { min-width: 88px; }
+.data-table.sheet td > input[type="text"]   { min-width: 160px; }
+.data-table.sheet td > select               { min-width: 140px; }
 .data-table.sheet td { padding: 0; }
 .data-table.sheet td.num { padding: 0; }
 .data-table.sheet td > input,
@@ -550,7 +556,6 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .data-table.sheet td.num > input { text-align: right; }
 .data-table.sheet td > select { padding-right: 6px; }
-.data-table.sheet td[data-line-items-target="rowTotal"],
 .data-table.sheet td[data-journal-lines-target] { padding: 8px 12px; }
 .data-table.sheet td > .btn { padding: 2px 8px; margin: 0 8px; }
 /* Chrome draws number spinners in a light box; the sheet has its own rhythm. */
@@ -745,6 +750,14 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
      squeezing columns into unreadable stacks. */
   .data-table { display: block; overflow-x: auto; white-space: nowrap; }
   .data-table thead, .data-table tbody, .data-table tfoot { display: table; width: 100%; }
+  /* Sheets stay real tables (so header and body columns line up) inside their
+     own scroll box, and their controls are big enough to hit and read without
+     iOS zooming in on focus. */
+  .data-table.sheet { display: table; min-width: 100%; white-space: nowrap; }
+  .data-table.sheet thead, .data-table.sheet tbody, .data-table.sheet tfoot { display: table-header-group; width: auto; }
+  .data-table.sheet tbody { display: table-row-group; }
+  .data-table.sheet tfoot { display: table-footer-group; }
+  .data-table.sheet td > input, .data-table.sheet td > select { font-size: 16px; padding: 10px 10px; }
   .app-form-wide, .app-form { max-width: none; }
   .page-header { align-items: flex-start; }
 }
