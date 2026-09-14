@@ -59,7 +59,7 @@
   <thead>
     <tr>
       <th>Date</th>
-      <th>Type</th>
+      <th style="width:70px;">Type</th>
       <th>Who / what</th>
       <th>Reference</th>
       <th class="num">Spent</th>
@@ -72,7 +72,7 @@
     <% @activity.rows.reverse_each do |row| %>
       <tr>
         <td><%= row.date.iso8601 %></td>
-        <td class="muted"><%= row.kind %></td>
+        <td class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;"><%= row.kind %></td>
         <td>
           <% if row.document %>
             <%= link_to row.party, document_path_for(row.document) %>

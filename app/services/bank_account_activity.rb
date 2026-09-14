@@ -59,11 +59,12 @@ class BankAccountActivity
     end.sort_by { |entry, _, _| [ entry.date || entry.created_at.to_date, entry.id ] }
   end
 
+  # One word; the Spent and Received columns already say which way money went.
   def kind_of(record)
     case record
-    when Payment  then record.direction == :received ? "Payment received" : "Payment made"
-    when Document then record.documentable.model_name.human
-    else "Ledger entry"
+    when Payment  then "Payment"
+    when Document then record.journal_entry? ? "Journal" : record.documentable.model_name.human
+    else "Entry"
     end
   end
 
