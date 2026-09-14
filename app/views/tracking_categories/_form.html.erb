@@ -1,0 +1,37 @@
+<%= form_with model: category, class: "app-form" do |f| %>
+  <% if category.errors.any? %>
+    <div class="form-errors"><ul><% category.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul></div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name, "Category name" %>
+    <%= f.text_field :name, placeholder: "Event Year", autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.check_box :active %>
+    <%= f.label :active, "Active (shown on every line sheet)", style: "display:inline;" %>
+  </div>
+
+  <fieldset style="border:0;padding:0;margin:0 0 16px;">
+    <legend style="font-weight:600;font-size:13px;margin-bottom:8px;">Options</legend>
+    <table class="data-table sheet" style="max-width:520px;">
+      <thead><tr><th>Name</th><th style="width:80px;">Active</th><th style="width:90px;">Remove</th></tr></thead>
+      <tbody>
+        <%= f.fields_for :options do |of| %>
+          <tr>
+            <td><%= of.text_field :name, placeholder: "2026" %></td>
+            <td style="padding:8px 12px;"><%= of.check_box :active, {}, "1", "0" %></td>
+            <td style="padding:8px 12px;"><% if of.object.persisted? %><%= of.check_box :_destroy %><% end %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <p class="muted" style="font-size:12px;margin:6px 0 0;">Save to get more empty rows.</p>
+  </fieldset>
+
+  <div class="form-actions">
+    <%= f.submit (category.new_record? ? "Add category" : "Save category"), class: "btn btn-primary" %>
+    <%= link_to "Cancel", tracking_categories_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

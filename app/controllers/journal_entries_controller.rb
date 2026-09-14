@@ -8,7 +8,7 @@ class JournalEntriesController < DocumentsController
 
   def documentable_class = JournalEntry
   def documentable_permitted
-    [ :narrative, { lines_attributes: %i[id account_id debit_amount credit_amount memo _destroy] } ]
+    [ :narrative, { lines_attributes: [ :id, :account_id, :debit_amount, :credit_amount, :memo, :_destroy, { tracking_option_ids: [] } ] } ]
   end
   def created_notice = "Journal entry posted."
 

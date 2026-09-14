@@ -17,19 +17,7 @@
   <% end %>
 </div>
 
-<h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Lines</h2>
-<table class="data-table">
-  <thead><tr><th>Description</th><th>Account</th><th class="num">Amount</th></tr></thead>
-  <tbody>
-    <% @document.line_items.each do |li| %>
-      <tr>
-        <td><%= li.description.presence || li.account.name %></td>
-        <td><%= li.account.name %></td>
-        <td class="num"><%= money(li.amount) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<%= render "documents/line_items", document: @document %>
 
 <%= render "documents/attachments", document: @document %>
 

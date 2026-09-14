@@ -2,6 +2,8 @@
 # plus what to create for it. Rules suggest by default; auto_apply lets a
 # trusted rule categorize straight from an import.
 class BankRule < ApplicationRecord
+  include Trackable
+
   MATCH_KINDS  = %w[contains starts_with regex].freeze
   AMOUNT_SIGNS = %w[any in out].freeze
   ACTIONS      = %w[Expense Deposit Transfer].freeze
@@ -59,7 +61,8 @@ class BankRule < ApplicationRecord
     if action_kind == "Transfer"
       Reconciliation::CreateTransfer.new(txn, other_bank_account: transfer_bank_account, source: source).call
     else
-      Reconciliation::Categorize.new(txn, account: account, tax_rate: tax_rate, contact_name: contact&.name, source: source).call
+      Reconciliation::Categorize.new(txn, account: account, tax_rate: tax_rate, contact_name: contact&.name,
+                                     tracking_option_ids: tracking_option_ids, source: source).call
     end
   end
 

@@ -40,6 +40,15 @@
 <% end %>
 
 <section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Tracking categories</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">
+    <% cats = Current.organization.tracking_categories.ordered.includes(:options) %>
+    <%= cats.any? ? cats.map { |c| "#{c.name} (#{c.options.size} options)" }.to_sentence : "Slice the books by event year, business line, or anything else, one option per line." %>
+  </p>
+  <%= link_to "Manage tracking categories", tracking_categories_path, class: "btn btn-secondary" %>
+</section>
+
+<section style="margin-top:32px;">
   <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Bank feed</h2>
   <p class="muted" style="font-size:13px;margin:0 0 12px;">
     <% if Current.organization.bank_feed %>

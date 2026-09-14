@@ -26,7 +26,8 @@ module Reconciliation
           Categorize.new(@txn,
             account:      org.plutus_accounts.find(@remainder[:account_id]),
             tax_rate:     @remainder[:tax_rate_id].present? ? org.tax_rates.find(@remainder[:tax_rate_id]) : nil,
-            contact_name: @remainder[:contact_name]).call
+            contact_name: @remainder[:contact_name],
+            tracking_option_ids: @remainder[:tracking_option_ids]).call
         end
         @txn.reload.refresh_status!
       end

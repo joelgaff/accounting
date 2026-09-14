@@ -28,6 +28,7 @@
           <tr>
             <th>Account</th>
             <th>Memo</th>
+            <% tracking_categories.each do |c| %><th style="width:130px;"><%= c.name %></th><% end %>
             <th class="num" style="width:120px;">Debit</th>
             <th class="num" style="width:120px;">Credit</th>
             <th style="width:40px;"></th>
@@ -40,13 +41,13 @@
         </tbody>
         <tfoot>
           <tr class="subtotal">
-            <td colspan="2" style="text-align:right;">Totals</td>
+            <td colspan="<%= 2 + tracking_categories.size %>" style="text-align:right;">Totals</td>
             <td class="num" data-journal-lines-target="debitTotal">$0.00</td>
             <td class="num" data-journal-lines-target="creditTotal">$0.00</td>
             <td></td>
           </tr>
           <tr>
-            <td colspan="2" style="text-align:right;" class="muted">Difference</td>
+            <td colspan="<%= 2 + tracking_categories.size %>" style="text-align:right;" class="muted">Difference</td>
             <td class="num" colspan="2" data-journal-lines-target="difference">$0.00</td>
             <td></td>
           </tr>

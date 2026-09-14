@@ -74,6 +74,6 @@ class BankRulesController < ApplicationController
 
   def rule_params
     params.require(:bank_rule).permit(:name, :match_kind, :pattern, :amount_sign, :bank_account_id, :action_kind,
-                                      :contact_id, :tax_rate_id, :transfer_bank_account_id, :auto_apply, :active)
+                                      :contact_id, :tax_rate_id, :transfer_bank_account_id, :auto_apply, :active, tracking_option_ids: [])
   end
 end

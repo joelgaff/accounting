@@ -65,6 +65,7 @@ Rails.application.routes.draw do
   end
 
   resource  :settings, only: %i[show update]
+  resources :tracking_categories, except: :show, path: "settings/tracking_categories"
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
     post :sync
   end
@@ -73,6 +74,7 @@ Rails.application.routes.draw do
   get "reports" => "reports#index", as: :reports
   namespace :reports do
     resource :profit_and_loss,             only: :show
+    resource :profit_and_loss_by_tracking, only: :show
     resource :balance_sheet,               only: :show
     resource :trial_balance,               only: :show
     resource :general_ledger,              only: :show

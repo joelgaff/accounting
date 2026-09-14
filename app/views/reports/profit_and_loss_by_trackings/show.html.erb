@@ -1,0 +1,66 @@
+<header class="page-header">
+  <h1>Profit &amp; Loss by <%= @category&.name || "tracking" %></h1>
+  <span class="muted"><%= @from.strftime("%b %-d, %Y") %> — <%= @to.strftime("%b %-d, %Y") %></span>
+</header>
+
+<% if @category.nil? %>
+  <p class="empty-state">No tracking categories yet. <%= link_to "Add one under Settings", tracking_categories_path %>.</p>
+<% else %>
+  <%= form_with url: reports_profit_and_loss_by_tracking_path, method: :get, class: "app-form filter-bar" do |f| %>
+    <div class="field" style="margin:0;">
+      <%= f.label :tracking_category_id, "Category" %>
+      <%= f.select :tracking_category_id, @categories.map { |c| [ c.name, c.id ] }, selected: @category.id %>
+    </div>
+    <div class="field" style="margin:0;"><%= f.label :from, "From" %><%= f.date_field :from, value: @from %></div>
+    <div class="field" style="margin:0;"><%= f.label :to, "To" %><%= f.date_field :to, value: @to %></div>
+    <%= f.submit "Run", class: "btn btn-primary" %>
+  <% end %>
+
+  <% columns = @report.columns %>
+  <% label = ->(c) { c == Reports::ProfitAndLossByTracking::UNASSIGNED ? "Unassigned" : c.name } %>
+  <% [ [ "Revenue", @report.revenue_rows ], [ "Expenses", @report.expense_rows ] ].each do |title, rows| %>
+    <section class="account-group">
+      <h2><%= title %></h2>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr><th style="width:70px;">Code</th><th>Account</th><% columns.each do |c| %><th class="num"><%= label.(c) %></th><% end %><th class="num">Total</th></tr>
+          </thead>
+          <tbody>
+            <% rows.each do |row| %>
+              <tr>
+                <td><%= row.account.code %></td>
+                <td><%= row.account.name %></td>
+                <% columns.each do |c| %><td class="num"><%= row.by_option[c] ? money(row.by_option[c]) : "" %></td><% end %>
+                <td class="num"><%= money(row.total) %></td>
+              </tr>
+            <% end %>
+            <tr class="subtotal">
+              <td></td><td>Total <%= title.downcase %></td>
+              <% columns.each do |c| %><td class="num"><%= money(@report.column_total(rows, c)) %></td><% end %>
+              <td class="num"><%= money(rows.sum(&:total)) %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% end %>
+
+  <section class="account-group">
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <tbody>
+          <tr class="grand-total">
+            <td style="width:70px;"></td><td>Net income</td>
+            <% columns.each do |c| %><td class="num"><%= money(@report.net_income(c)) %></td><% end %>
+            <td class="num"><%= money(@report.total_revenue - @report.total_expenses) %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:8px;">
+      Built from document and journal lines, which is where tracking lives. Ledger net income for the same period:
+      <%= money(@report.ledger_net_income) %>.
+    </p>
+  </section>
+<% end %>

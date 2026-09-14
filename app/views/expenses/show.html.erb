@@ -18,6 +18,7 @@
   <% end %>
 </div>
 
+<%= render "documents/line_items", document: @document %>
 <%= render "documents/attachments", document: @document, title: "Receipts" %>
 
 <p style="margin-top:24px;"><%= link_to "← Back to expenses", expenses_path %></p>

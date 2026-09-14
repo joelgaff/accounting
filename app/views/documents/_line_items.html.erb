@@ -1,0 +1,37 @@
+<%# Read-only lines for a show page, with tracking. %>
+<% cats = tracking_categories %>
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;"><%= local_assigns.fetch(:title, "Lines") %></h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th>Account</th>
+        <% cats.each do |c| %><th><%= c.name %></th><% end %>
+        <th class="num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% document.line_items.each do |li| %>
+        <tr>
+          <td><%= li.description.presence || li.account.name %></td>
+          <td class="num"><%= li.quantity.to_d.frac.zero? ? li.quantity.to_i : li.quantity %></td>
+          <td class="num"><%= money(li.unit_amount) %></td>
+          <td><%= li.account.name %></td>
+          <% cats.each do |c| %><td class="muted"><%= li.tracking_option_for(c)&.name || "—" %></td><% end %>
+          <td class="num"><%= money(li.amount) %></td>
+        </tr>
+      <% end %>
+      <tr class="subtotal">
+        <td colspan="<%= 4 + cats.size %>">Subtotal</td>
+        <td class="num"><%= money(document.subtotal) %></td>
+      </tr>
+      <% if document.tax_amount.positive? %>
+        <tr><td colspan="<%= 4 + cats.size %>" class="muted">Tax</td><td class="num"><%= money(document.tax_amount) %></td></tr>
+      <% end %>
+      <tr class="grand-total">
+        <td colspan="<%= 4 + cats.size %>">Total</td>
+        <td class="num"><%= money(document.total) %></td>
+      </tr>
+    </tbody>
+  </table>
+</section>

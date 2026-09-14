@@ -49,6 +49,21 @@ module ApplicationHelper
     "Void #{document.label}? This removes #{parts.to_sentence}."
   end
 
+  # Active tracking categories with their options, loaded once per request for the line sheets.
+  def tracking_categories
+    @tracking_categories ||= Current.organization.tracking_categories.active.ordered.includes(:options).to_a
+  end
+
+  # One select per active category for a line; posts as <name>[tracking_option_ids][]
+  def tracking_selects(object_name, line, style: "width:100%;")
+    safe_join(tracking_categories.map do |category|
+      current = line.respond_to?(:tracking_option_for) ? line.tracking_option_for(category)&.id : nil
+      select_tag "#{object_name}[tracking_option_ids][]",
+                 options_for_select([ [ "— #{category.name} —", "" ] ] + category.active_options.map { |o| [ o.name, o.id ] }, current),
+                 style: style, "aria-label": category.name
+    end)
+  end
+
   def money(amount)
     "$#{number_with_precision(amount, precision: 2, delimiter: ',')}"
   end

@@ -26,7 +26,7 @@ class BankTransactionsController < ApplicationController
   # new expense or deposit when asked.
   def allocate
     allocations = params.fetch(:allocations, {}).values.map { |a| a.permit(:document_id, :amount).to_h }
-    remainder   = params[:remainder]&.permit(:account_id, :tax_rate_id, :contact_name)&.to_h
+    remainder   = params[:remainder]&.permit(:account_id, :tax_rate_id, :contact_name, tracking_option_ids: [])&.to_h
     respond_with_row { Reconciliation::Allocate.new(@txn, allocations: allocations, remainder: remainder).call }
   end
 
@@ -38,7 +38,8 @@ class BankTransactionsController < ApplicationController
         account:      Current.organization.plutus_accounts.find(params[:account_id]),
         tax_rate:     params[:tax_rate_id].present? ? Current.organization.tax_rates.find(params[:tax_rate_id]) : nil,
         contact_name: params[:contact_name],
-        memo:         params[:memo]
+        memo:         params[:memo],
+        tracking_option_ids: params[:tracking_option_ids]
       ).call
     end
   end

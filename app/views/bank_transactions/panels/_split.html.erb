@@ -29,6 +29,7 @@
     <button type="button" class="btn btn-secondary" data-action="allocations#add">+ Add document</button>
     <% accounts = txn.deposit? ? @income_accts : @expense_accts %>
     <%= select_tag "remainder[account_id]", options_from_collection_for_select(accounts, :id, :name), include_blank: (txn.deposit? ? "Rest as a deposit to…" : "Rest as an expense to…"), style: "font-size:12px;max-width:200px;" %>
+    <%= tracking_selects("remainder", txn, style: "font-size:12px;max-width:140px;") %>
   </div>
   <%= f.submit "Allocate", class: "btn btn-primary" %>
 <% end %>

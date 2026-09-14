@@ -17,19 +17,20 @@
 <h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Lines</h2>
 <table class="data-table">
   <thead>
-    <tr><th>Account</th><th>Memo</th><th class="num">Debit</th><th class="num">Credit</th></tr>
+    <tr><th>Account</th><th>Memo</th><% tracking_categories.each do |c| %><th><%= c.name %></th><% end %><th class="num">Debit</th><th class="num">Credit</th></tr>
   </thead>
   <tbody>
     <% entry.lines.each do |line| %>
       <tr>
         <td><%= line.account.code %> <%= line.account.name %></td>
         <td class="muted"><%= line.memo %></td>
+        <% tracking_categories.each do |c| %><td class="muted"><%= line.tracking_option_for(c)&.name || "—" %></td><% end %>
         <td class="num"><%= line.debit? ? money(line.debit_amount) : "" %></td>
         <td class="num"><%= line.credit? ? money(line.credit_amount) : "" %></td>
       </tr>
     <% end %>
     <tr class="subtotal">
-      <td colspan="2">Totals</td>
+      <td colspan="<%= 2 + tracking_categories.size %>">Totals</td>
       <td class="num"><%= money(entry.total_debits) %></td>
       <td class="num"><%= money(entry.total_credits) %></td>
     </tr>

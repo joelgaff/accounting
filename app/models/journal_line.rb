@@ -1,4 +1,6 @@
 class JournalLine < ApplicationRecord
+  include Trackable
+
   belongs_to :journal_entry, inverse_of: :lines
   belongs_to :account, class_name: "Plutus::Account"
 

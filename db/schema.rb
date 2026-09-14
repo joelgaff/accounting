@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_050000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -351,6 +351,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_040000) do
     t.index ["organization_id"], name: "index_tax_rates_on_organization_id"
   end
 
+  create_table "tracking_categories", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "organization_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "name"], name: "index_tracking_categories_on_organization_id_and_name", unique: true
+    t.index ["organization_id"], name: "index_tracking_categories_on_organization_id"
+  end
+
+  create_table "tracking_options", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "tracking_category_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tracking_category_id", "name"], name: "index_tracking_options_on_tracking_category_id_and_name", unique: true
+    t.index ["tracking_category_id"], name: "index_tracking_options_on_tracking_category_id"
+  end
+
+  create_table "tracking_selections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "trackable_id", null: false
+    t.string "trackable_type", null: false
+    t.integer "tracking_category_id", null: false
+    t.integer "tracking_option_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["trackable_type", "trackable_id", "tracking_category_id"], name: "idx_tracking_selections_one_per_category", unique: true
+    t.index ["trackable_type", "trackable_id"], name: "index_tracking_selections_on_trackable"
+    t.index ["tracking_category_id"], name: "index_tracking_selections_on_tracking_category_id"
+    t.index ["tracking_option_id", "trackable_type"], name: "idx_tracking_selections_by_option"
+    t.index ["tracking_option_id"], name: "index_tracking_selections_on_tracking_option_id"
+  end
+
   create_table "transfers", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "from_bank_account_id", null: false
@@ -402,6 +438,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_040000) do
   add_foreign_key "payments", "organizations"
   add_foreign_key "recurring_invoices", "organizations"
   add_foreign_key "tax_rates", "organizations"
+  add_foreign_key "tracking_categories", "organizations"
+  add_foreign_key "tracking_options", "tracking_categories"
+  add_foreign_key "tracking_selections", "tracking_categories"
+  add_foreign_key "tracking_selections", "tracking_options"
   add_foreign_key "transfers", "bank_accounts", column: "from_bank_account_id"
   add_foreign_key "transfers", "bank_accounts", column: "to_bank_account_id"
   add_foreign_key "users", "organizations"

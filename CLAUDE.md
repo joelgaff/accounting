@@ -57,6 +57,14 @@
   settled and a line carries at most one `document`; `Allocate` splits, `Unmatch` undoes,
   `Suggester` ranks, `Summary` compares ledger to statement balance.
 
+## Tracking categories (Xero-style)
+- `TrackingCategory` → `TrackingOption`; anything `Trackable` (`LineItem`, `JournalLine`,
+  `BankRule`) holds one `TrackingSelection` per category. At most two categories are active,
+  like Xero. Forms and importers assign `tracking_option_ids`; the last option per category wins.
+- Xero exports carry `TrackingName1/TrackingOption1` (and 2) per line; `Imports::TrackingResolver`
+  creates categories and options on first sight. `Reports::ProfitAndLossByTracking` is line-based
+  (tracking lives on lines) and shows the ledger net income beside its own as a check figure.
+
 ## Xero migration toolkit (rake)
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
   `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs

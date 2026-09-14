@@ -48,7 +48,9 @@ class BooksReset
     docs    = Document.where(organization: @org)
     doc_ids = docs.pluck(:id)
     purge_attachments("Document", doc_ids)
-    LineItem.where(lineable_type: "Document", lineable_id: doc_ids).delete_all
+    line_ids = LineItem.where(lineable_type: "Document", lineable_id: doc_ids).pluck(:id)
+    TrackingSelection.where(trackable_type: "LineItem", trackable_id: line_ids).delete_all
+    LineItem.where(id: line_ids).delete_all
 
     # Type rows go before the documents that point at them.
     Invoice.where(id: docs.invoices.select(:documentable_id)).delete_all
@@ -57,6 +59,7 @@ class BooksReset
     Deposit.where(id: docs.deposits.select(:documentable_id)).delete_all
     Transfer.where(id: docs.transfers.select(:documentable_id)).delete_all
     journal_ids = docs.journal_entries.pluck(:documentable_id)
+    TrackingSelection.where(trackable_type: "JournalLine", trackable_id: JournalLine.where(journal_entry_id: journal_ids).select(:id)).delete_all
     JournalLine.where(journal_entry_id: journal_ids).delete_all
     JournalEntry.where(id: journal_ids).delete_all
     docs.delete_all
@@ -69,11 +72,17 @@ class BooksReset
 
   def wipe_everything
     recurring_ids = @org.recurring_invoices.pluck(:id)
-    LineItem.where(lineable_type: "RecurringInvoice", lineable_id: recurring_ids).delete_all
+    recurring_line_ids = LineItem.where(lineable_type: "RecurringInvoice", lineable_id: recurring_ids).pluck(:id)
+    TrackingSelection.where(trackable_type: "LineItem", trackable_id: recurring_line_ids).delete_all
+    LineItem.where(id: recurring_line_ids).delete_all
     RecurringInvoice.where(organization: @org).delete_all
 
     OrganizationSettings.where(organization: @org).delete_all
+    TrackingSelection.where(trackable_type: "BankRule", trackable_id: BankRule.where(organization: @org).select(:id)).delete_all
     BankRule.where(organization: @org).delete_all
+    TrackingSelection.where(tracking_category_id: TrackingCategory.where(organization: @org).select(:id)).delete_all
+    TrackingOption.where(tracking_category_id: TrackingCategory.where(organization: @org).select(:id)).delete_all
+    TrackingCategory.where(organization: @org).delete_all
     BankAccount.where(organization: @org).update_all(bank_feed_id: nil, feed_account_id: nil, feed_name: nil, feed_synced_at: nil)
     BankFeed.where(organization: @org).delete_all
     TaxRate.where(organization: @org).delete_all
@@ -100,6 +109,7 @@ class BooksReset
       "journal_entries"    => @org.documents.journal_entries.count,
       "bank_transactions"  => @org.bank_transactions.count,
       "bank_rules"         => @org.bank_rules.count,
+      "tracking_categories" => @org.tracking_categories.count,
       "ledger_entries"     => Plutus::Amount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).distinct.count(:entry_id),
       "accounts"           => @org.plutus_accounts.count,
       "bank_accounts"      => @org.bank_accounts.count,

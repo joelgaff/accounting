@@ -1,4 +1,6 @@
 class LineItem < ApplicationRecord
+  include Trackable
+
   belongs_to :lineable, polymorphic: true
   belongs_to :account,  class_name: "Plutus::Account"
   belongs_to :tax_rate, optional: true

@@ -73,7 +73,7 @@ class RecurringInvoicesController < ApplicationController
     params.require(:recurring_invoice).permit(
       :contact_id, :client_name, :receivable_account_id, :net_days,
       :frequency, :interval, :next_run_on, :end_on, :active, :email_on_generate,
-      line_items_attributes: %i[id description quantity unit_amount account_id tax_rate_id _destroy]
+      line_items_attributes: [ :id, :description, :quantity, :unit_amount, :account_id, :tax_rate_id, :_destroy, { tracking_option_ids: [] } ]
     )
   end
 end

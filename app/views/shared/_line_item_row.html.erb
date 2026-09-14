@@ -8,6 +8,9 @@
       <%= li_form.collection_select :tax_rate_id, tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, { include_blank: "—" }, { style: "width:100%;", data: { action: "change->line-items#recalc", line_items_target: "tax_rate", "tax-rates": tax_rates.map { |t| [t.id.to_s, t.rate.to_f] }.to_h.to_json } } %>
     </td>
   <% end %>
+  <% tracking_categories.each do |c| %>
+    <td><%= select_tag "#{li_form.object_name}[tracking_option_ids][]", options_for_select([ [ "—", "" ] ] + c.active_options.map { |o| [ o.name, o.id ] }, li_form.object.tracking_option_for(c)&.id), style: "width:100%;", "aria-label": c.name %></td>
+  <% end %>
   <td class="num" data-line-items-target="rowTotal">$0.00</td>
   <td>
     <%= li_form.hidden_field :_destroy, data: { line_items_target: "destroy" } %>

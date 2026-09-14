@@ -169,9 +169,12 @@ module Imports
         quantity:    BigDecimal(row["quantity"].to_s.presence || "1"),
         unit_amount: BigDecimal(row["unitamount"].to_s),
         account:     account,
-        tax_rate:    tax_rate
+        tax_rate:    tax_rate,
+        tracking_option_ids: tracking.option_ids_for(row)
       }
     end
+
+    def tracking = @tracking ||= TrackingResolver.new(@organization)
 
     def resolve_contact(name)
       @organization.contacts.find_or_create_by!(name: name.to_s.strip) do |c|

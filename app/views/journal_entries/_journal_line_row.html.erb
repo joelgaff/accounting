@@ -1,6 +1,9 @@
 <tr data-journal-lines-target="row">
   <td><%= lf.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name} (#{a.type.demodulize})" }, { include_blank: "—" }, { style: "width:100%;" } %></td>
   <td><%= lf.text_field :memo, style: "width:100%;" %></td>
+  <% tracking_categories.each do |c| %>
+    <td><%= select_tag "#{lf.object_name}[tracking_option_ids][]", options_for_select([ [ "—", "" ] ] + c.active_options.map { |o| [ o.name, o.id ] }, lf.object.tracking_option_for(c)&.id), style: "width:100%;", "aria-label": c.name %></td>
+  <% end %>
   <td class="num"><%= lf.number_field :debit_amount,  step: 0.01, min: 0, placeholder: "0.00", style: "width:100%;text-align:right;", data: { action: "input->journal-lines#recalc" } %></td>
   <td class="num"><%= lf.number_field :credit_amount, step: 0.01, min: 0, placeholder: "0.00", style: "width:100%;text-align:right;", data: { action: "input->journal-lines#recalc" } %></td>
   <td>

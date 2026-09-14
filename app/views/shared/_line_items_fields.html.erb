@@ -19,6 +19,7 @@
         <th class="num" style="width:100px;">Unit</th>
         <th style="width:180px;">Account</th>
         <% if tax_rates.any? %><th style="width:140px;">Tax</th><% end %>
+        <% tracking_categories.each do |c| %><th style="width:130px;"><%= c.name %></th><% end %>
         <th class="num" style="width:100px;">Amount</th>
         <th style="width:40px;"></th>
       </tr>
@@ -30,17 +31,17 @@
     </tbody>
     <tfoot>
       <tr class="subtotal">
-        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Subtotal</td>
+        <td colspan="<%= (tax_rates.any? ? 5 : 4) + tracking_categories.size %>" style="text-align:right;">Subtotal</td>
         <td class="num" data-line-items-target="subtotal">$0.00</td>
         <td></td>
       </tr>
       <tr>
-        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;" class="muted">Tax</td>
+        <td colspan="<%= (tax_rates.any? ? 5 : 4) + tracking_categories.size %>" style="text-align:right;" class="muted">Tax</td>
         <td class="num" data-line-items-target="tax">$0.00</td>
         <td></td>
       </tr>
       <tr class="grand-total">
-        <td colspan="<%= tax_rates.any? ? 5 : 4 %>" style="text-align:right;">Total</td>
+        <td colspan="<%= (tax_rates.any? ? 5 : 4) + tracking_categories.size %>" style="text-align:right;">Total</td>
         <td class="num" data-line-items-target="total">$0.00</td>
         <td></td>
       </tr>

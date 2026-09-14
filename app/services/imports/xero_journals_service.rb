@@ -161,6 +161,8 @@ module Imports
       end
     end
 
+    def tracking = @tracking ||= TrackingResolver.new(@organization)
+
     def resolve_columns(headers)
       ALIASES.transform_values do |candidates|
         candidates.find { |c| headers.include?(c) } ||
@@ -183,7 +185,8 @@ module Imports
           debit_amount:  debit,
           credit_amount: credit,
           memo:          cols[:description] ? row[cols[:description]].to_s.strip.presence : nil,
-          position:      i
+          position:      i,
+          tracking_option_ids: tracking.option_ids_for(row)
         }
       end
     end
