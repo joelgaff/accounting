@@ -3,6 +3,8 @@
   <%= link_to "New transfer", new_transfer_path, class: "btn btn-primary" %>
 </header>
 
+<%= render "documents/status_filter", statuses: [] %>
+
 <% if @documents.any? %>
   <table class="data-table">
     <thead>
@@ -10,7 +12,7 @@
     </thead>
     <tbody>
       <% @documents.each do |document| %>
-        <tr id="<%= dom_id(document) %>">
+        <tr id="<%= dom_id(document) %>" class="<%= 'muted' if document.voided? %>">
           <td><%= link_to document.date.iso8601, transfer_path(document) %></td>
           <td><%= document.transfer.from_bank_account.name %></td>
           <td><%= document.transfer.to_bank_account.name %></td>
@@ -20,6 +22,7 @@
       <% end %>
     </tbody>
   </table>
+  <%= render "shared/pagination" %>
 <% else %>
   <p class="empty-state">No transfers yet.</p>
 <% end %>

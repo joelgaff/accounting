@@ -1,0 +1,11 @@
+<% if @page > 1 || @has_more %>
+  <nav class="pagination" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+    <% if @page > 1 %>
+      <%= link_to "← Newer", url_for(request.query_parameters.merge(page: @page - 1)), class: "btn btn-secondary" %>
+    <% end %>
+    <span class="muted" style="align-self:center;font-size:12px;">Page <%= @page %></span>
+    <% if @has_more %>
+      <%= link_to "Older →", url_for(request.query_parameters.merge(page: @page + 1)), class: "btn btn-secondary" %>
+    <% end %>
+  </nav>
+<% end %>

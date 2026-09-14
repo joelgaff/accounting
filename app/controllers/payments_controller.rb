@@ -1,5 +1,5 @@
 class PaymentsController < ApplicationController
-  before_action :load_document
+  before_action :load_document, only: %i[new create]
 
   def new
     @payment = @document.payments.build(
@@ -18,6 +18,18 @@ class PaymentsController < ApplicationController
     else
       load_bank_options
       render :new, status: :unprocessable_entity
+    end
+  end
+
+  # Remove a payment: its posting goes and any statement line it settled
+  # returns to the reconcile queue.
+  def destroy
+    payment   = Payment.where(organization: Current.organization).find(params[:id])
+    @document = payment.document
+    payment.unwind!
+    respond_to do |format|
+      format.turbo_stream { render "documents/payment_removed" }
+      format.html { redirect_to helpers.document_path_for(@document), notice: "Payment removed." }
     end
   end
 

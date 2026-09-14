@@ -1,0 +1,4 @@
+<%= turbo_stream.replace dom_id(@document, :status), partial: "documents/status_header", locals: { document: @document } %>
+<% if @document.settleable? %>
+  <%= turbo_stream.replace dom_id(@document, :payments), partial: "documents/payments", locals: { document: @document } %>
+<% end %>

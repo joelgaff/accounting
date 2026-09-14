@@ -1,4 +1,6 @@
 class BankTransactionsController < ApplicationController
+  include Paginatable
+
   before_action :load_transaction, only: %i[match categorize transfer ignore unmatch]
   before_action :load_collections
 
@@ -6,7 +8,7 @@ class BankTransactionsController < ApplicationController
     scope = Current.organization.bank_transactions.includes(:bank_account, matched: :documentable)
     scope = scope.where(status: params[:status]) if params[:status].in?(BankTransaction::STATUSES)
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
-    @transactions    = scope.order(posted_on: :desc, id: :desc)
+    @transactions    = paginate(scope.order(posted_on: :desc, id: :desc), per: 100)
     @candidates      = Reconciliation::Candidates.new(Current.organization, @transactions)
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
   end

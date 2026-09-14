@@ -30,7 +30,7 @@ module Reports
     def outstanding_bills
       payable = organization.settings.payable_account
       return [] unless payable
-      organization.documents.bills.includes(:contact, :payments, :documentable)
+      organization.documents.live.bills.includes(:contact, :payments, :documentable)
                   .select { |bill| bill.bill.payable_account_id == payable.id && bill.balance_due.positive? }
     end
 

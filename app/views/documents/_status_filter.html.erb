@@ -1,0 +1,8 @@
+<%# ?status= filter for an index. `statuses` are the type's own; voided and all are always offered. %>
+<%= form_with url: url_for(only_path: true), method: :get, class: "app-form filter-bar" do |f| %>
+  <div class="field">
+    <%= f.label :status, "Show" %>
+    <%= f.select :status, [ [ "Active", "" ] ] + statuses.map { |s| [ s.titleize, s ] } + [ [ "Voided", "voided" ], [ "All", "all" ] ], { selected: @status.to_s } %>
+  </div>
+  <%= f.submit "Filter", class: "btn btn-secondary" %>
+<% end %>

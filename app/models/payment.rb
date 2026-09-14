@@ -5,6 +5,7 @@ class Payment < ApplicationRecord
   belongs_to :document
   belongs_to :bank_account
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
+  has_many   :bank_transactions, as: :matched, dependent: :nullify
 
   validates :amount, numericality: { greater_than: 0 }
   validates :paid_on, presence: true
@@ -16,6 +17,16 @@ class Payment < ApplicationRecord
 
   def direction = document.documentable.settlement_direction
   def label     = "Payment ##{id}"
+
+  # Remove this payment as if it never happened: its posting goes, any
+  # statement line it settled returns to the queue, then the row itself.
+  def unwind!
+    transaction do
+      Ledger.reset_for(self)
+      bank_transactions.each(&:unlink!)
+      destroy!
+    end
+  end
 
   private
 

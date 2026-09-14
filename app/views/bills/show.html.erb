@@ -1,12 +1,7 @@
 <% bill = @document.bill %>
 <header class="page-header">
   <h1><%= @document.label %></h1>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <%= status_badge(@document.status) %>
-    <% unless @document.paid? %>
-      <%= link_to "Record payment", new_document_payment_path(@document), class: "btn btn-primary" %>
-    <% end %>
-  </div>
+  <%= render "documents/status_header", document: @document %>
 </header>
 
 <div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">

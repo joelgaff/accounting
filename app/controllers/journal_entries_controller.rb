@@ -17,6 +17,7 @@ class JournalEntriesController < DocumentsController
     lines = @document.journal_entry.lines
     (2 - lines.reject(&:marked_for_destruction?).size).times { lines.build }
   end
+  alias_method :after_failed_update, :after_failed_create
 
   def load_form_collections
     @accounts = Plutus::Account.where(tenant: Current.organization).order(:type, :code, :name)

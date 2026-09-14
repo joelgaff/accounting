@@ -1,9 +1,9 @@
-<%# Payments against a settleable document, plus the button to record one. %>
-<section style="margin-top:32px;">
+<%# Payments against a settleable document. Replaced over turbo_stream when one is removed. %>
+<%= tag.section id: dom_id(document, :payments), style: "margin-top:32px;" do %>
   <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Payments</h2>
   <% if document.payments.any? %>
     <table class="data-table">
-      <thead><tr><th>Date</th><th>Bank</th><th>Reference</th><th class="num">Amount</th></tr></thead>
+      <thead><tr><th>Date</th><th>Bank</th><th>Reference</th><th class="num">Amount</th><th style="width:90px"></th></tr></thead>
       <tbody>
         <% document.payments.order(paid_on: :desc).each do |p| %>
           <tr id="<%= dom_id(p) %>">
@@ -11,6 +11,13 @@
             <td><%= p.bank_account.name %></td>
             <td><%= p.reference %></td>
             <td class="num"><%= money(p.amount) %></td>
+            <td class="num">
+              <% unless document.voided? %>
+                <%= button_to "Remove", payment_path(p), method: :delete, class: "btn btn-secondary",
+                      form: { data: { turbo_confirm: "Remove this #{money(p.amount)} payment? Its posting goes and any matched bank line returns to the queue." } },
+                      style: "padding:2px 8px;font-size:12px;" %>
+              <% end %>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -18,4 +25,4 @@
   <% else %>
     <p class="empty-state">No payments recorded.</p>
   <% end %>
-</section>
+<% end %>

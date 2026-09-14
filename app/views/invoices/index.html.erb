@@ -6,6 +6,8 @@
   </div>
 </header>
 
+<%= render "documents/status_filter", statuses: %w[open partial overdue paid] %>
+
 <% if @documents.any? %>
   <table class="data-table">
     <thead>
@@ -20,7 +22,7 @@
     </thead>
     <tbody>
       <% @documents.each do |document| %>
-        <tr id="<%= dom_id(document) %>">
+        <tr id="<%= dom_id(document) %>" class="<%= 'muted' if document.voided? %>">
           <td><%= document.date.iso8601 %></td>
           <td><%= link_to document.counterparty, invoice_path(document) %></td>
           <td><%= document.invoice.due_date.iso8601 %></td>
@@ -31,6 +33,7 @@
       <% end %>
     </tbody>
   </table>
+  <%= render "shared/pagination" %>
 <% else %>
-  <p class="empty-state">No invoices yet.</p>
+  <p class="empty-state"><%= @status.present? ? "Nothing matches this filter." : "No invoices yet." %></p>
 <% end %>

@@ -1,6 +1,7 @@
 <% entry = @document.journal_entry %>
 <header class="page-header">
   <h1><%= @document.label %></h1>
+  <%= render "documents/status_header", document: @document %>
 </header>
 
 <div class="app-form" style="max-width:none;">

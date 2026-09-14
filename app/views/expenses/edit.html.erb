@@ -1,0 +1,12 @@
+<header class="page-header">
+  <h1>Edit expense #<%= @document.id %></h1>
+</header>
+
+<% if @expense_accounts.empty? || @bank_accounts.empty? %>
+  <div class="notice">
+    <p>You need an expense category and a bank account before you can record an expense.</p>
+    <p><%= link_to "Import your Chart of Accounts", new_chart_of_accounts_import_path %> for categories, and <%= link_to "add a bank account", new_bank_account_path %> under Banking.</p>
+  </div>
+<% else %>
+  <%= render "form", document: @document, expense_accounts: @expense_accounts, bank_accounts: @bank_accounts, vendors: @vendors, tax_rates: @tax_rates %>
+<% end %>

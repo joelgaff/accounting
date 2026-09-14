@@ -1,0 +1,12 @@
+<header class="page-header">
+  <h1>Edit bill #<%= @document.id %></h1>
+</header>
+
+<% if @expense_accounts.empty? || @liability_accounts.empty? %>
+  <div class="notice">
+    <p>You need to set up your Chart of Accounts before you can record a bill.</p>
+    <p>At minimum you need one <strong>Expense</strong> category and one <strong>Liability</strong> account (typically "Accounts Payable") to accrue to.</p>
+  </div>
+<% else %>
+  <%= render "form", document: @document, expense_accounts: @expense_accounts, liability_accounts: @liability_accounts, vendors: @vendors, tax_rates: @tax_rates %>
+<% end %>

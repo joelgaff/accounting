@@ -1,4 +1,4 @@
-<%= form_with model: document, url: bills_path, class: "app-form app-form-wide" do |f| %>
+<%= form_with model: document, **document_form_options(document), class: "app-form app-form-wide" do |f| %>
   <%= render "documents/errors", document: document %>
 
   <% if vendors.any? %>
@@ -43,7 +43,7 @@
   </div>
 
   <div class="form-actions">
-    <%= f.submit "Record bill", class: "btn btn-primary" %>
+    <%= f.submit (document.new_record? ? "Record bill" : "Update bill"), class: "btn btn-primary" %>
     <%= link_to "Cancel", bills_path, class: "btn btn-secondary" %>
   </div>
 <% end %>

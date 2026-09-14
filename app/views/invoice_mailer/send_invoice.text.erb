@@ -4,13 +4,15 @@ Hi <%= @invoice.counterparty %>,
 
 <% else %>Please find your invoice below.
 
-<% end %>
----
+<% end %>---
 Invoice #<%= @invoice.id %>
 From:     <%= @invoice.organization.name %>
 To:       <%= @invoice.counterparty %>
+Issued:   <%= @invoice.date.strftime("%b %-d, %Y") %>
 Due date: <%= @invoice.invoice.due_date.strftime("%b %-d, %Y") %>
 
-Services rendered .......... $<%= '%.2f' % (@invoice.subtotal) %>
-<% if @invoice.tax_amount.positive? %>Tax (<%= @invoice.invoice.tax_rate_display %>) . $<%= '%.2f' % @invoice.tax_amount %>
-<% end %>Total due .................. $<%= '%.2f' % @invoice.total %>
+<% @invoice.line_items.each do |li| %><%= (li.description.presence || li.account.name).ljust(28, ".") %> <%= '%8.2f' % li.amount %>
+<% end %>Subtotal .................... $<%= '%.2f' % @invoice.subtotal %>
+<% @invoice.line_ledger_legs[:taxes].each do |tax, amt| %><%= tax.name.ljust(28, ".") %> $<%= '%.2f' % amt %>
+<% end %><% if @invoice.paid_amount.positive? %>Paid ........................ -$<%= '%.2f' % @invoice.paid_amount %>
+<% end %>Balance due ................. $<%= '%.2f' % @invoice.balance_due %>

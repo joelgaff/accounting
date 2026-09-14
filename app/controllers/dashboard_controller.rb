@@ -19,7 +19,7 @@ class DashboardController < ApplicationController
                         .joins(debit_amounts: :account)
                         .where(plutus_accounts: { tenant_id: Current.organization.id })
                         .distinct
-                        .order(created_at: :desc)
+                        .order(date: :desc, id: :desc)
                         .limit(10)
   end
 end

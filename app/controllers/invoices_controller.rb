@@ -1,6 +1,4 @@
 class InvoicesController < DocumentsController
-  before_action :load_document, only: %i[print email send_email]
-
   def print; end
   def email; end
 
@@ -21,10 +19,6 @@ class InvoicesController < DocumentsController
 
   def build_document
     super.tap { |doc| doc.invoice.due_date = Date.current + 30.days }
-  end
-
-  def load_document
-    @document = scope.find(params[:id])
   end
 
   def load_form_collections

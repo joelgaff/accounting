@@ -26,10 +26,15 @@ class Document < ApplicationRecord
   validates :source, inclusion: { in: SOURCES }
   validates :total, numericality: { greater_than: 0 }
   validate  :must_have_line_items, if: -> { documentable&.line_items? }
+  validate  :not_voided,             on: :update
+  validate  :total_covers_payments,  on: :update
+  validate  :total_matches_bank_line, on: :update
 
   after_create :post_to_ledger
 
   scope :chronological, -> { order(date: :desc, id: :desc) }
+  scope :live,   -> { where(voided_at: nil) }
+  scope :voided, -> { where.not(voided_at: nil) }
   scope :outstanding_between, ->(low, high) {
     where("(documents.total - COALESCE((SELECT SUM(payments.amount) FROM payments WHERE payments.document_id = documents.id), 0)) BETWEEN ? AND ?", low, high)
   }
@@ -40,7 +45,10 @@ class Document < ApplicationRecord
     documentable.assign_attributes(attrs)
   end
 
-  delegate :status, :settleable?, :party_name, to: :documentable
+  delegate :settleable?, :party_name, to: :documentable
+
+  def status  = voided? ? "voided" : documentable.status
+  def voided? = voided_at.present?
 
   def label        = "#{documentable.model_name.human} ##{id}"
   def counterparty = contact&.name.presence || party_name
@@ -53,6 +61,34 @@ class Document < ApplicationRecord
       Ledger.reset_for(self)
       post_to_ledger
     end
+  end
+
+  # Edit in place: new attributes and lines, then a fresh posting.
+  def update_and_repost!(attrs)
+    transaction do
+      assign_attributes(attrs)
+      save!
+      line_items.reload if documentable.line_items?
+      repost_to_ledger!
+    end
+  end
+
+  # "This never happened": unwind every payment against it, release every
+  # statement line pointing at it, remove its postings, and mark it. The
+  # document itself stays for the record.
+  def void!
+    raise ActiveRecord::RecordInvalid.new(self) if voided?
+    transaction do
+      payments.each(&:unwind!)
+      bank_transactions.each(&:unlink!)
+      Ledger.reset_for(self)
+      update_columns(voided_at: Time.current, updated_at: Time.current)
+    end
+  end
+
+  # What void! would touch, for the confirmation prompt.
+  def void_consequences
+    { payments: payments.size, paid: paid_amount, bank_lines: bank_transactions.size + payments.sum { |p| p.bank_transactions.size } }
   end
 
   private
@@ -76,6 +112,25 @@ class Document < ApplicationRecord
 
   def must_have_line_items
     errors.add(:base, "must have at least one line item") if live_line_items.empty?
+  end
+
+  def not_voided
+    errors.add(:base, "is voided and can't be changed") if voided?
+  end
+
+  def total_covers_payments
+    return unless settleable? && total_changed?
+    paid = paid_amount
+    errors.add(:total, "can't be below the $#{'%.2f' % paid} already paid") if total < paid
+  end
+
+  # A document created from or linked to a statement line must keep that
+  # line's amount; unmatch the line first to change it.
+  def total_matches_bank_line
+    return unless total_changed?
+    line = bank_transactions.first
+    return if line.nil? || line.amount.abs == total
+    errors.add(:total, "must stay $#{'%.2f' % line.amount.abs} while matched to a bank line (unmatch it first)")
   end
 
   def post_to_ledger

@@ -1,4 +1,4 @@
-<%= form_with model: document, url: transfers_path, class: "app-form" do |f| %>
+<%= form_with model: document, **document_form_options(document), class: "app-form" do |f| %>
   <%= render "documents/errors", document: document %>
 
   <div class="field">
@@ -33,7 +33,7 @@
   </div>
 
   <div class="form-actions">
-    <%= f.submit "Record transfer", class: "btn btn-primary" %>
+    <%= f.submit (document.new_record? ? "Record transfer" : "Update transfer"), class: "btn btn-primary" %>
     <%= link_to "Cancel", transfers_path, class: "btn btn-secondary" %>
   </div>
 <% end %>

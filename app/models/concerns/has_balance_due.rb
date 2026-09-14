@@ -6,7 +6,7 @@ module HasBalanceDue
   end
 
   def paid_amount  = payments.loaded? ? payments.sum(&:amount) : payments.sum(:amount)
-  def balance_due  = total - paid_amount
+  def balance_due  = respond_to?(:voided?) && voided? ? BigDecimal("0") : total - paid_amount
   def paid?        = balance_due <= 0
   def outstanding? = !paid?
 end

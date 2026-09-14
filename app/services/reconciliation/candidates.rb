@@ -20,22 +20,22 @@ module Reconciliation
     private
 
     def receivables
-      @receivables ||= @org.documents.invoices.includes(:contact, :payments, :documentable).select(&:outstanding?)
+      @receivables ||= @org.documents.live.invoices.includes(:contact, :payments, :documentable).select(&:outstanding?)
     end
 
     def payables
-      @payables ||= @org.documents.bills.includes(:contact, :payments, :documentable).select(&:outstanding?)
+      @payables ||= @org.documents.live.bills.includes(:contact, :payments, :documentable).select(&:outstanding?)
     end
 
     # Expenses and deposits nobody has reconciled yet.
     def direct
-      @direct ||= @org.documents.where(documentable_type: %w[Expense Deposit])
+      @direct ||= @org.documents.live.where(documentable_type: %w[Expense Deposit])
                       .where.missing(:bank_transactions)
                       .includes(:contact, :documentable).to_a
     end
 
     def transfers
-      @transfers ||= @org.documents.transfers
+      @transfers ||= @org.documents.live.transfers
                          .includes(:bank_transactions, documentable: %i[from_bank_account to_bank_account]).to_a
     end
 

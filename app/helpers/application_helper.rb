@@ -31,6 +31,24 @@ module ApplicationHelper
     public_send("#{document.documentable_name}_path", document)
   end
 
+  def edit_document_path_for(document) = public_send("edit_#{document.documentable_name}_path", document)
+  def void_document_path_for(document) = public_send("void_#{document.documentable_name}_path", document)
+  def documents_path_for(document)     = public_send("#{document.documentable_name.pluralize}_path")
+
+  # The form target for a new or existing document of its type.
+  def document_form_options(document)
+    document.persisted? ? { url: document_path_for(document), method: :patch } : { url: documents_path_for(document), method: :post }
+  end
+
+  # "Void Invoice #12? This removes its ledger postings, 2 payments ($750.00) and returns 2 bank lines to unmatched."
+  def void_confirm_message(document)
+    c = document.void_consequences
+    parts = [ "its ledger postings" ]
+    parts << "#{pluralize(c[:payments], 'payment')} (#{money(c[:paid])})" if c[:payments].positive?
+    parts << "returns #{pluralize(c[:bank_lines], 'bank line')} to unmatched" if c[:bank_lines].positive?
+    "Void #{document.label}? This removes #{parts.to_sentence}."
+  end
+
   def money(amount)
     "$#{number_with_precision(amount, precision: 2, delimiter: ',')}"
   end

@@ -1,0 +1,70 @@
+<%= form_with model: document, **document_form_options(document), class: "app-form app-form-wide" do |f| %>
+  <%= render "documents/errors", document: document %>
+
+  <div class="field">
+    <%= f.label :date, "Date" %>
+    <%= f.date_field :date %>
+  </div>
+
+  <%= f.fields_for :documentable, document.journal_entry do |jf| %>
+    <div class="field">
+      <%= jf.label :narrative %>
+      <%= jf.text_field :narrative, placeholder: "e.g. Depreciation for July" %>
+    </div>
+
+    <div class="field">
+      <%= f.label :reference, "Reference (optional)" %>
+      <%= f.text_field :reference %>
+    </div>
+
+    <fieldset class="journal-lines"
+              data-controller="journal-lines"
+              data-journal-lines-index-value="<%= document.journal_entry.lines.size %>"
+              style="border:0;padding:0;margin:20px 0;">
+      <legend>Lines</legend>
+
+      <table class="data-table sheet">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Memo</th>
+            <th class="num" style="width:120px;">Debit</th>
+            <th class="num" style="width:120px;">Credit</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody data-journal-lines-target="rows">
+          <%= jf.fields_for :lines do |lf| %>
+            <%= render "journal_line_row", lf: lf, accounts: @accounts %>
+          <% end %>
+        </tbody>
+        <tfoot>
+          <tr class="subtotal">
+            <td colspan="2" style="text-align:right;">Totals</td>
+            <td class="num" data-journal-lines-target="debitTotal">$0.00</td>
+            <td class="num" data-journal-lines-target="creditTotal">$0.00</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2" style="text-align:right;" class="muted">Difference</td>
+            <td class="num" colspan="2" data-journal-lines-target="difference">$0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <template data-journal-lines-target="template">
+        <%= jf.fields_for :lines, JournalLine.new, child_index: "NEW_RECORD" do |lf| %>
+          <%= render "journal_line_row", lf: lf, accounts: @accounts %>
+        <% end %>
+      </template>
+
+      <button type="button" class="btn btn-secondary" data-action="journal-lines#add">+ Add line</button>
+    </fieldset>
+  <% end %>
+
+  <div class="form-actions">
+    <%= f.submit (document.new_record? ? "Post entry" : "Update entry"), class: "btn btn-primary" %>
+    <%= link_to "Cancel", journal_entries_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

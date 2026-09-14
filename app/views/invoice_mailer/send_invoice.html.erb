@@ -3,7 +3,7 @@
 <% if @body.present? %>
   <%= simple_format @body %>
 <% else %>
-  <p>Please find your invoice attached below.</p>
+  <p>Please find your invoice below.</p>
 <% end %>
 
 <hr style="border:0;border-top:1px solid #ccc;margin:24px 0;">
@@ -12,27 +12,43 @@
 <p>
   <strong>From:</strong> <%= @invoice.organization.name %><br>
   <strong>To:</strong> <%= @invoice.counterparty %><br>
+  <strong>Issued:</strong> <%= @invoice.date.strftime("%b %-d, %Y") %><br>
   <strong>Due date:</strong> <%= @invoice.invoice.due_date.strftime("%b %-d, %Y") %>
+  <% if @invoice.reference.present? %><br><strong>Reference:</strong> <%= @invoice.reference %><% end %>
 </p>
 
-<table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;max-width:500px;">
+<table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;max-width:560px;">
   <thead>
-    <tr style="background:#f4f4f4;"><th align="left">Description</th><th align="right">Amount</th></tr>
+    <tr style="background:#f4f4f4;"><th align="left">Description</th><th align="right">Qty</th><th align="right">Unit</th><th align="right">Amount</th></tr>
   </thead>
   <tbody>
+    <% @invoice.line_items.each do |li| %>
+      <tr>
+        <td><%= li.description.presence || li.account.name %></td>
+        <td align="right"><%= li.quantity.to_d.frac.zero? ? li.quantity.to_i : li.quantity %></td>
+        <td align="right">$<%= number_with_precision(li.unit_amount, precision: 2, delimiter: ",") %></td>
+        <td align="right">$<%= number_with_precision(li.amount, precision: 2, delimiter: ",") %></td>
+      </tr>
+    <% end %>
     <tr>
-      <td>Services rendered</td>
+      <td colspan="3" align="right">Subtotal</td>
       <td align="right">$<%= number_with_precision(@invoice.subtotal, precision: 2, delimiter: ",") %></td>
     </tr>
-    <% if @invoice.tax_amount.positive? %>
+    <% @invoice.line_ledger_legs[:taxes].each do |tax, amt| %>
       <tr>
-        <td>Tax (<%= @invoice.invoice.tax_rate_display %>)</td>
-        <td align="right">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
+        <td colspan="3" align="right"><%= tax.name %></td>
+        <td align="right">$<%= number_with_precision(amt, precision: 2, delimiter: ",") %></td>
+      </tr>
+    <% end %>
+    <% if @invoice.paid_amount.positive? %>
+      <tr>
+        <td colspan="3" align="right">Paid</td>
+        <td align="right">−$<%= number_with_precision(@invoice.paid_amount, precision: 2, delimiter: ",") %></td>
       </tr>
     <% end %>
     <tr style="background:#f4f4f4;font-weight:bold;">
-      <td>Total due</td>
-      <td align="right">$<%= number_with_precision(@invoice.total, precision: 2, delimiter: ",") %></td>
+      <td colspan="3" align="right">Balance due</td>
+      <td align="right">$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></td>
     </tr>
   </tbody>
 </table>

@@ -3,6 +3,8 @@
   <%= link_to "New journal entry", new_journal_entry_path, class: "btn btn-primary" %>
 </header>
 
+<%= render "documents/status_filter", statuses: [] %>
+
 <% if @documents.any? %>
   <table class="data-table">
     <thead>
@@ -10,7 +12,7 @@
     </thead>
     <tbody>
       <% @documents.each do |document| %>
-        <tr id="<%= dom_id(document) %>">
+        <tr id="<%= dom_id(document) %>" class="<%= 'muted' if document.voided? %>">
           <td><%= document.date.iso8601 %></td>
           <td><%= link_to document.journal_entry.narrative, journal_entry_path(document) %></td>
           <td class="muted"><%= document.reference %></td>
@@ -19,6 +21,7 @@
       <% end %>
     </tbody>
   </table>
+  <%= render "shared/pagination" %>
 <% else %>
   <p class="empty-state">No journal entries yet. <%= link_to "Post one", new_journal_entry_path %>.</p>
 <% end %>

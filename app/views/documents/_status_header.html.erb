@@ -1,0 +1,16 @@
+<%# Badge plus the actions a document offers. Replaced over turbo_stream after a void. %>
+<%= tag.div id: dom_id(document, :status), style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;" do %>
+  <%= status_badge(document.status) %>
+  <% if document.invoice? %>
+    <%= link_to "Print / PDF", print_invoice_path(document), class: "btn btn-secondary" %>
+    <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" %>
+  <% end %>
+  <% unless document.voided? %>
+    <%= link_to "Edit", edit_document_path_for(document), class: "btn btn-secondary" %>
+    <%= button_to "Void", void_document_path_for(document), class: "btn btn-secondary",
+          form: { style: "display:inline", data: { turbo_confirm: void_confirm_message(document) } } %>
+    <% if document.settleable? && !document.paid? %>
+      <%= link_to "Record payment", new_document_payment_path(document), class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+<% end %>

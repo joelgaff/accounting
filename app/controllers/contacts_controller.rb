@@ -1,12 +1,17 @@
 class ContactsController < ApplicationController
+  include Paginatable
+
   before_action :load_contact, only: %i[show edit update destroy]
 
   def index
-    @contacts = Current.organization.contacts.ordered
-    @contacts = @contacts.where(kind: [ params[:kind], "both" ]) if Contact::KINDS.include?(params[:kind])
+    contacts  = Current.organization.contacts.ordered
+    contacts  = contacts.where(kind: [ params[:kind], "both" ]) if Contact::KINDS.include?(params[:kind])
+    @contacts = paginate(contacts)
   end
 
   def show
+    @documents   = @contact.documents.live.includes(:documentable, :payments).chronological.limit(50)
+    @outstanding = @documents.select(&:settleable?).sum(&:balance_due)
   end
 
   def new

@@ -2,20 +2,23 @@ Rails.application.routes.draw do
   root "dashboard#index"
 
   # Auth lives entirely at the Launchpad hub (see LaunchpadAuthentication).
-  resources :invoices, only: %i[index show new create] do
+  resources :invoices, only: %i[index show new create edit update] do
     member do
       get  :print
       get  :email
       post :send_email
+      post :void
     end
   end
-  resources :bills,           only: %i[index show new create]
-  resources :expenses,        only: %i[index show new create]
-  resources :deposits,        only: %i[index show new create]
-  resources :transfers,       only: %i[index show new create]
+  %i[bills expenses deposits transfers].each do |kind|
+    resources kind, only: %i[index show new create edit update] do
+      member { post :void }
+    end
+  end
   resources :documents, only: [] do
     resources :payments, only: %i[new create]
   end
+  resources :payments, only: :destroy
   resources :accounts, only: %i[index]
   resources :bank_accounts, except: %i[show destroy] do
     member do
@@ -24,7 +27,9 @@ Rails.application.routes.draw do
     end
   end
   resources :contacts
-  resources :journal_entries, only: %i[index show new create]
+  resources :journal_entries, only: %i[index show new create edit update] do
+    member { post :void }
+  end
   resources :recurring_invoices do
     member { post :run_now }
   end

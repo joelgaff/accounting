@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -124,10 +124,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_010000) do
     t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "total", precision: 20, scale: 2, default: "0.0", null: false
     t.datetime "updated_at", null: false
+    t.datetime "voided_at"
     t.index ["contact_id"], name: "index_documents_on_contact_id"
     t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable", unique: true
     t.index ["organization_id", "date"], name: "index_documents_on_organization_id_and_date"
     t.index ["organization_id", "documentable_type", "date"], name: "idx_on_organization_id_documentable_type_date_0e28425c30"
+    t.index ["organization_id", "voided_at"], name: "index_documents_on_organization_id_and_voided_at"
     t.index ["organization_id"], name: "index_documents_on_organization_id"
   end
 

@@ -3,6 +3,8 @@
   <%= link_to "New deposit", new_deposit_path, class: "btn btn-primary" %>
 </header>
 
+<%= render "documents/status_filter", statuses: [] %>
+
 <% if @documents.any? %>
   <table class="data-table">
     <thead>
@@ -16,7 +18,7 @@
     </thead>
     <tbody>
       <% @documents.each do |document| %>
-        <tr id="<%= dom_id(document) %>">
+        <tr id="<%= dom_id(document) %>" class="<%= 'muted' if document.voided? %>">
           <td><%= document.date.iso8601 %></td>
           <td><%= link_to document.display_name, deposit_path(document) %></td>
           <td><%= document.line_items.filter_map { |li| li.account&.name }.uniq.to_sentence %></td>
@@ -26,6 +28,7 @@
       <% end %>
     </tbody>
   </table>
+  <%= render "shared/pagination" %>
 <% else %>
   <p class="empty-state">No deposits yet. Money in that isn't an invoice payment lands here.</p>
 <% end %>
