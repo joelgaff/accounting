@@ -1,0 +1,12 @@
+<%= tag.article id: dom_id(row.bank_account, :recon_summary), class: "kpi-card" do %>
+  <div class="kpi-label"><%= link_to row.bank_account.name, bank_transactions_path(bank_account_id: row.bank_account.id) %></div>
+  <div class="kpi-value"><%= money(row.ledger_balance) %></div>
+  <div class="kpi-source">
+    <% if row.statement_balance %>
+      statement <%= money(row.statement_balance) %>
+      <% if row.difference&.nonzero? %><span class="neg">(<%= signed_money(row.difference) %> off)</span><% else %><span class="pos">✓</span><% end %>
+      <br>
+    <% end %>
+    <%= pluralize(row.unmatched_count, "line") %> unmatched<%= row.unmatched_count.positive? ? " · #{signed_money(row.unmatched_total)}" : "" %>
+  </div>
+<% end %>

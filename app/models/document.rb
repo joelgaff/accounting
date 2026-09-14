@@ -16,7 +16,7 @@ class Document < ApplicationRecord
   belongs_to :contact, optional: true
   delegated_type :documentable, types: TYPES, dependent: :destroy, autosave: true, inverse_of: :document
   has_many :entries, class_name: "Plutus::Entry", as: :commercial_document
-  has_many :bank_transactions, as: :matched, dependent: :nullify
+  has_many :bank_transactions, dependent: :nullify
   has_many_attached :attachments
 
   before_validation :default_date
@@ -88,7 +88,8 @@ class Document < ApplicationRecord
 
   # What void! would touch, for the confirmation prompt.
   def void_consequences
-    { payments: payments.size, paid: paid_amount, bank_lines: bank_transactions.size + payments.sum { |p| p.bank_transactions.size } }
+    { payments: payments.size, paid: paid_amount,
+      bank_lines: (bank_transactions.pluck(:id) + payments.filter_map(&:bank_transaction_id)).uniq.size }
   end
 
   private

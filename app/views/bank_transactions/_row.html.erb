@@ -1,17 +1,34 @@
-<%# One statement line. Unmatched rows carry Match / Create / Transfer panels, switched by the segments controller. %>
+<%# One statement line. Unmatched rows carry Match / Split / Create / Transfer panels, switched by the segments controller. %>
 <% default_segment = candidates.any? ? "match" : "create" %>
 <%= tag.tr id: dom_id(txn), class: ("muted" if txn.ignored?), data: { controller: "segments", segments_active_value: default_segment } do %>
   <td><%= txn.posted_on.iso8601 %></td>
   <td class="muted"><%= txn.bank_account.name %></td>
-  <td><%= txn.description %></td>
+  <td>
+    <strong><%= txn.display_payee %></strong>
+    <% if txn.payee.present? && txn.description.present? && txn.description != txn.payee %>
+      <div class="muted" style="font-size:12px;"><%= txn.description %></div>
+    <% end %>
+  </td>
   <td class="muted"><%= txn.reference %></td>
   <td class="num <%= txn.deposit? ? 'pos' : 'neg' %>"><%= signed_money(txn.amount) %></td>
-  <td><%= status_badge(txn.status) %></td>
+  <td>
+    <%= status_badge(txn.partial? ? "partial" : txn.status) %>
+    <% if txn.partial? %><div class="muted" style="font-size:11px;"><%= money(txn.remaining) %> left</div><% end %>
+  </td>
   <td class="recon-actions">
     <% if txn.unmatched? %>
+      <% if suggestion&.confident? %>
+        <div class="suggestion">
+          <span><%= suggestion.kind == :rule ? "" : "Match: " %><%= suggestion.label %></span>
+          <%= button_to "OK", accept_suggestion_bank_transaction_path(txn), params: { kind: suggestion.kind, target_id: suggestion.target.id }, class: "btn btn-primary" %>
+        </div>
+      <% end %>
       <div class="segments" role="tablist">
         <% if candidates.any? %>
           <button type="button" role="tab" data-segments-target="tab" data-segment="match" data-action="segments#select">Match</button>
+        <% end %>
+        <% if candidates_index.pool_for(txn).any? %>
+          <button type="button" role="tab" data-segments-target="tab" data-segment="split" data-action="segments#select">Split</button>
         <% end %>
         <button type="button" role="tab" data-segments-target="tab" data-segment="create" data-action="segments#select"><%= txn.deposit? ? "Deposit" : "Expense" %></button>
         <button type="button" role="tab" data-segments-target="tab" data-segment="transfer" data-action="segments#select">Transfer</button>
@@ -20,6 +37,9 @@
       <div id="<%= dom_id(txn, :error) %>"></div>
       <% if candidates.any? %>
         <div data-segments-target="panel" data-segment="match" hidden><%= render "bank_transactions/panels/match", txn: txn, candidates: candidates %></div>
+      <% end %>
+      <% if candidates_index.pool_for(txn).any? %>
+        <div data-segments-target="panel" data-segment="split" hidden><%= render "bank_transactions/panels/split", txn: txn, pool: candidates_index.pool_for(txn) %></div>
       <% end %>
       <div data-segments-target="panel" data-segment="create" hidden><%= render "bank_transactions/panels/create", txn: txn %></div>
       <div data-segments-target="panel" data-segment="transfer" hidden><%= render "bank_transactions/panels/transfer", txn: txn, candidates: candidates %></div>

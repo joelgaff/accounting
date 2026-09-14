@@ -4,8 +4,8 @@ class Payment < ApplicationRecord
   belongs_to :organization
   belongs_to :document
   belongs_to :bank_account
+  belongs_to :bank_transaction, optional: true        # the statement line this settled, if any
   has_many   :entries, class_name: "Plutus::Entry", as: :commercial_document
-  has_many   :bank_transactions, as: :matched, dependent: :nullify
 
   validates :amount, numericality: { greater_than: 0 }
   validates :paid_on, presence: true
@@ -22,9 +22,10 @@ class Payment < ApplicationRecord
   # statement line it settled returns to the queue, then the row itself.
   def unwind!
     transaction do
+      line = bank_transaction
       Ledger.reset_for(self)
-      bank_transactions.each(&:unlink!)
       destroy!
+      line&.refresh_status!
     end
   end
 

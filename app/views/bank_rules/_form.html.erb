@@ -1,0 +1,74 @@
+<%= form_with model: rule, class: "app-form" do |f| %>
+  <% if rule.errors.any? %>
+    <div class="form-errors"><ul><% rule.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul></div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :name %>
+    <%= f.text_field :name, placeholder: "Cloudflare hosting" %>
+  </div>
+
+  <fieldset style="border:0;padding:0;margin:0 0 16px;">
+    <legend style="font-weight:600;font-size:13px;margin-bottom:8px;">When a line…</legend>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+      <div class="field">
+        <%= f.label :match_kind, "Payee or description" %>
+        <%= f.select :match_kind, BankRule::MATCH_KINDS.map { |k| [ k.humanize.downcase, k ] } %>
+      </div>
+      <div class="field">
+        <%= f.label :pattern %>
+        <%= f.text_field :pattern, placeholder: "CLOUDFLARE" %>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="field">
+        <%= f.label :amount_sign, "Direction" %>
+        <%= f.select :amount_sign, [ [ "either way", "any" ], [ "money in", "in" ], [ "money out", "out" ] ] %>
+      </div>
+      <div class="field">
+        <%= f.label :bank_account_id, "Only this account" %>
+        <%= f.collection_select :bank_account_id, bank_accounts, :id, :display_name, include_blank: "Any account" %>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset style="border:0;padding:0;margin:0 0 16px;">
+    <legend style="font-weight:600;font-size:13px;margin-bottom:8px;">…then create</legend>
+    <div class="field">
+      <%= f.label :action_kind, "Kind" %>
+      <%= f.select :action_kind, BankRule::ACTIONS.map { |k| [ k, k ] } %>
+    </div>
+    <div class="field">
+      <%= f.label :account_id, "Account (expense or deposit)" %>
+      <%= f.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name} (#{a.type.demodulize})" }, include_blank: "—" %>
+    </div>
+    <div class="field">
+      <%= f.label :transfer_bank_account_id, "Other account (transfer)" %>
+      <%= f.collection_select :transfer_bank_account_id, bank_accounts, :id, :display_name, include_blank: "—" %>
+    </div>
+    <div class="field">
+      <%= f.label :contact_id, "Contact (optional)" %>
+      <%= f.collection_select :contact_id, contacts, :id, :name, include_blank: "—" %>
+    </div>
+    <% if tax_rates.any? %>
+      <div class="field">
+        <%= f.label :tax_rate_id, "Tax included (optional)" %>
+        <%= f.collection_select :tax_rate_id, tax_rates, :id, :name, include_blank: "None" %>
+      </div>
+    <% end %>
+  </fieldset>
+
+  <div class="field">
+    <%= f.check_box :auto_apply %>
+    <%= f.label :auto_apply, "Auto-apply on import (otherwise the rule only suggests)", style: "display:inline;" %>
+  </div>
+  <div class="field">
+    <%= f.check_box :active %>
+    <%= f.label :active, "Active", style: "display:inline;" %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit (rule.new_record? ? "Add rule" : "Save rule"), class: "btn btn-primary" %>
+    <%= link_to "Cancel", bank_rules_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

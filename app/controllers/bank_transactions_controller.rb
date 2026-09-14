@@ -1,25 +1,36 @@
 class BankTransactionsController < ApplicationController
   include Paginatable
 
-  before_action :load_transaction, only: %i[match categorize transfer ignore unmatch]
+  before_action :load_transaction, only: %i[match allocate categorize transfer accept_suggestion ignore unmatch]
   before_action :load_collections
 
   def index
-    scope = Current.organization.bank_transactions.includes(:bank_account, matched: :documentable)
+    scope = Current.organization.bank_transactions.includes(:bank_account, :payments, :bank_rule, document: :documentable)
     scope = scope.where(status: params[:status]) if params[:status].in?(BankTransaction::STATUSES)
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
     @transactions    = paginate(scope.order(posted_on: :desc, id: :desc), per: 100)
     @candidates      = Reconciliation::Candidates.new(Current.organization, @transactions)
+    @suggestions     = Reconciliation::Suggester.new(Current.organization, @transactions, candidates: @candidates)
+    @summary         = Reconciliation::Summary.new(Current.organization).rows
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
   end
 
-  # Settle an invoice or bill, or link an existing expense, deposit or transfer.
+  # Settle an invoice or bill (fully or with the amount given), or link an
+  # existing expense, deposit or transfer.
   def match
     document = Current.organization.documents.find(params[:document_id])
-    respond_with_row { Reconciliation::MatchDocument.new(@txn, document).call }
+    respond_with_row { Reconciliation::MatchDocument.new(@txn, document, amount: params[:amount]).call }
   end
 
-  # A fresh expense (money out) or deposit (money in) for this line.
+  # Split the line across several invoices or bills, sweeping the rest into a
+  # new expense or deposit when asked.
+  def allocate
+    allocations = params.fetch(:allocations, {}).values.map { |a| a.permit(:document_id, :amount).to_h }
+    remainder   = params[:remainder]&.permit(:account_id, :tax_rate_id, :contact_name)&.to_h
+    respond_with_row { Reconciliation::Allocate.new(@txn, allocations: allocations, remainder: remainder).call }
+  end
+
+  # A fresh expense (money out) or deposit (money in) for what is left of this line.
   def categorize
     respond_with_row do
       Reconciliation::Categorize.new(
@@ -44,17 +55,31 @@ class BankTransactionsController < ApplicationController
     end
   end
 
+  # The one-click OK on the row's top suggestion. The server re-checks everything.
+  def accept_suggestion
+    org = Current.organization
+    respond_with_row do
+      case params[:kind]
+      when "document", "transfer_side"
+        Reconciliation::MatchDocument.new(@txn, org.documents.find(params[:target_id])).call
+      when "transfer_pair"
+        other = org.bank_transactions.find(params[:target_id]).bank_account
+        Reconciliation::CreateTransfer.new(@txn, other_bank_account: other).call
+      when "rule"
+        org.bank_rules.find(params[:target_id]).apply!(@txn)
+      else
+        raise Reconciliation::MatchDocument::Mismatch, "unknown suggestion"
+      end
+    end
+  end
+
   def ignore
     respond_with_row { @txn.update!(status: "ignored"); Reconciliation::Result.new(transaction: @txn) }
   end
 
-  # An ignored line comes back to the queue. Undo for matched lines lands with split matching.
+  # Back to the queue: payments unwound, a reconcile-made document removed.
   def unmatch
-    respond_with_row do
-      raise Reconciliation::MatchDocument::Mismatch, "only ignored lines can be undone for now" unless @txn.ignored?
-      @txn.unlink!
-      Reconciliation::Result.new(transaction: @txn)
-    end
+    respond_with_row { Reconciliation::Unmatch.new(@txn).call }
   end
 
   private
@@ -75,10 +100,13 @@ class BankTransactionsController < ApplicationController
   end
 
   def respond_with_row
-    result = yield
-    @txn   = result.transaction.reload
+    result   = yield
+    @txn     = result.transaction.reload
     @sibling = result.sibling&.reload
-    @candidates = Reconciliation::Candidates.new(Current.organization, [ @txn, @sibling ].compact)
+    rows     = [ @txn, @sibling ].compact
+    @candidates  = Reconciliation::Candidates.new(Current.organization, rows)
+    @suggestions = Reconciliation::Suggester.new(Current.organization, rows, candidates: @candidates)
+    @summary     = Reconciliation::Summary.new(Current.organization).rows.select { |r| rows.map(&:bank_account_id).include?(r.bank_account.id) }
     respond_to do |format|
       format.turbo_stream { render :row }
       format.html { redirect_to bank_transactions_path, notice: "Transaction updated." }

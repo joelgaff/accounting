@@ -33,7 +33,7 @@ class TransferTest < ActiveSupport::TestCase
     assert_equal BigDecimal("-200"), tr.expected_amount_for(@checking)
     assert_equal BigDecimal("200"),  tr.expected_amount_for(@savings)
     assert tr.awaiting_side?(@checking)
-    @org.bank_transactions.create!(bank_account: @checking, posted_on: Date.current, amount: -200, description: "TFR").match_to!(tr.document)
+    @org.bank_transactions.create!(bank_account: @checking, posted_on: Date.current, amount: -200, description: "TFR").update!(document: tr.document, status: "matched")
     assert_not tr.reload.awaiting_side?(@checking)
     assert tr.awaiting_side?(@savings)
   end

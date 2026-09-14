@@ -36,12 +36,15 @@ Rails.application.routes.draw do
   resources :bank_transactions, only: %i[index] do
     member do
       post :match
+      post :allocate
       post :categorize
       post :transfer
+      post :accept_suggestion
       post :ignore
       post :unmatch
     end
   end
+  resources :bank_rules, except: :show
   resource  :contact_import,           only: %i[new create]
   resource  :chart_of_accounts_import, only: %i[new create]
 

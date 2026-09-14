@@ -18,6 +18,8 @@ class Imports::BankController < ApplicationController
     ).call
 
     msg = "Imported #{result.imported}, duplicates skipped #{result.duplicates}."
+    msg += " #{result.rules_applied} categorized by rules." if result.rules_applied.positive?
+    msg += " #{result.rules_suggested} with a rule suggestion." if result.rules_suggested.positive?
     msg += " Errors: #{result.errors.first(5).join('; ')}" if result.errors.any?
     redirect_to bank_transactions_path, notice: msg
   end

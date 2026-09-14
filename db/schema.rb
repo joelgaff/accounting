@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_030000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -47,26 +47,56 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
     t.string "kind", default: "checking", null: false
     t.string "last_four"
     t.integer "organization_id", null: false
+    t.decimal "statement_balance", precision: 20, scale: 2
+    t.datetime "statement_balance_at"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_bank_accounts_on_account_id", unique: true
     t.index ["organization_id"], name: "index_bank_accounts_on_organization_id"
   end
 
+  create_table "bank_rules", force: :cascade do |t|
+    t.integer "account_id"
+    t.string "action_kind", null: false
+    t.boolean "active", default: true, null: false
+    t.string "amount_sign", default: "any", null: false
+    t.boolean "auto_apply", default: false, null: false
+    t.integer "bank_account_id"
+    t.integer "contact_id"
+    t.datetime "created_at", null: false
+    t.string "match_kind", default: "contains", null: false
+    t.string "name", null: false
+    t.integer "organization_id", null: false
+    t.string "pattern", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "tax_rate_id"
+    t.integer "transfer_bank_account_id"
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_bank_rules_on_account_id"
+    t.index ["bank_account_id"], name: "index_bank_rules_on_bank_account_id"
+    t.index ["contact_id"], name: "index_bank_rules_on_contact_id"
+    t.index ["organization_id", "position"], name: "index_bank_rules_on_organization_id_and_position"
+    t.index ["organization_id"], name: "index_bank_rules_on_organization_id"
+    t.index ["tax_rate_id"], name: "index_bank_rules_on_tax_rate_id"
+    t.index ["transfer_bank_account_id"], name: "index_bank_rules_on_transfer_bank_account_id"
+  end
+
   create_table "bank_transactions", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.integer "bank_account_id", null: false
+    t.integer "bank_rule_id"
     t.datetime "created_at", null: false
     t.text "description"
-    t.integer "matched_id"
-    t.string "matched_type"
+    t.integer "document_id"
     t.integer "organization_id", null: false
+    t.string "payee", default: "", null: false
     t.date "posted_on", null: false
     t.string "reference"
     t.string "status", default: "unmatched", null: false
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_bank_transactions_on_bank_account_id"
-    t.index ["matched_type", "matched_id"], name: "index_bank_transactions_on_matched"
-    t.index ["organization_id", "bank_account_id", "posted_on", "amount", "description"], name: "idx_bank_txns_dedupe", unique: true
+    t.index ["bank_rule_id"], name: "index_bank_transactions_on_bank_rule_id"
+    t.index ["document_id"], name: "index_bank_transactions_on_document_id"
+    t.index ["organization_id", "bank_account_id", "posted_on", "amount", "payee", "description"], name: "idx_bank_txns_dedupe", unique: true
     t.index ["organization_id", "status"], name: "index_bank_transactions_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_bank_transactions_on_organization_id"
   end
@@ -213,6 +243,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
   create_table "payments", force: :cascade do |t|
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.integer "bank_account_id", null: false
+    t.integer "bank_transaction_id"
     t.datetime "created_at", null: false
     t.integer "document_id", null: false
     t.text "memo"
@@ -221,6 +252,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
     t.string "reference"
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_payments_on_bank_account_id"
+    t.index ["bank_transaction_id"], name: "index_payments_on_bank_transaction_id"
     t.index ["document_id"], name: "index_payments_on_document_id"
     t.index ["organization_id", "paid_on"], name: "index_payments_on_organization_id_and_paid_on"
     t.index ["organization_id"], name: "index_payments_on_organization_id"
@@ -321,6 +353,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bank_accounts", "organizations"
   add_foreign_key "bank_accounts", "plutus_accounts", column: "account_id"
+  add_foreign_key "bank_rules", "bank_accounts"
+  add_foreign_key "bank_rules", "bank_accounts", column: "transfer_bank_account_id"
+  add_foreign_key "bank_rules", "contacts"
+  add_foreign_key "bank_rules", "organizations"
+  add_foreign_key "bank_rules", "plutus_accounts", column: "account_id"
+  add_foreign_key "bank_rules", "tax_rates"
+  add_foreign_key "bank_transactions", "bank_rules"
+  add_foreign_key "bank_transactions", "documents"
   add_foreign_key "bank_transactions", "organizations"
   add_foreign_key "bills", "plutus_accounts", column: "payable_account_id"
   add_foreign_key "contacts", "organizations"
@@ -333,6 +373,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_020000) do
   add_foreign_key "journal_lines", "plutus_accounts", column: "account_id"
   add_foreign_key "organization_settings", "organizations"
   add_foreign_key "payments", "bank_accounts"
+  add_foreign_key "payments", "bank_transactions"
   add_foreign_key "payments", "documents"
   add_foreign_key "payments", "organizations"
   add_foreign_key "recurring_invoices", "organizations"

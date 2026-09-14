@@ -3,8 +3,19 @@
     <span id="<%= dom_id(Current.organization, :unmatched_count) %>" class="muted" style="font-size:14px;font-weight:400;"><%= @unmatched_count %></span>
     <span class="muted" style="font-size:14px;font-weight:400;">unmatched</span>
   </h1>
-  <%= link_to "Import statement", new_imports_bank_path, class: "btn btn-primary" %>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "Rules", bank_rules_path, class: "btn btn-secondary" %>
+    <%= link_to "Import statement", new_imports_bank_path, class: "btn btn-primary" %>
+  </div>
 </header>
+
+<% if @summary.any? %>
+  <section class="kpi-grid recon-summary">
+    <% @summary.each do |row| %>
+      <%= render "bank_transactions/summary_card", row: row %>
+    <% end %>
+  </section>
+<% end %>
 
 <%= form_with url: bank_transactions_path, method: :get, class: "app-form filter-bar" do |f| %>
   <div class="field">
@@ -29,7 +40,7 @@
         <tr>
           <th>Date</th>
           <th>Bank</th>
-          <th>Description</th>
+          <th>Payee / description</th>
           <th>Reference</th>
           <th class="num">Amount</th>
           <th>Status</th>
@@ -38,7 +49,7 @@
       </thead>
       <tbody>
         <% @transactions.each do |txn| %>
-          <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn) %>
+          <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn), suggestion: @suggestions.top(txn), candidates_index: @candidates %>
         <% end %>
       </tbody>
     </table>
@@ -47,3 +58,8 @@
     <p class="empty-state">No transactions match this filter.</p>
   <% end %>
 <% end %>
+
+<p class="muted" style="font-size:12px;margin-top:16px;">
+  A line that is an invoice payment net of a processor fee can't be split here yet: record the fee as an expense
+  and match the rest, or edit the invoice.
+</p>

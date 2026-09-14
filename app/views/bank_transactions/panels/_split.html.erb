@@ -1,0 +1,34 @@
+<%# Several invoices or bills from one line; whatever is left can become an expense or deposit. %>
+<%= form_with url: allocate_bank_transaction_path(txn), method: :post, class: "app-form recon-form",
+      data: { controller: "allocations", allocations_total_value: txn.remaining.to_s("F"), allocations_index_value: 1 } do |f| %>
+  <table class="data-table sheet" style="margin-bottom:6px;">
+    <thead><tr><th>Document</th><th class="num" style="width:110px;">Amount</th><th style="width:30px;"></th></tr></thead>
+    <tbody data-allocations-target="rows">
+      <tr data-allocations-target="row">
+        <td><%= select_tag "allocations[0][document_id]", options_for_select(pool.map { |d| [ "#{d.label} · #{d.display_name} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
+        <td class="num"><%= number_field_tag "allocations[0][amount]", txn.remaining.to_s("F"), step: 0.01, min: 0, data: { action: "input->allocations#recalc" } %></td>
+        <td><button type="button" class="btn btn-secondary" data-action="allocations#remove" style="padding:2px 8px;">×</button></td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr class="subtotal">
+        <td style="text-align:right;">Left on this line</td>
+        <td class="num" data-allocations-target="remaining"><%= money(txn.remaining) %></td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+  <template data-allocations-target="template">
+    <tr data-allocations-target="row">
+      <td><%= select_tag "allocations[NEW_RECORD][document_id]", options_for_select(pool.map { |d| [ "#{d.label} · #{d.display_name} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
+      <td class="num"><%= number_field_tag "allocations[NEW_RECORD][amount]", nil, step: 0.01, min: 0, data: { action: "input->allocations#recalc" } %></td>
+      <td><button type="button" class="btn btn-secondary" data-action="allocations#remove" style="padding:2px 8px;">×</button></td>
+    </tr>
+  </template>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;">
+    <button type="button" class="btn btn-secondary" data-action="allocations#add">+ Add document</button>
+    <% accounts = txn.deposit? ? @income_accts : @expense_accts %>
+    <%= select_tag "remainder[account_id]", options_from_collection_for_select(accounts, :id, :name), include_blank: (txn.deposit? ? "Rest as a deposit to…" : "Rest as an expense to…"), style: "font-size:12px;max-width:200px;" %>
+  </div>
+  <%= f.submit "Allocate", class: "btn btn-primary" %>
+<% end %>

@@ -27,7 +27,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
     assert_equal BigDecimal("0"), @bank.balance
     assert_equal BigDecimal("0"), inv.balance_due
     assert txn.reload.unmatched?
-    assert_nil txn.matched
+    assert_empty txn.payments
     assert Invoice.exists?(inv.documentable_id), "the record stays for the audit trail"
     assert_not_includes @org.documents.live, inv
     assert_includes @org.documents.voided, inv
@@ -36,7 +36,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
   test "voiding a reconcile-created expense returns its line to the queue" do
     txn = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
     Reconciliation::Categorize.new(txn, account: @hosting).call
-    exp = txn.reload.matched
+    exp = txn.reload.document
     exp.void!
     assert txn.reload.unmatched?
     assert_equal BigDecimal("0"), @hosting.balance
@@ -47,7 +47,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
     out = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -100, description: "TFR")
     inn = @org.bank_transactions.create!(bank_account: savings, posted_on: Date.current, amount: 100, description: "TFR")
     Reconciliation::CreateTransfer.new(out, other_bank_account: savings).call
-    out.reload.matched.void!
+    out.reload.document.void!
     assert out.reload.unmatched?
     assert inn.reload.unmatched?
     assert_equal BigDecimal("0"), savings.balance
@@ -88,7 +88,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
 
     txn = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
     Reconciliation::Categorize.new(txn, account: @hosting).call
-    exp = txn.reload.matched
+    exp = txn.reload.document
     err = assert_raises(ActiveRecord::RecordInvalid) do
       exp.update_and_repost!(line_items_attributes: [ { id: exp.line_items.sole.id, unit_amount: 31 } ])
     end

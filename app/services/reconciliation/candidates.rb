@@ -17,6 +17,18 @@ module Reconciliation
       @memo[txn.id] ||= build(txn)
     end
 
+    # Every open invoice (money in) or bill (money out), for splitting a line.
+    def pool_for(txn)
+      txn.deposit? ? receivables : payables
+    end
+
+    # Unmatched lines in other accounts that mirror this one within three days.
+    def mirror_lines_for(txn)
+      other_lines.select do |o|
+        o.bank_account_id != txn.bank_account_id && o.amount == -txn.amount && (o.posted_on - txn.posted_on).abs <= CreateTransfer::WINDOW_DAYS
+      end
+    end
+
     private
 
     def receivables
@@ -37,6 +49,10 @@ module Reconciliation
     def transfers
       @transfers ||= @org.documents.live.transfers
                          .includes(:bank_transactions, documentable: %i[from_bank_account to_bank_account]).to_a
+    end
+
+    def other_lines
+      @other_lines ||= @org.bank_transactions.unmatched.includes(:bank_account).to_a
     end
 
     def build(txn)

@@ -40,8 +40,9 @@ class BooksReset
   private
 
   def wipe_transactions
-    BankTransaction.where(organization: @org).delete_all
     Payment.where(organization: @org).delete_all
+    BankTransaction.where(organization: @org).delete_all
+    BankAccount.where(organization: @org).update_all(statement_balance: nil, statement_balance_at: nil)
 
     docs    = Document.where(organization: @org)
     doc_ids = docs.pluck(:id)
@@ -71,6 +72,7 @@ class BooksReset
     RecurringInvoice.where(organization: @org).delete_all
 
     OrganizationSettings.where(organization: @org).delete_all
+    BankRule.where(organization: @org).delete_all
     TaxRate.where(organization: @org).delete_all
     BankAccount.where(organization: @org).delete_all
     Plutus::Account.where(tenant_id: @org.id).delete_all
@@ -94,6 +96,7 @@ class BooksReset
       "payments"           => Payment.where(organization: @org).count,
       "journal_entries"    => @org.documents.journal_entries.count,
       "bank_transactions"  => @org.bank_transactions.count,
+      "bank_rules"         => @org.bank_rules.count,
       "ledger_entries"     => Plutus::Amount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).distinct.count(:entry_id),
       "accounts"           => @org.plutus_accounts.count,
       "bank_accounts"      => @org.bank_accounts.count,

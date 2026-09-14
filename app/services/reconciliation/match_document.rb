@@ -1,12 +1,13 @@
 module Reconciliation
-  # Settle an invoice or bill with this line (a Payment), or link the line to
-  # an expense, deposit or transfer that already exists for it.
+  # Settle an invoice or bill with (part of) this line, or link the line to an
+  # expense, deposit or transfer that already exists for it.
   class MatchDocument
     class Mismatch < StandardError; end
 
-    def initialize(txn, document)
+    def initialize(txn, document, amount: nil)
       @txn      = txn
       @document = document
+      @amount   = amount.present? ? BigDecimal(amount.to_s) : nil
     end
 
     def call
@@ -14,18 +15,22 @@ module Reconciliation
 
       Document.transaction do
         if @document.settleable?
-          payment = @document.payments.create!(
-            organization: @txn.organization,
-            amount:       [ @txn.amount.abs, @document.balance_due ].min,
-            paid_on:      @txn.posted_on,
-            bank_account: @txn.bank_account,
-            reference:    @txn.reference
+          amount = @amount || [ @txn.remaining, @document.balance_due ].min
+          raise Mismatch, "nothing left to allocate on this line" unless amount.positive?
+          raise Mismatch, "#{'%.2f' % amount} is more than the #{'%.2f' % @txn.remaining} left on this line" if amount > @txn.remaining
+          @document.payments.create!(
+            organization:     @txn.organization,
+            amount:           amount,
+            paid_on:          @txn.posted_on,
+            bank_account:     @txn.bank_account,
+            reference:        @txn.reference,
+            bank_transaction: @txn
           )
-          @txn.match_to!(payment)
         else
           check_direct!
-          @txn.match_to!(@document)
+          @txn.update!(document: @document)
         end
+        @txn.refresh_status!
       end
       Result.new(transaction: @txn)
     end
@@ -33,6 +38,7 @@ module Reconciliation
     private
 
     def check_direct!
+      raise Mismatch, "this line already carries #{@txn.document.label}" if @txn.document
       type = @document.documentable
       case type
       when Expense
@@ -44,7 +50,7 @@ module Reconciliation
       else
         raise Mismatch, "#{@document.label} cannot be matched to a bank line"
       end
-      raise Mismatch, "amounts differ (#{@document.label} is for #{'%.2f' % @document.total})" unless @document.total == @txn.amount.abs
+      raise Mismatch, "amounts differ (#{@document.label} is for #{'%.2f' % @document.total})" unless @document.total == @txn.remaining
     end
   end
 end

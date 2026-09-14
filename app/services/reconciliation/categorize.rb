@@ -13,8 +13,10 @@ module Reconciliation
 
     def call
       raise MatchDocument::Mismatch, "this line is already #{@txn.status}" unless @txn.unmatched?
+      raise MatchDocument::Mismatch, "this line already carries #{@txn.document.label}" if @txn.document
       org      = @txn.organization
-      gross    = @txn.amount.abs
+      gross    = @txn.remaining
+      raise MatchDocument::Mismatch, "nothing left on this line to categorize" unless gross.positive?
       net, _   = TaxInclusive.split(gross, @tax_rate&.rate)
       contact  = @contact_name && Contact.find_or_create_named(org, @contact_name, kind: @txn.deposit? ? "customer" : "vendor")
 
@@ -29,7 +31,8 @@ module Reconciliation
           line_items_attributes: [ { description: @txn.description.to_s.truncate(120), quantity: 1,
                                      unit_amount: net, account: @account, tax_rate: @tax_rate } ]
         )
-        @txn.match_to!(document)
+        @txn.update!(document: document)
+        @txn.refresh_status!
         Result.new(transaction: @txn)
       end
     end

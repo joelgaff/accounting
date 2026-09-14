@@ -31,7 +31,8 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     Reconciliation::MatchDocument.new(txn, inv).call
     assert inv.reload.paid?
     assert_equal "matched", txn.reload.status
-    assert_equal inv, txn.matched_document
+    assert_equal inv, txn.payments.sole.document
+    assert_equal txn, inv.payments.sole.bank_transaction
     assert_equal BigDecimal("500"), @checking.balance
   end
 
@@ -41,7 +42,7 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     assert_raises(Reconciliation::MatchDocument::Mismatch) { Reconciliation::MatchDocument.new(line(-25), exp).call }
     txn = line(-20)
     Reconciliation::MatchDocument.new(txn, exp).call
-    assert_equal exp, txn.reload.matched
+    assert_equal exp, txn.reload.document
     assert_equal 0, Payment.count
   end
 
@@ -49,7 +50,7 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     rate = @org.tax_rates.create!(name: "Tax 8.75%", rate: 0.0875, liability_account: @taxl)
     out  = line(-108.75, description: "CLOUDFLARE")
     Reconciliation::Categorize.new(out, account: @hosting, tax_rate: rate, contact_name: "Cloudflare").call
-    exp = out.reload.matched
+    exp = out.reload.document
     assert exp.expense?
     assert_equal BigDecimal("108.75"), exp.total
     assert_equal "Cloudflare", exp.contact.name
@@ -59,7 +60,7 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
 
     inn = line(250, description: "FAIR SPONSOR")
     Reconciliation::Categorize.new(inn, account: @sales, contact_name: "cloudflare").call   # same contact, other side
-    dep = inn.reload.matched
+    dep = inn.reload.document
     assert dep.deposit?
     assert_equal exp.contact, dep.contact
     assert_equal "both", exp.contact.reload.kind
@@ -73,12 +74,12 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     late  = line(1000, bank: @savings, on: Date.new(2026, 9, 9))
 
     result = Reconciliation::CreateTransfer.new(out, other_bank_account: @savings).call
-    doc = out.reload.matched
+    doc = out.reload.document
     assert doc.transfer?
     assert_equal @checking, doc.transfer.from_bank_account
     assert_equal @savings,  doc.transfer.to_bank_account
     assert_equal near, result.sibling
-    assert_equal doc, near.reload.matched
+    assert_equal doc, near.reload.document
     assert far.reload.unmatched?
     assert late.reload.unmatched?
     assert_equal BigDecimal("-1000"), @checking.balance
@@ -88,7 +89,7 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
   test "a transfer with no mirror line is single-sided until the other statement arrives" do
     out = line(-300)
     Reconciliation::CreateTransfer.new(out, other_bank_account: @savings).call
-    doc = out.reload.matched
+    doc = out.reload.document
     assert doc.transfer.awaiting_side?(@savings)
 
     later = line(300, bank: @savings, on: Date.current + 1)

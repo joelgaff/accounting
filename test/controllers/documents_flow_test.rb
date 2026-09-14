@@ -85,7 +85,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     exp = @org.documents.expenses.sole
     assert_equal BigDecimal("30"), exp.total
-    assert_equal exp, wd.reload.matched
+    assert_equal exp, wd.reload.document
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
   end
 

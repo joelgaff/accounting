@@ -1,13 +1,10 @@
-<% record = txn.matched %>
 <span class="muted">
-  <% if record.is_a?(Payment) %>
-    → <%= record.label %> on <%= link_to record.document.label, document_path_for(record.document) %>
-  <% elsif record.is_a?(Document) %>
-    → <%= link_to "#{record.label} · #{record.display_name}", document_path_for(record) %>
-  <% elsif txn.ignored? %>
+  <% if txn.ignored? %>
     ignored
+  <% else %>
+    <% parts = txn.payments.map { |p| link_to("#{p.document.label} #{money(p.amount)}", document_path_for(p.document)) } %>
+    <% parts << link_to("#{txn.document.label} · #{txn.document.display_name}", document_path_for(txn.document)) if txn.document %>
+    → <%= safe_join(parts, ", ") %>
   <% end %>
 </span>
-<% if txn.ignored? %>
-  <%= button_to "Undo", unmatch_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>
-<% end %>
+<%= button_to "Undo", unmatch_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>

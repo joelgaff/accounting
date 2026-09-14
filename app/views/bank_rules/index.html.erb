@@ -1,0 +1,37 @@
+<header class="page-header">
+  <h1>Bank rules</h1>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "← Reconcile", bank_transactions_path, class: "btn btn-secondary" %>
+    <%= link_to "New rule", new_bank_rule_path, class: "btn btn-primary" %>
+  </div>
+</header>
+
+<p class="muted" style="margin:0 0 16px;font-size:13px;">
+  When a statement line matches a rule it is offered as a one-click suggestion. Rules marked
+  <strong>auto-apply</strong> categorize their lines the moment a statement is imported.
+</p>
+
+<% if @rules.any? %>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>When</th><th>Then</th><th>Auto</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <% @rules.each do |rule| %>
+        <tr id="<%= dom_id(rule) %>" class="<%= 'muted' unless rule.active? %>">
+          <td><%= link_to rule.name, edit_bank_rule_path(rule) %></td>
+          <td>
+            <code><%= rule.match_kind.humanize.downcase %> “<%= rule.pattern %>”</code>
+            <span class="muted" style="font-size:12px;">
+              <%= { "in" => "money in", "out" => "money out", "any" => "either way" }[rule.amount_sign] %><%= rule.bank_account ? " · #{rule.bank_account.name}" : "" %>
+            </span>
+          </td>
+          <td><%= rule.summary %></td>
+          <td><%= rule.auto_apply? ? "yes" : "suggest" %></td>
+          <td><%= rule.active? ? "yes" : "off" %></td>
+          <td class="num"><%= button_to "Remove", bank_rule_path(rule), method: :delete, class: "btn btn-secondary", form: { data: { turbo_confirm: "Remove rule “#{rule.name}”?" } }, style: "padding:2px 8px;font-size:12px;" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No rules yet. Open a statement line's Expense panel and pick “Make a rule from this line”.</p>
+<% end %>

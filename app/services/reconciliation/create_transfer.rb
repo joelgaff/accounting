@@ -14,20 +14,25 @@ module Reconciliation
     def call
       raise MatchDocument::Mismatch, "this line is already #{@txn.status}" unless @txn.unmatched?
       raise MatchDocument::Mismatch, "pick a different account for the other side" if @other.id == @txn.bank_account_id
+      raise MatchDocument::Mismatch, "this line already carries #{@txn.document.label}" if @txn.document
 
       from, to = @txn.withdrawal? ? [ @txn.bank_account, @other ] : [ @other, @txn.bank_account ]
       Document.transaction do
         document = @txn.organization.documents.create!(
           date:         @txn.posted_on,
-          total:        @txn.amount.abs,
+          total:        @txn.remaining,
           reference:    @txn.reference,
           memo:         @txn.description,
           source:       @source,
           documentable: Transfer.new(from_bank_account: from, to_bank_account: to)
         )
-        @txn.match_to!(document)
+        @txn.update!(document: document)
+        @txn.refresh_status!
         sibling = counterpart
-        sibling&.match_to!(document)
+        if sibling
+          sibling.update!(document: document)
+          sibling.refresh_status!
+        end
         Result.new(transaction: @txn, sibling: sibling)
       end
     end
@@ -37,7 +42,7 @@ module Reconciliation
     # The mirror line: same amount, opposite sign, other account, nearest date
     # within the window.
     def counterpart
-      @txn.organization.bank_transactions.unmatched
+      @txn.organization.bank_transactions.unmatched.where(document_id: nil)
           .where(bank_account: @other, amount: -@txn.amount)
           .where(posted_on: (@txn.posted_on - WINDOW_DAYS)..(@txn.posted_on + WINDOW_DAYS))
           .to_a.min_by { |o| [ (o.posted_on - @txn.posted_on).abs, o.id ] }

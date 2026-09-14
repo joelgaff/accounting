@@ -11,8 +11,8 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     @hosting  = Plutus::Expense.create!(tenant: @org, name: "Hosting")
   end
 
-  def line(amount, bank: @checking, on: Date.current, description: "LINE")
-    @org.bank_transactions.create!(bank_account: bank, posted_on: on, amount: amount, description: description)
+  def line(amount, bank: @checking, on: Date.current, description: "LINE", payee: "")
+    @org.bank_transactions.create!(bank_account: bank, posted_on: on, amount: amount, description: description, payee: payee)
   end
 
   def counter_id = ActionView::RecordIdentifier.dom_id(@org, :unmatched_count)
@@ -37,7 +37,7 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/turbo-stream action="replace" target="#{row_id(txn)}"/, response.body)
     assert_match(/turbo-stream action="update" target="#{counter_id}"/, response.body)
-    assert_match(/Payment #\d+/, response.body)
+    assert_match(/Invoice #\d+ \$100\.00/, response.body)
     assert inv.reload.paid?
   end
 
@@ -89,6 +89,54 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     12.times { |i| line(100, description: "B#{i}") }
     many = count_queries { get bank_transactions_path }
     assert_operator many - few, :<=, 2, "expected roughly constant queries, got #{few} then #{many}"
+  end
+
+  test "one-click OK accepts a document suggestion and a transfer pair" do
+    inv = create_invoice(@org, client_name: "Acme", amount: 100, receivable: @ar, revenue: @sales)
+    txn = line(100, description: "ACME")
+    get bank_transactions_path
+    assert_select ".suggestion", 1
+    post accept_suggestion_bank_transaction_path(txn), params: { kind: "document", target_id: inv.id }, as: :turbo_stream
+    assert_response :success
+    assert inv.reload.paid?
+
+    out = line(-40); inn = line(40, bank: @savings)
+    post accept_suggestion_bank_transaction_path(out), params: { kind: "transfer_pair", target_id: inn.id }, as: :turbo_stream
+    assert_response :success
+    assert inn.reload.matched?
+    assert_match(/target="#{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}"/, response.body)
+  end
+
+  test "allocate splits, and undo brings a matched line back" do
+    a = create_invoice(@org, client_name: "A", amount: 60, receivable: @ar, revenue: @sales)
+    b = create_invoice(@org, client_name: "B", amount: 40, receivable: @ar, revenue: @sales)
+    txn = line(100)
+    post allocate_bank_transaction_path(txn), params: { allocations: { "0" => { document_id: a.id, amount: "60" }, "1" => { document_id: b.id, amount: "40" } } }, as: :turbo_stream
+    assert_response :success
+    assert txn.reload.matched?
+    assert_match(/Undo/, response.body)
+    post unmatch_bank_transaction_path(txn), as: :turbo_stream
+    assert_response :success
+    assert txn.reload.unmatched?
+    assert_equal 0, Payment.count
+  end
+
+  test "bank rules can be created from a line and edited" do
+    txn = line(-8, payee: "CLOUDFLARE")
+    get new_bank_rule_path(bank_transaction_id: txn.id)
+    assert_response :success
+    assert_select "input[name='bank_rule[pattern]'][value=CLOUDFLARE]"
+    post bank_rules_path, params: { bank_rule: { name: "CF", match_kind: "contains", pattern: "cloudflare", amount_sign: "out", action_kind: "Expense", account_id: @hosting.id, auto_apply: "1", active: "1" } }
+    assert_redirected_to bank_rules_path
+    rule = @org.bank_rules.sole
+    get bank_rules_path
+    assert_select "td", text: "CF"
+    patch bank_rule_path(rule), params: { bank_rule: { name: "Cloudflare" } }
+    assert_equal "Cloudflare", rule.reload.name
+    get bank_transactions_path
+    assert_select ".suggestion", text: /Rule/
+    delete bank_rule_path(rule)
+    assert_equal 0, @org.bank_rules.count
   end
 
   private

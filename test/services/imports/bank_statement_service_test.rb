@@ -33,7 +33,8 @@ class Imports::BankStatementServiceTest < ActiveSupport::TestCase
     assert_equal 2, result.imported
     row = BankTransaction.find_by(amount: 250)
     assert_equal Date.new(2026, 7, 15), row.posted_on
-    assert_equal "Acme Widgets — INV 1001", row.description
+    assert_equal "Acme Widgets", row.payee
+    assert_equal "INV 1001", row.description
     assert_equal "TXN-001", row.reference
   end
 

@@ -14,5 +14,8 @@
     <%= f.label :contact_name, txn.deposit? ? "From (optional)" : "Vendor (optional)" %>
     <%= f.text_field :contact_name, list: dom_id(Current.organization, :contact_names), placeholder: "Existing or new contact" %>
   </div>
-  <%= f.submit (txn.deposit? ? "Create deposit" : "Create expense"), class: "btn btn-primary" %>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <%= f.submit (txn.deposit? ? "Create deposit" : "Create expense"), class: "btn btn-primary" %>
+    <%= link_to "Make a rule from this line", new_bank_rule_path(bank_transaction_id: txn.id), class: "muted", style: "font-size:11.5px;" %>
+  </div>
 <% end %>

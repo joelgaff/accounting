@@ -5,6 +5,7 @@ class Organization < ApplicationRecord
   has_many :tax_rates,          dependent: :destroy
   has_many :bank_accounts,      dependent: :destroy
   has_many :bank_transactions,  dependent: :destroy
+  has_many :bank_rules,         dependent: :destroy
   has_many :recurring_invoices, dependent: :destroy
   has_one  :settings, class_name: "OrganizationSettings", dependent: :destroy
   validates :name, presence: true
