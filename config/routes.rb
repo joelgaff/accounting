@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   end
   resources :documents, only: [] do
     resources :payments, only: %i[new create]
+    resources :notes,    only: :create, controller: "document_notes"
   end
   resources :payments, only: :destroy
   resources :accounts, only: %i[index]

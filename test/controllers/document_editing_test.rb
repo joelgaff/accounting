@@ -129,3 +129,39 @@ class DocumentEditingTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", 80
   end
 end
+
+class DocumentHistoryPagesTest < ActionDispatch::IntegrationTest
+  setup do
+    @org = organizations(:one)
+    sign_in_as_launchpad_user(@org)
+    @ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
+    @sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
+    @invoice = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+  end
+
+  test "show pages list history, notes append over turbo stream, and emailing records the send" do
+    get invoice_path(@invoice)
+    assert_response :success
+    assert_select "section h2", text: "History & notes"
+    assert_select "li.history-event strong", text: "Created"
+
+    post document_notes_path(@invoice), params: { note: { text: "Chased by phone" } }, as: :turbo_stream
+    assert_response :success
+    assert_match(/Chased by phone/, response.body)
+    assert_equal "note", @invoice.events.newest_first.first.action
+    assert_equal "Joel", @invoice.events.newest_first.first.actor_name
+
+    assert_enqueued_emails 1 do
+      post send_email_invoice_path(@invoice), params: { to: "ap@acme.example", subject: "Your invoice" }
+    end
+    assert_redirected_to invoice_path(@invoice)
+    emailed = @invoice.events.newest_first.first
+    assert_equal "emailed", emailed.action
+    assert_equal "ap@acme.example", emailed.details["to"]
+
+    get print_invoice_path(@invoice, format: :pdf)
+    assert_response :success
+    assert_equal "application/pdf", response.media_type
+    assert response.body.start_with?("%PDF-")
+  end
+end

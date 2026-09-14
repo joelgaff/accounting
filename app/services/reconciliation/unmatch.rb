@@ -17,6 +17,8 @@ module Reconciliation
           if document.source == "reconcile"
             Ledger.reset_for(document)
             document.destroy!
+          else
+            document.record_event!(:unmatched, bank_account: @txn.bank_account.name, posted_on: @txn.posted_on.iso8601, amount: @txn.amount.abs)
           end
         end
         @txn.update!(status: "unmatched", bank_rule: nil)

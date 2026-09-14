@@ -1,0 +1,4 @@
+<%= form_with url: document_notes_path(document), scope: :note, id: dom_id(document, :note_form), class: "app-form note-form" do |f| %>
+  <%= f.text_area :text, rows: 2, placeholder: "Add a note…", required: true, "aria-label": "Note" %>
+  <%= f.submit "Add note", class: "btn btn-secondary" %>
+<% end %>

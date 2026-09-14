@@ -14,18 +14,21 @@ class Payment < ApplicationRecord
   validate  :amount_within_balance_due, on: :create
 
   after_create :post_to_ledger
+  after_create :record_history
 
   def direction = document.documentable.settlement_direction
   def label     = "Payment ##{id}"
 
   # Remove this payment as if it never happened: its posting goes, any
   # statement line it settled returns to the queue, then the row itself.
-  def unwind!
+  # record: false when the caller writes its own history line (a void does).
+  def unwind!(record: true)
     transaction do
       line = bank_transaction
       Ledger.reset_for(self)
       destroy!
       line&.refresh_status!
+      document.record_event!(:payment_removed, **history_details) if record && !document.destroyed?
     end
   end
 
@@ -47,6 +50,13 @@ class Payment < ApplicationRecord
     if already + amount > document.total
       errors.add(:amount, "exceeds balance due ($#{'%.2f' % (document.total - already)})")
     end
+  end
+
+  def record_history = document.record_event!(:payment_recorded, **history_details)
+
+  def history_details
+    { amount: amount, bank_account: bank_account.name, paid_on: paid_on.iso8601, direction: direction,
+      via: bank_transaction_id ? "reconcile" : "manual" }
   end
 
   def post_to_ledger

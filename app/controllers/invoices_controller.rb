@@ -1,5 +1,10 @@
 class InvoicesController < DocumentsController
-  def print; end
+  def print
+    respond_to do |format|
+      format.html
+      format.pdf { send_data InvoicePdf.new(@document).render, filename: InvoicePdf.filename(@document), type: "application/pdf", disposition: "inline" }
+    end
+  end
   def email; end
 
   def send_email
@@ -8,7 +13,8 @@ class InvoicesController < DocumentsController
     body    = params[:body].presence
 
     InvoiceMailer.send_invoice(@document, to: to, subject: subject, body: body).deliver_later
-    redirect_to invoice_path(@document), notice: "Invoice emailed to #{to}."
+    @document.record_event!(:emailed, to: to, subject: subject || InvoiceMailer.default_subject(@document), pdf: true)
+    redirect_to invoice_path(@document), notice: "Invoice emailed to #{to} with the PDF attached."
   end
 
   private

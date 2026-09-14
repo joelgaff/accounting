@@ -1,0 +1,12 @@
+<%# History & notes, newest first, as Xero shows at the foot of every transaction. %>
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">History &amp; notes</h2>
+  <%= render "documents/note_form", document: document %>
+  <% events = document.events.includes(:user).newest_first.to_a %>
+  <ol id="<%= dom_id(document, :history_list) %>" class="history">
+    <%= render partial: "documents/history_event", collection: events, as: :event %>
+  </ol>
+  <% if events.empty? %>
+    <p id="<%= dom_id(document, :history_empty) %>" class="empty-state">No history yet.</p>
+  <% end %>
+</section>

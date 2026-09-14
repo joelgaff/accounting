@@ -47,6 +47,7 @@ class BooksReset
 
     docs    = Document.where(organization: @org)
     doc_ids = docs.pluck(:id)
+    DocumentEvent.where(document_id: doc_ids).delete_all
     purge_attachments("Document", doc_ids)
     line_ids = LineItem.where(lineable_type: "Document", lineable_id: doc_ids).pluck(:id)
     TrackingSelection.where(trackable_type: "LineItem", trackable_id: line_ids).delete_all

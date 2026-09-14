@@ -1,0 +1,3 @@
+<%= turbo_stream.prepend dom_id(@document, :history_list), partial: "documents/history_event", locals: { event: @event } %>
+<%= turbo_stream.replace dom_id(@document, :note_form), partial: "documents/note_form", locals: { document: @document } %>
+<%= turbo_stream.remove dom_id(@document, :history_empty) %>

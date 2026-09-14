@@ -11,6 +11,7 @@ class Document < ApplicationRecord
 
   include HasLineItems
   include HasBalanceDue
+  include DocumentHistory
 
   belongs_to :organization
   belongs_to :contact, optional: true
@@ -66,10 +67,12 @@ class Document < ApplicationRecord
   # Edit in place: new attributes and lines, then a fresh posting.
   def update_and_repost!(attrs)
     transaction do
+      before = history_snapshot
       assign_attributes(attrs)
       save!
       line_items.reload if documentable.line_items?
       repost_to_ledger!
+      record_edit_against!(before)
     end
   end
 
@@ -79,10 +82,12 @@ class Document < ApplicationRecord
   def void!
     raise ActiveRecord::RecordInvalid.new(self) if voided?
     transaction do
-      payments.each(&:unwind!)
+      consequences = void_consequences
+      payments.each { |p| p.unwind!(record: false) }
       bank_transactions.each(&:unlink!)
       Ledger.reset_for(self)
       update_columns(voided_at: Time.current, updated_at: Time.current)
+      record_event!(:voided, **consequences)
     end
   end
 

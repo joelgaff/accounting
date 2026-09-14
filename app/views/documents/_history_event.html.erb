@@ -1,0 +1,12 @@
+<li id="<%= dom_id(event) %>" class="history-event <%= 'history-note' if event.note? %>">
+  <div class="history-when">
+    <%= tag.time event.created_at.strftime("%b %-d, %Y %-l:%M %p"), datetime: event.created_at.iso8601 %>
+    <span class="muted">· <%= event.actor_name %></span>
+  </div>
+  <div class="history-what">
+    <strong><%= event.title %></strong>
+    <% event.detail_lines.each do |line| %>
+      <div class="history-detail"><%= line %></div>
+    <% end %>
+  </div>
+</li>

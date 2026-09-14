@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -160,6 +160,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_050000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_deposits_on_bank_account_id"
+  end
+
+  create_table "document_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.json "details", default: {}, null: false
+    t.integer "document_id", null: false
+    t.integer "organization_id", null: false
+    t.integer "user_id"
+    t.index ["document_id", "created_at"], name: "index_document_events_on_document_id_and_created_at"
+    t.index ["document_id"], name: "index_document_events_on_document_id"
+    t.index ["organization_id"], name: "index_document_events_on_organization_id"
+    t.index ["user_id"], name: "index_document_events_on_user_id"
   end
 
   create_table "documents", force: :cascade do |t|
@@ -425,6 +438,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_050000) do
   add_foreign_key "bills", "plutus_accounts", column: "payable_account_id"
   add_foreign_key "contacts", "organizations"
   add_foreign_key "deposits", "bank_accounts"
+  add_foreign_key "document_events", "documents"
+  add_foreign_key "document_events", "organizations"
+  add_foreign_key "document_events", "users"
   add_foreign_key "documents", "contacts"
   add_foreign_key "documents", "organizations"
   add_foreign_key "expenses", "bank_accounts"

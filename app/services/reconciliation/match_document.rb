@@ -29,6 +29,7 @@ module Reconciliation
         else
           check_direct!
           @txn.update!(document: @document)
+          @document.record_event!(:matched, **bank_line_details)
         end
         @txn.refresh_status!
       end
@@ -36,6 +37,11 @@ module Reconciliation
     end
 
     private
+
+    def bank_line_details
+      { bank_account: @txn.bank_account.name, posted_on: @txn.posted_on.iso8601, amount: @txn.amount.abs,
+        description: [ @txn.payee, @txn.description ].compact_blank.join(" ").truncate(80) }
+    end
 
     def check_direct!
       raise Mismatch, "this line already carries #{@txn.document.label}" if @txn.document
