@@ -1,0 +1,5 @@
+<%= turbo_stream.replace @txn, partial: "bank_transactions/row", locals: { txn: @txn, candidates: @candidates.for(@txn) } %>
+<% if @sibling %>
+  <%= turbo_stream.replace @sibling, partial: "bank_transactions/row", locals: { txn: @sibling, candidates: @candidates.for(@sibling) } %>
+<% end %>
+<%= turbo_stream.update dom_id(Current.organization, :unmatched_count), Current.organization.bank_transactions.unmatched.count.to_s %>

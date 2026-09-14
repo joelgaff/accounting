@@ -1,0 +1,39 @@
+<%= form_with model: document, url: transfers_path, class: "app-form" do |f| %>
+  <%= render "documents/errors", document: document %>
+
+  <div class="field">
+    <%= f.label :date, "Date" %>
+    <%= f.date_field :date %>
+  </div>
+
+  <%= f.fields_for :documentable, document.transfer do |tr| %>
+    <div class="field">
+      <%= tr.label :from_bank_account_id, "From" %>
+      <%= tr.collection_select :from_bank_account_id, bank_accounts, :id, :display_name, prompt: "Select an account" %>
+    </div>
+    <div class="field">
+      <%= tr.label :to_bank_account_id, "To" %>
+      <%= tr.collection_select :to_bank_account_id, bank_accounts, :id, :display_name, prompt: "Select an account" %>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :total, "Amount" %>
+    <%= f.number_field :total, step: 0.01, min: 0 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
+  </div>
+
+  <div class="field">
+    <%= f.label :memo %>
+    <%= f.text_area :memo, rows: 2 %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Record transfer", class: "btn btn-primary" %>
+    <%= link_to "Cancel", transfers_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

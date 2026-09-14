@@ -81,7 +81,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
     assert inv.reload.paid?
     assert_equal "matched", dep.reload.status
 
-    post categorize_bank_transaction_path(wd), params: { expense_account_id: @hosting.id }, as: :turbo_stream
+    post categorize_bank_transaction_path(wd), params: { account_id: @hosting.id }, as: :turbo_stream
     assert_response :success
     exp = @org.documents.expenses.sole
     assert_equal BigDecimal("30"), exp.total
@@ -104,6 +104,25 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
       journal_entries_path, journal_entry_path(je), new_journal_entry_path,
       root_path, contacts_path, imports_path,
       reports_accounts_receivable_aging_path, reports_accounts_payable_aging_path, reports_general_ledger_path ].each do |path|
+      get path
+      assert_response :success, "#{path} failed: #{response.status}"
+    end
+  end
+
+  test "creates a deposit and a transfer through their pages" do
+    savings = create_bank_account(@org, name: "Savings", code: "091", kind: "savings")
+    post deposits_path, params: { document: { date: "2026-09-01", documentable_attributes: { bank_account_id: @bank.id },
+                                              line_items_attributes: line(250, @sales) } }
+    assert_redirected_to deposits_path
+    assert_equal BigDecimal("250"), @bank.balance
+
+    post transfers_path, params: { document: { date: "2026-09-02", total: 100, documentable_attributes: { from_bank_account_id: @bank.id, to_bank_account_id: savings.id } } }
+    assert_redirected_to transfers_path
+    assert_equal BigDecimal("150"), @bank.balance
+    assert_equal BigDecimal("100"), savings.balance
+
+    [ deposits_path, deposit_path(@org.documents.deposits.sole), new_deposit_path,
+      transfers_path, transfer_path(@org.documents.transfers.sole), new_transfer_path ].each do |path|
       get path
       assert_response :success, "#{path} failed: #{response.status}"
     end

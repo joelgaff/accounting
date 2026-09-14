@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_010000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -103,6 +103,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
     t.index ["organization_id"], name: "index_contacts_on_organization_id"
   end
 
+  create_table "deposits", force: :cascade do |t|
+    t.integer "bank_account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bank_account_id"], name: "index_deposits_on_bank_account_id"
+  end
+
   create_table "documents", force: :cascade do |t|
     t.integer "contact_id"
     t.datetime "created_at", null: false
@@ -112,6 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
     t.text "memo"
     t.integer "organization_id", null: false
     t.string "reference"
+    t.string "source", default: "manual", null: false
     t.decimal "subtotal", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "total", precision: 20, scale: 2, default: "0.0", null: false
@@ -287,6 +295,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
     t.index ["organization_id"], name: "index_tax_rates_on_organization_id"
   end
 
+  create_table "transfers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "from_bank_account_id", null: false
+    t.integer "to_bank_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["from_bank_account_id"], name: "index_transfers_on_from_bank_account_id"
+    t.index ["to_bank_account_id"], name: "index_transfers_on_to_bank_account_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address"
@@ -305,6 +322,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
   add_foreign_key "bank_transactions", "organizations"
   add_foreign_key "bills", "plutus_accounts", column: "payable_account_id"
   add_foreign_key "contacts", "organizations"
+  add_foreign_key "deposits", "bank_accounts"
   add_foreign_key "documents", "contacts"
   add_foreign_key "documents", "organizations"
   add_foreign_key "expenses", "bank_accounts"
@@ -317,5 +335,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
   add_foreign_key "payments", "organizations"
   add_foreign_key "recurring_invoices", "organizations"
   add_foreign_key "tax_rates", "organizations"
+  add_foreign_key "transfers", "bank_accounts", column: "from_bank_account_id"
+  add_foreign_key "transfers", "bank_accounts", column: "to_bank_account_id"
   add_foreign_key "users", "organizations"
 end

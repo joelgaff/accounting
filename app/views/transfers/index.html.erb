@@ -1,0 +1,25 @@
+<header class="page-header">
+  <h1>Transfers</h1>
+  <%= link_to "New transfer", new_transfer_path, class: "btn btn-primary" %>
+</header>
+
+<% if @documents.any? %>
+  <table class="data-table">
+    <thead>
+      <tr><th>Date</th><th>From</th><th>To</th><th>Reference</th><th class="num">Amount</th></tr>
+    </thead>
+    <tbody>
+      <% @documents.each do |document| %>
+        <tr id="<%= dom_id(document) %>">
+          <td><%= link_to document.date.iso8601, transfer_path(document) %></td>
+          <td><%= document.transfer.from_bank_account.name %></td>
+          <td><%= document.transfer.to_bank_account.name %></td>
+          <td class="muted"><%= document.reference %></td>
+          <td class="num"><%= money(document.total) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No transfers yet.</p>
+<% end %>

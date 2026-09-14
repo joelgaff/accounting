@@ -43,9 +43,11 @@ class DocumentsController < ApplicationController
     Current.organization.documents.build(date: Date.current, documentable: documentable_class.new)
   end
 
+  def universal_permitted = %i[contact_id date reference memo]
+
   def document_params
     params.require(:document).permit(
-      :contact_id, :date, :reference, :memo,
+      *universal_permitted,
       attachments: [],
       line_items_attributes: %i[id description quantity unit_amount account_id tax_rate_id _destroy],
       documentable_attributes: documentable_permitted

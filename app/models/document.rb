@@ -6,7 +6,8 @@
 # whether it can take payments — and Document does everything shared: line
 # items, totals, payments, attachments and posting to the ledger.
 class Document < ApplicationRecord
-  TYPES = %w[Invoice Bill Expense JournalEntry].freeze
+  TYPES = %w[Invoice Bill Expense Deposit Transfer JournalEntry].freeze
+  SOURCES = %w[manual reconcile xero_import].freeze
 
   include HasLineItems
   include HasBalanceDue
@@ -15,12 +16,14 @@ class Document < ApplicationRecord
   belongs_to :contact, optional: true
   delegated_type :documentable, types: TYPES, dependent: :destroy, autosave: true, inverse_of: :document
   has_many :entries, class_name: "Plutus::Entry", as: :commercial_document
+  has_many :bank_transactions, as: :matched, dependent: :nullify
   has_many_attached :attachments
 
   before_validation :default_date
   before_validation :link_documentable
   before_validation :sync_totals
   validates :date, presence: true
+  validates :source, inclusion: { in: SOURCES }
   validates :total, numericality: { greater_than: 0 }
   validate  :must_have_line_items, if: -> { documentable&.line_items? }
 
@@ -41,6 +44,7 @@ class Document < ApplicationRecord
 
   def label        = "#{documentable.model_name.human} ##{id}"
   def counterparty = contact&.name.presence || party_name
+  def display_name = counterparty.presence || memo.to_s.truncate(40).presence || label
 
   # Wipe this document's posting and post it again from what it holds now.
   # Used by the importers when a re-import changes a document in place.

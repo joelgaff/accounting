@@ -7,6 +7,8 @@ module ApplicationHelper
     invoices:  %(<path d="M3.5 2h9v12l-2.25-1.3L8 14l-2.25-1.3L3.5 14z"/><path d="M6 5.5h4M6 8.5h4"/>),
     bills:     %(<path d="M4 2.5h8v11l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1z"/><path d="M6.5 6h3M6.5 8.5h3"/>),
     expenses:  %(<path d="M2.5 4.5h11v7h-11z"/><path d="M2.5 7h11"/><path d="M10.5 9.5h1.5"/>),
+    deposits:  %(<path d="M8 13.5v-8M5 8.5 8 5.5l3 3"/><path d="M2.5 13.5h11"/>),
+    transfers: %(<path d="M2.5 5.5h9l-2.5-2.5M13.5 10.5h-9l2.5 2.5"/>),
     journal:   %(<path d="M4 2.5h8v11H4z"/><path d="M4 5h-1.5M4 8h-1.5M4 11h-1.5"/><path d="M6.5 6h3M6.5 9h3"/>),
     accounts:  %(<path d="M8 2 14 5.5H2z"/><path d="M4 7v4.5M8 7v4.5M12 7v4.5"/><path d="M2.5 13.5h11"/>),
     banking:   %(<rect x="2" y="4" width="12" height="8.5" rx="1.5"/><path d="M2 7h12"/><path d="M4.5 10.5h3"/>),
@@ -31,6 +33,11 @@ module ApplicationHelper
 
   def money(amount)
     "$#{number_with_precision(amount, precision: 2, delimiter: ',')}"
+  end
+
+  # +$1,000.00 / -$8.00 for statement lines.
+  def signed_money(amount)
+    "#{amount.negative? ? '-' : '+'}#{money(amount.abs)}"
   end
 
   def status_badge(status)

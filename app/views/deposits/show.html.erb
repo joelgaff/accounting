@@ -1,0 +1,36 @@
+<% deposit = @document.deposit %>
+<header class="page-header">
+  <h1><%= @document.label %></h1>
+  <div><%= status_badge(@document.status) %></div>
+</header>
+
+<div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">From</div><div><%= @document.counterparty.presence || "—" %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Date</div><div><%= @document.date.strftime("%b %-d, %Y") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Into</div><div><%= deposit.bank_account.display_name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div><strong><%= money(@document.total) %></strong></div></div>
+  <% if @document.reference.present? %>
+    <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Reference</div><div><%= @document.reference %></div></div>
+  <% end %>
+  <% if @document.memo.present? %>
+    <div style="grid-column:1/-1;"><div class="muted" style="font-size:12px;text-transform:uppercase;">Memo</div><div><%= simple_format @document.memo %></div></div>
+  <% end %>
+</div>
+
+<h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Lines</h2>
+<table class="data-table">
+  <thead><tr><th>Description</th><th>Account</th><th class="num">Amount</th></tr></thead>
+  <tbody>
+    <% @document.line_items.each do |li| %>
+      <tr>
+        <td><%= li.description.presence || li.account.name %></td>
+        <td><%= li.account.name %></td>
+        <td class="num"><%= money(li.amount) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= render "documents/attachments", document: @document %>
+
+<p style="margin-top:24px;"><%= link_to "← Back to deposits", deposits_path %></p>

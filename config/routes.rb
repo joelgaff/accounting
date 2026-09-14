@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   end
   resources :bills,           only: %i[index show new create]
   resources :expenses,        only: %i[index show new create]
+  resources :deposits,        only: %i[index show new create]
+  resources :transfers,       only: %i[index show new create]
   resources :documents, only: [] do
     resources :payments, only: %i[new create]
   end
@@ -30,7 +32,9 @@ Rails.application.routes.draw do
     member do
       post :match
       post :categorize
+      post :transfer
       post :ignore
+      post :unmatch
     end
   end
   resource  :contact_import,           only: %i[new create]

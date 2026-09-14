@@ -1,0 +1,44 @@
+<%= form_with model: document, url: deposits_path, class: "app-form app-form-wide" do |f| %>
+  <%= render "documents/errors", document: document %>
+
+  <% if customers.any? %>
+    <div class="field">
+      <%= f.label :contact_id, "From (optional)" %>
+      <%= f.collection_select :contact_id, customers, :id, :name, include_blank: "—" %>
+    </div>
+  <% end %>
+
+  <%= f.fields_for :documentable, document.deposit do |dep| %>
+    <div class="field">
+      <%= f.label :date, "Date" %>
+      <%= f.date_field :date %>
+    </div>
+
+    <div class="field">
+      <%= dep.label :bank_account_id, "Deposited into" %>
+      <%= dep.collection_select :bank_account_id, bank_accounts, :id, :display_name, prompt: "Select a bank account" %>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
+  </div>
+
+  <%= render "shared/line_items_fields", form: f, accounts: income_accounts, tax_rates: tax_rates %>
+
+  <div class="field">
+    <%= f.label :memo %>
+    <%= f.text_area :memo, rows: 3 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :attachments, "Attachments (PDF, images)" %>
+    <%= f.file_field :attachments, multiple: true %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Record deposit", class: "btn btn-primary" %>
+    <%= link_to "Cancel", deposits_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

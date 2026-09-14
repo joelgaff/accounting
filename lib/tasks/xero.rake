@@ -42,6 +42,8 @@ namespace :xero do
       [ "invoices",          "#{org.documents.invoices.count}  #{range.(org.documents.invoices, :date)}" ],
       [ "bills",             "#{org.documents.bills.count}  #{range.(org.documents.bills, :date)}" ],
       [ "expenses",          "#{org.documents.expenses.count}  #{range.(org.documents.expenses, :date)}" ],
+      [ "deposits",          "#{org.documents.deposits.count}  #{range.(org.documents.deposits, :date)}" ],
+      [ "transfers",         "#{org.documents.transfers.count}  #{range.(org.documents.transfers, :date)}" ],
       [ "payments",          Payment.where(organization: org).count ],
       [ "journal entries",   "#{org.documents.journal_entries.count}  #{range.(org.documents.journal_entries, :date)}" ],
       [ "bank transactions", org.bank_transactions.count ],

@@ -1,0 +1,17 @@
+<% others = @bank_accounts.reject { |b| b.id == txn.bank_account_id } %>
+<% if candidates.transfers.any? %>
+  <%= form_with url: transfer_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
+    <div class="field">
+      <%= f.label :transfer_document_id, "Existing transfer" %>
+      <%= f.select :transfer_document_id, candidates.transfers.map { |d| [ "#{d.label} — #{d.party_name} — #{money(d.total)} on #{d.date.iso8601}", d.id ] } %>
+    </div>
+    <%= f.submit "Link", class: "btn btn-primary" %>
+  <% end %>
+<% end %>
+<%= form_with url: transfer_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
+  <div class="field">
+    <%= f.label :other_bank_account_id, txn.deposit? ? "Transferred from" : "Transferred to" %>
+    <%= f.collection_select :other_bank_account_id, others, :id, :display_name, prompt: "Choose an account…" %>
+  </div>
+  <%= f.submit "Record transfer", class: "btn btn-primary" %>
+<% end %>

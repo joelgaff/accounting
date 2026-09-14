@@ -1,37 +1,30 @@
-<%= tag.tr id: dom_id(txn), data: { controller: "reveal" } do %>
+<%# One statement line. Unmatched rows carry Match / Create / Transfer panels, switched by the segments controller. %>
+<% default_segment = candidates.any? ? "match" : "create" %>
+<%= tag.tr id: dom_id(txn), class: ("muted" if txn.ignored?), data: { controller: "segments", segments_active_value: default_segment } do %>
   <td><%= txn.posted_on.iso8601 %></td>
   <td class="muted"><%= txn.bank_account.name %></td>
   <td><%= txn.description %></td>
   <td class="muted"><%= txn.reference %></td>
-  <td class="num" style="color:<%= txn.deposit? ? 'var(--success)' : 'var(--danger)' %>;">
-    <%= txn.deposit? ? "+" : "" %>$<%= number_with_precision(txn.amount, precision: 2, delimiter: ",") %>
-  </td>
-  <td><span class="badge badge-<%= { 'unmatched' => 'open', 'matched' => 'paid', 'ignored' => 'partial' }[txn.status] %>"><%= txn.status %></span></td>
-  <td>
-    <% if txn.status == "unmatched" %>
-      <% candidates = (txn.deposit? ? Current.organization.documents.invoices : Current.organization.documents.bills)
-                        .outstanding_between(txn.amount.abs * 0.95, txn.amount.abs * 1.05)
-                        .includes(:contact, :documentable, :payments).limit(20) %>
+  <td class="num <%= txn.deposit? ? 'pos' : 'neg' %>"><%= signed_money(txn.amount) %></td>
+  <td><%= status_badge(txn.status) %></td>
+  <td class="recon-actions">
+    <% if txn.unmatched? %>
+      <div class="segments" role="tablist">
+        <% if candidates.any? %>
+          <button type="button" role="tab" data-segments-target="tab" data-segment="match" data-action="segments#select">Match</button>
+        <% end %>
+        <button type="button" role="tab" data-segments-target="tab" data-segment="create" data-action="segments#select"><%= txn.deposit? ? "Deposit" : "Expense" %></button>
+        <button type="button" role="tab" data-segments-target="tab" data-segment="transfer" data-action="segments#select">Transfer</button>
+        <%= button_to "Ignore", ignore_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>
+      </div>
+      <div id="<%= dom_id(txn, :error) %>"></div>
       <% if candidates.any? %>
-        <%= form_with url: match_bank_transaction_path(txn), method: :post, class: "inline-form" do |f| %>
-          <%= f.select :document_id, candidates.map { |d| [ "#{d.counterparty} — $#{format('%.2f', d.balance_due)} (##{d.id})", d.id ] }, { include_blank: txn.deposit? ? "Match to invoice…" : "Match to bill…" }, style: "font-size:12px;" %>
-          <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
-        <% end %>
+        <div data-segments-target="panel" data-segment="match" hidden><%= render "bank_transactions/panels/match", txn: txn, candidates: candidates %></div>
       <% end %>
-      <% if txn.withdrawal? %>
-        <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "inline-form" do |f| %>
-          <%= f.collection_select :expense_account_id, expense_accts, :id, ->(a) { "#{a.code} #{a.name}" }, { include_blank: "Or new expense…" }, style: "font-size:12px;" %>
-          <%= f.submit "Go", class: "btn btn-secondary", style: "padding:2px 8px;font-size:12px;" %>
-        <% end %>
-      <% end %>
-      <%= button_to "Ignore", ignore_bank_transaction_path(txn), method: :post, class: "btn btn-secondary",
-          form: { style: "display:inline-block;margin-top:4px;" }, style: "padding:2px 8px;font-size:12px;" %>
+      <div data-segments-target="panel" data-segment="create" hidden><%= render "bank_transactions/panels/create", txn: txn %></div>
+      <div data-segments-target="panel" data-segment="transfer" hidden><%= render "bank_transactions/panels/transfer", txn: txn, candidates: candidates %></div>
     <% else %>
-      <span class="muted">
-        <% if txn.matched %>
-          → <%= txn.matched.label %>
-        <% end %>
-      </span>
+      <%= render "bank_transactions/result", txn: txn %>
     <% end %>
   </td>
 <% end %>

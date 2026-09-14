@@ -52,6 +52,8 @@ class BooksReset
     Invoice.where(id: docs.invoices.select(:documentable_id)).delete_all
     Bill.where(id: docs.bills.select(:documentable_id)).delete_all
     Expense.where(id: docs.expenses.select(:documentable_id)).delete_all
+    Deposit.where(id: docs.deposits.select(:documentable_id)).delete_all
+    Transfer.where(id: docs.transfers.select(:documentable_id)).delete_all
     journal_ids = docs.journal_entries.pluck(:documentable_id)
     JournalLine.where(journal_entry_id: journal_ids).delete_all
     JournalEntry.where(id: journal_ids).delete_all
@@ -87,6 +89,8 @@ class BooksReset
       "invoices"           => @org.documents.invoices.count,
       "bills"              => @org.documents.bills.count,
       "expenses"           => @org.documents.expenses.count,
+      "deposits"           => @org.documents.deposits.count,
+      "transfers"          => @org.documents.transfers.count,
       "payments"           => Payment.where(organization: @org).count,
       "journal_entries"    => @org.documents.journal_entries.count,
       "bank_transactions"  => @org.bank_transactions.count,

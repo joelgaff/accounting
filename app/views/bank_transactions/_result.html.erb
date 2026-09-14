@@ -1,0 +1,13 @@
+<% record = txn.matched %>
+<span class="muted">
+  <% if record.is_a?(Payment) %>
+    → <%= record.label %> on <%= link_to record.document.label, document_path_for(record.document) %>
+  <% elsif record.is_a?(Document) %>
+    → <%= link_to "#{record.label} · #{record.display_name}", document_path_for(record) %>
+  <% elsif txn.ignored? %>
+    ignored
+  <% end %>
+</span>
+<% if txn.ignored? %>
+  <%= button_to "Undo", unmatch_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>
+<% end %>

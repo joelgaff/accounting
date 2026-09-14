@@ -1,0 +1,18 @@
+<%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
+  <div class="field">
+    <%= f.label :account_id, txn.deposit? ? "Income account" : "Expense category" %>
+    <% accounts = txn.deposit? ? @income_accts : @expense_accts %>
+    <%= f.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}#{txn.deposit? && !a.is_a?(Plutus::Revenue) ? " (#{a.type.demodulize})" : ""}" }, prompt: "Choose…" %>
+  </div>
+  <% if @tax_rates.any? %>
+    <div class="field">
+      <%= f.label :tax_rate_id, "Tax included" %>
+      <%= f.collection_select :tax_rate_id, @tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, include_blank: "None" %>
+    </div>
+  <% end %>
+  <div class="field">
+    <%= f.label :contact_name, txn.deposit? ? "From (optional)" : "Vendor (optional)" %>
+    <%= f.text_field :contact_name, list: dom_id(Current.organization, :contact_names), placeholder: "Existing or new contact" %>
+  </div>
+  <%= f.submit (txn.deposit? ? "Create deposit" : "Create expense"), class: "btn btn-primary" %>
+<% end %>

@@ -1,6 +1,9 @@
 <header class="page-header">
   <h1>Bank accounts</h1>
-  <%= link_to "New bank account", new_bank_account_path, class: "btn btn-primary" %>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "Transfers", transfers_path, class: "btn btn-secondary" %>
+    <%= link_to "New bank account", new_bank_account_path, class: "btn btn-primary" %>
+  </div>
 </header>
 
 <p class="muted" style="margin:0 0 16px;font-size:13px;">

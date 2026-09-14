@@ -14,6 +14,9 @@ class BankAccount < ApplicationRecord
   belongs_to :account, class_name: "Plutus::Account", autosave: true
   has_many   :payments,          dependent: :restrict_with_error
   has_many   :expenses,          dependent: :restrict_with_error
+  has_many   :deposits,          dependent: :restrict_with_error
+  has_many   :transfers_out, class_name: "Transfer", foreign_key: :from_bank_account_id, dependent: :restrict_with_error, inverse_of: :from_bank_account
+  has_many   :transfers_in,  class_name: "Transfer", foreign_key: :to_bank_account_id,   dependent: :restrict_with_error, inverse_of: :to_bank_account
   has_many   :bank_transactions, dependent: :restrict_with_error
 
   validates :kind,      inclusion: { in: KINDS }

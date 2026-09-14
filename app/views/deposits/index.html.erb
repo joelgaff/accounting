@@ -1,0 +1,31 @@
+<header class="page-header">
+  <h1>Deposits</h1>
+  <%= link_to "New deposit", new_deposit_path, class: "btn btn-primary" %>
+</header>
+
+<% if @documents.any? %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>From</th>
+        <th>Account</th>
+        <th>Into</th>
+        <th class="num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @documents.each do |document| %>
+        <tr id="<%= dom_id(document) %>">
+          <td><%= document.date.iso8601 %></td>
+          <td><%= link_to document.display_name, deposit_path(document) %></td>
+          <td><%= document.line_items.filter_map { |li| li.account&.name }.uniq.to_sentence %></td>
+          <td><%= document.deposit.bank_account.name %></td>
+          <td class="num"><%= money(document.total) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No deposits yet. Money in that isn't an invoice payment lands here.</p>
+<% end %>

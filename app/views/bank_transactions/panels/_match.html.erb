@@ -1,0 +1,8 @@
+<%= form_with url: match_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
+  <div class="field">
+    <%= f.select :document_id,
+          candidates.documents.map { |d| [ "#{d.label} — #{d.display_name} — #{money(d.settleable? ? d.balance_due : d.total)}", d.id ] },
+          { prompt: "Choose…" } %>
+  </div>
+  <%= f.submit "Match", class: "btn btn-primary" %>
+<% end %>

@@ -1,0 +1,28 @@
+<% transfer = @document.transfer %>
+<header class="page-header">
+  <h1><%= @document.label %></h1>
+</header>
+
+<div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">From</div><div><%= transfer.from_bank_account.display_name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">To</div><div><%= transfer.to_bank_account.display_name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Date</div><div><%= @document.date.strftime("%b %-d, %Y") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div><strong><%= money(@document.total) %></strong></div></div>
+  <% if @document.reference.present? %>
+    <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Reference</div><div><%= @document.reference %></div></div>
+  <% end %>
+  <% if @document.memo.present? %>
+    <div style="grid-column:1/-1;"><div class="muted" style="font-size:12px;text-transform:uppercase;">Memo</div><div><%= simple_format @document.memo %></div></div>
+  <% end %>
+  <div style="grid-column:1/-1;">
+    <div class="muted" style="font-size:12px;text-transform:uppercase;">Statement lines</div>
+    <div>
+      <% sides = @document.bank_transactions.to_a %>
+      <% if sides.empty? %>none linked yet<% else %>
+        <%= sides.map { |t| "#{t.bank_account.name} #{t.posted_on.iso8601}" }.to_sentence %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:24px;"><%= link_to "← Back to transfers", transfers_path %></p>

@@ -775,3 +775,28 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .app-body { display: block; }
   .app-main { padding: 0; }
 }
+
+/* ── Reconcile row: Match / Create / Transfer segments ──────────────────── */
+
+.recon-table .recon-actions { width: 380px; }
+.segments { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 6px; }
+.segments [role="tab"] {
+  font: inherit; font-size: 11.5px; padding: 3px 10px; cursor: pointer;
+  border: 1px solid var(--rule-lit); border-radius: var(--radius-sm);
+  background: transparent; color: var(--dim);
+}
+.segments [role="tab"]:hover { color: var(--ink); background: rgba(41, 74, 120, 0.22); }
+.segments [role="tab"][aria-selected="true"] {
+  color: var(--cyan); border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.1);
+}
+.segments .segments-aside, .segments-aside { margin-left: auto; padding: 3px 10px; font-size: 11.5px; }
+.segments form.button_to { margin-left: auto; }
+.segments form.button_to .segments-aside { margin-left: 0; }
+.recon-form { max-width: none; }
+.recon-form .field { margin: 0 0 6px; }
+.recon-form .field label { font-size: 11px; }
+.recon-form select, .recon-form input[type="text"] { font-size: 12px; width: 100%; }
+.recon-form .btn { padding: 3px 10px; font-size: 11.5px; }
+.recon-error { margin: 4px 0 8px; font-size: 12px; }
+.badge-received { background: rgba(52, 211, 153, 0.1);  color: var(--credit);  border-color: rgba(52, 211, 153, 0.45); }
+.badge-posted   { background: rgba(167, 139, 250, 0.1); color: var(--violet);  border-color: rgba(167, 139, 250, 0.45); }
