@@ -61,7 +61,8 @@
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
   `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs
   `CONFIRM=<org name>`. `bin/xero-prod <status|import DIR|reset [scope]>` rsyncs a bundle
-  to the Hatchbox server and runs the same tasks there.
+  to the Hatchbox server and runs the same tasks there; it needs `HATCHBOX_HOST=user@host` in
+  the environment (this repo is public, so the server address is never committed).
 
 ## Run locally
 - `bin/dev` boots the Launchpad SSO hub (`../launchpad`, port 3000) and this app (port 3001)

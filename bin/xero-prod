@@ -6,12 +6,17 @@
 #   bin/xero-prod reset                                     # keeps the chart; needs CONFIRM=<org>
 #   bin/xero-prod reset everything
 #
-# The bundle directory is rsynced to the server first. Override the target with
-# HATCHBOX_HOST (default deploy@SERVER-IP-REDACTED) and HATCHBOX_APP (default accounting).
+# The bundle directory is rsynced to the server first. The target comes from
+# the environment, not from this public repo: set HATCHBOX_HOST (user@host, or
+# an alias from ~/.ssh/config) and optionally HATCHBOX_APP (default accounting).
 set -euo pipefail
 
-host="${HATCHBOX_HOST:-deploy@SERVER-IP-REDACTED}"
+host="${HATCHBOX_HOST:-}"
 app="${HATCHBOX_APP:-accounting}"
+if [ -z "$host" ]; then
+  echo "Set HATCHBOX_HOST=user@host (or an ~/.ssh/config alias) before running $0." >&2
+  exit 1
+fi
 remote_dir="~/$app/current"
 remote_bundle="~/$app/shared/xero-bundle"
 
