@@ -758,8 +758,14 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 
   /* Wide tables keep their shape and scroll inside the panel rather than
      squeezing columns into unreadable stacks. */
+  /* The table becomes its own scroll box; its row groups stay one table so
+     header and body columns line up and the last column is reachable. */
   .data-table { display: block; overflow-x: auto; white-space: nowrap; }
-  .data-table thead, .data-table tbody, .data-table tfoot { display: table; width: 100%; }
+  .data-table thead { display: table-header-group; }
+  .data-table tbody { display: table-row-group; }
+  .data-table tfoot { display: table-footer-group; }
+  .data-table tr    { display: table-row; }
+  .data-table td.num, .data-table th.num { padding-left: 16px; }
   /* Sheets stay real tables (so header and body columns line up) inside their
      own scroll box, and their controls are big enough to hit and read without
      iOS zooming in on focus. */
