@@ -6,15 +6,17 @@
 #   bin/xero-prod reset                                     # keeps the chart; needs CONFIRM=<org>
 #   bin/xero-prod reset everything
 #
-# The bundle directory is rsynced to the server first. The target comes from
-# the environment, not from this public repo: set HATCHBOX_HOST (user@host, or
-# an alias from ~/.ssh/config) and optionally HATCHBOX_APP (default accounting).
+# The bundle directory is rsynced to the server first. The target lives in the
+# encrypted credentials (hatchbox.host), never in this public repo's plain
+# files; HATCHBOX_HOST in the environment overrides it. HATCHBOX_APP defaults
+# to accounting.
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
-host="${HATCHBOX_HOST:-}"
+host="${HATCHBOX_HOST:-$(bin/rails credentials:fetch hatchbox.host 2>/dev/null | tail -1)}"
 app="${HATCHBOX_APP:-accounting}"
 if [ -z "$host" ]; then
-  echo "Set HATCHBOX_HOST=user@host (or an ~/.ssh/config alias) before running $0." >&2
+  echo "No server configured: add hatchbox.host to credentials or set HATCHBOX_HOST=user@host." >&2
   exit 1
 fi
 remote_dir="~/$app/current"
