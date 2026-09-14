@@ -30,31 +30,32 @@
   </style>
 <% end %>
 
+<% invoice = @document.invoice %>
 <div class="print-hide" style="margin-bottom:16px;">
   <button onclick="window.print()" class="btn btn-primary">Print / Save as PDF</button>
-  <%= link_to "Email to customer", email_invoice_path(@invoice), class: "btn btn-secondary" %>
-  <%= link_to "← Back", invoice_path(@invoice), class: "btn btn-secondary" %>
+  <%= link_to "Email to customer", email_invoice_path(@document), class: "btn btn-secondary" %>
+  <%= link_to "← Back", invoice_path(@document), class: "btn btn-secondary" %>
 </div>
 
 <div class="doc">
 <div class="invoice-header">
   <div>
     <h1>Invoice</h1>
-    <p style="margin:8px 0 0;color:var(--text-muted);">#<%= @invoice.id %></p>
+    <p style="margin:8px 0 0;color:var(--text-muted);">#<%= @document.id %></p>
   </div>
   <div class="invoice-meta">
-    <strong><%= @invoice.organization.name %></strong><br>
-    Issued <%= @invoice.issued_on.strftime("%b %-d, %Y") %><br>
-    Due <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+    <strong><%= @document.organization.name %></strong><br>
+    Issued <%= @document.date.strftime("%b %-d, %Y") %><br>
+    Due <%= invoice.due_date.strftime("%b %-d, %Y") %>
   </div>
 </div>
 
 <div class="invoice-bill">
   <div>
     <h3>Billed to</h3>
-    <div><%= @invoice.customer_display %></div>
-    <% if @invoice.contact %>
-      <% c = @invoice.contact %>
+    <div><%= @document.counterparty %></div>
+    <% if @document.contact %>
+      <% c = @document.contact %>
       <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">
         <%= c.email %><br>
         <%= [c.address, [c.city, c.region, c.postal_code].compact_blank.join(", "), c.country].compact_blank.join("\n").then { |a| simple_format a, {}, wrapper_tag: "span" } if [c.address, c.city, c.country].any?(&:present?) %>
@@ -63,15 +64,15 @@
   </div>
   <div>
     <h3>Balance due</h3>
-    <div style="font-size:24px;font-weight:600;">$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></div>
-    <div style="font-size:12px;color:var(--text-muted);">of $<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></div>
+    <div style="font-size:24px;font-weight:600;">$<%= number_with_precision(@document.balance_due, precision: 2, delimiter: ",") %></div>
+    <div style="font-size:12px;color:var(--text-muted);">of $<%= number_with_precision(@document.total, precision: 2, delimiter: ",") %></div>
   </div>
 </div>
 
 <table class="invoice-lines">
   <thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead>
   <tbody>
-    <% @invoice.line_items.each do |li| %>
+    <% @document.line_items.each do |li| %>
       <tr>
         <td><%= li.description.presence || li.account.name %></td>
         <td class="num"><%= li.quantity.to_d.frac.zero? ? li.quantity.to_i : li.quantity %></td>
@@ -85,9 +86,9 @@
 <table class="totals">
   <tr>
     <td>Subtotal</td>
-    <td class="num">$<%= number_with_precision(@invoice.subtotal, precision: 2, delimiter: ",") %></td>
+    <td class="num">$<%= number_with_precision(@document.subtotal, precision: 2, delimiter: ",") %></td>
   </tr>
-  <% @invoice.line_ledger_legs[:taxes].each do |tax, amt| %>
+  <% @document.line_ledger_legs[:taxes].each do |tax, amt| %>
     <tr>
       <td><%= tax.name %></td>
       <td class="num">$<%= number_with_precision(amt, precision: 2, delimiter: ",") %></td>
@@ -95,16 +96,16 @@
   <% end %>
   <tr class="total">
     <td>Total</td>
-    <td class="num">$<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></td>
+    <td class="num">$<%= number_with_precision(@document.total, precision: 2, delimiter: ",") %></td>
   </tr>
-  <% if @invoice.paid_amount.positive? %>
+  <% if @document.paid_amount.positive? %>
     <tr>
       <td>Paid</td>
-      <td class="num">−$<%= number_with_precision(@invoice.paid_amount, precision: 2, delimiter: ",") %></td>
+      <td class="num">−$<%= number_with_precision(@document.paid_amount, precision: 2, delimiter: ",") %></td>
     </tr>
     <tr class="total">
       <td>Balance due</td>
-      <td class="num">$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></td>
+      <td class="num">$<%= number_with_precision(@document.balance_due, precision: 2, delimiter: ",") %></td>
     </tr>
   <% end %>
 </table>

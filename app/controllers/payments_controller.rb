@@ -1,10 +1,10 @@
 class PaymentsController < ApplicationController
-  before_action :load_payable
+  before_action :load_document
 
   def new
-    @payment = @payable.payments.build(
+    @payment = @document.payments.build(
       organization: Current.organization,
-      amount: @payable.balance_due,
+      amount: @document.balance_due,
       paid_on: Date.current,
       bank_account: Current.organization.settings.bank_account
     )
@@ -12,9 +12,9 @@ class PaymentsController < ApplicationController
   end
 
   def create
-    @payment = @payable.payments.build(payment_params.merge(organization: Current.organization))
+    @payment = @document.payments.build(payment_params.merge(organization: Current.organization))
     if @payment.save
-      redirect_to redirect_target, notice: "Payment recorded."
+      redirect_to helpers.document_path_for(@document), notice: "Payment recorded."
     else
       load_bank_options
       render :new, status: :unprocessable_entity
@@ -23,20 +23,12 @@ class PaymentsController < ApplicationController
 
   private
 
-  def load_payable
-    if params[:invoice_id]
-      @payable = Current.organization.invoices.find(params[:invoice_id])
-    else
-      @payable = Current.organization.expenses.find(params[:expense_id])
-    end
+  def load_document
+    @document = Current.organization.documents.find(params[:document_id])
   end
 
   def load_bank_options
     @bank_accounts = Current.organization.bank_accounts.active.ordered
-  end
-
-  def redirect_target
-    @payable.is_a?(Invoice) ? invoice_path(@payable) : expense_path(@payable)
   end
 
   def payment_params

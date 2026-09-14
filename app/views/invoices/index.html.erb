@@ -6,7 +6,7 @@
   </div>
 </header>
 
-<% if @invoices.any? %>
+<% if @documents.any? %>
   <table class="data-table">
     <thead>
       <tr>
@@ -19,14 +19,14 @@
       </tr>
     </thead>
     <tbody>
-      <% @invoices.each do |invoice| %>
-        <tr>
-          <td><%= invoice.issued_on.iso8601 %></td>
-          <td><%= link_to invoice.customer_display, invoice_path(invoice) %></td>
-          <td><%= invoice.due_date.iso8601 %></td>
-          <td><span class="badge badge-<%= invoice.status %>"><%= invoice.status %></span></td>
-          <td class="num">$<%= number_with_precision(invoice.amount, precision: 2, delimiter: ",") %></td>
-          <td class="num">$<%= number_with_precision(invoice.balance_due, precision: 2, delimiter: ",") %></td>
+      <% @documents.each do |document| %>
+        <tr id="<%= dom_id(document) %>">
+          <td><%= document.date.iso8601 %></td>
+          <td><%= link_to document.counterparty, invoice_path(document) %></td>
+          <td><%= document.invoice.due_date.iso8601 %></td>
+          <td><%= status_badge(document.status) %></td>
+          <td class="num"><%= money(document.total) %></td>
+          <td class="num"><%= money(document.balance_due) %></td>
         </tr>
       <% end %>
     </tbody>

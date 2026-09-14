@@ -23,6 +23,14 @@
   frame IDs and stream targets — never handwritten strings.
 - **Delegated types** for "same role, different attributes" modeling; keep superclasses lean
   (only universal FKs on the parent), type-specific attributes on the type tables.
+  Every ledger transaction is a `Document` (organisation, contact, date, reference, totals,
+  line items, payments, attachments) with `delegated_type :documentable` → `Invoice`, `Bill`
+  (accrued to AP, takes payments), `Expense` (paid from a bank, Xero's Spend Money),
+  `JournalEntry`. A type implements the `Documentable` interface: `ledger_legs(document)`,
+  `ledger_description(document)`, `status`, `party_name`, `totals_for(document)`, `line_items?`,
+  and for settleable types `settlement_legs(bank_account)` / `settlement_direction`. Document
+  posts to the ledger; types never touch it. URLs use the document id (`/invoices/:id`),
+  payments nest under `/documents/:id/payments`, and controllers subclass `DocumentsController`.
 - **Shared behavior via concerns** with a common interface; let each type define divergent pieces.
 - **Name entities, not values** (no `Year` table with a `year` column).
 - **Tokenized public shares** (`has_secure_token` + unauthenticated token-scoped controller)

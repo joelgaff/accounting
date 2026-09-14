@@ -1,0 +1,9 @@
+<% if document.errors.any? %>
+  <div class="form-errors">
+    <ul>
+      <% document.errors.full_messages.each do |msg| %>
+        <li><%= msg.sub(/\ADocumentable /, "").upcase_first %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

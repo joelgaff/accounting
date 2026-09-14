@@ -17,6 +17,10 @@ class Imports::XeroJournalsServiceTest < ActiveSupport::TestCase
     Imports::XeroJournalsService.new(file_fixture(fixture).read, organization: @org, **opts).call
   end
 
+  def journal_by_number(n)
+    JournalEntry.joins(:document).where(documents: { organization_id: @org.id }).find_by!(xero_journal_number: n).document
+  end
+
   test "posts the report-shaped export, skipping document journals by default" do
     result = import("xero/journals.csv")
 
@@ -26,12 +30,12 @@ class Imports::XeroJournalsServiceTest < ActiveSupport::TestCase
     assert_match(/journal 8: account "999"/, result.errors.first)
     assert_match(/journal 9: does not balance \(off by -2\.00\)/, result.errors.last)
 
-    conv = @org.journal_entries.find_by!(xero_journal_number: "1")
-    assert_equal Date.new(2019, 1, 1), conv.posted_on
-    assert_equal "Conversion Balance: Opening balance", conv.narrative
+    conv = journal_by_number("1")
+    assert_equal Date.new(2019, 1, 1), conv.date
+    assert_equal "Conversion Balance: Opening balance", conv.journal_entry.narrative
     assert_equal "Conversion", conv.reference
-    assert_equal "CONVERSIONBALANCE", conv.xero_source_type
-    assert_equal BigDecimal("5000"), conv.total_debits
+    assert_equal "CONVERSIONBALANCE", conv.journal_entry.xero_source_type
+    assert_equal BigDecimal("5000"), conv.total
 
     assert_equal BigDecimal("5760"), @bank.balance    # 5000 - 240 + 1000
     assert_equal BigDecimal("290"),  @office.balance  # 240 + 50
@@ -52,8 +56,8 @@ class Imports::XeroJournalsServiceTest < ActiveSupport::TestCase
     assert_equal 1, result.skipped
     assert_equal BigDecimal("-555.5"), @bank.balance
     assert_equal BigDecimal("500"),    @savings.balance
-    assert_equal "Spend money: Fuel", @org.journal_entries.find_by!(xero_journal_number: "41").narrative
-    assert_equal "Transfer: #43",     @org.journal_entries.find_by!(xero_journal_number: "43").narrative
+    assert_equal "Spend money: Fuel", journal_by_number("41").journal_entry.narrative
+    assert_equal "Transfer: #43",     journal_by_number("43").journal_entry.narrative
   end
 
   test "re-import replaces entries in place without double posting" do
@@ -62,9 +66,9 @@ class Imports::XeroJournalsServiceTest < ActiveSupport::TestCase
 
     assert_equal 0, result.created
     assert_equal 4, result.updated
-    assert_equal 4, @org.journal_entries.count
+    assert_equal 4, @org.documents.journal_entries.count
     assert_equal BigDecimal("5760"), @bank.balance
-    assert_equal 4, Plutus::Entry.where(commercial_document_type: "JournalEntry").count
+    assert_equal 4, Plutus::Entry.where(commercial_document: @org.documents.journal_entries).count
   end
 
   test "rejects a file without the columns it needs" do

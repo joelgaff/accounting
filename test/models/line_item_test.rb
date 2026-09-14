@@ -12,8 +12,8 @@ class LineItemTest < ActiveSupport::TestCase
   end
 
   test "multi-line invoice posts one credit per revenue account" do
-    inv = @org.invoices.create!(
-      client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar,
+    inv = @org.documents.create!(
+      date: Date.current, documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar),
       line_items_attributes: [
         { description: "Discovery",  quantity: 1, unit_amount: 500, account_id: @sales1.id },
         { description: "Delivery",   quantity: 2, unit_amount: 750, account_id: @sales1.id },
@@ -23,7 +23,7 @@ class LineItemTest < ActiveSupport::TestCase
     inv.reload
     assert_equal BigDecimal("2400"), inv.subtotal      # 500 + 1500 + 400
     assert_equal BigDecimal("0"),    inv.tax_amount
-    assert_equal BigDecimal("2400"), inv.amount
+    assert_equal BigDecimal("2400"), inv.total
 
     # Balances: AR debit 2400, Consulting credit 2000, Retainer credit 400
     assert_equal BigDecimal("2400"), @ar.balance
@@ -34,8 +34,8 @@ class LineItemTest < ActiveSupport::TestCase
 
   test "mixed-tax invoice posts one liability leg per tax rate" do
     zero_tax = @org.tax_rates.create!(name: "Zero", rate: 0.0, liability_account: @tax_l)
-    inv = @org.invoices.create!(
-      client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar,
+    inv = @org.documents.create!(
+      date: Date.current, documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar),
       line_items_attributes: [
         { description: "Taxable",  quantity: 1, unit_amount: 100, account_id: @sales1.id, tax_rate_id: @gst.id },
         { description: "Exempt",   quantity: 1, unit_amount: 50,  account_id: @sales1.id, tax_rate_id: zero_tax.id }
@@ -44,24 +44,24 @@ class LineItemTest < ActiveSupport::TestCase
     inv.reload
     assert_equal BigDecimal("150"),  inv.subtotal
     assert_equal BigDecimal("10"),   inv.tax_amount    # only the taxable line
-    assert_equal BigDecimal("160"),  inv.amount
+    assert_equal BigDecimal("160"),  inv.total
     assert_equal BigDecimal("10"),   @tax_l.balance
   end
 
   test "removing a line via _destroy in nested attributes rebalances totals" do
-    inv = @org.invoices.create!(
-      client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar,
+    inv = @org.documents.create!(
+      date: Date.current, documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar),
       line_items_attributes: [
         { description: "A", quantity: 1, unit_amount: 100, account_id: @sales1.id },
         { description: "B", quantity: 1, unit_amount: 200, account_id: @sales1.id }
       ]
     )
-    assert_equal BigDecimal("300"), inv.reload.amount
+    assert_equal BigDecimal("300"), inv.reload.total
     assert_equal 2, inv.line_items.count
   end
 
   test "invoice without any line items is invalid" do
-    inv = @org.invoices.build(client_name: "Bad", due_date: Date.current + 30, receivable_account: @ar)
+    inv = @org.documents.build(date: Date.current, documentable: Invoice.new(client_name: "Bad", due_date: Date.current + 30, receivable_account: @ar))
     assert_not inv.valid?
     assert_includes inv.errors[:base].join, "line item"
   end

@@ -4,10 +4,7 @@ require "test_helper"
 class BankPickersTest < ActionDispatch::IntegrationTest
   setup do
     @org = organizations(:one)
-    Organization.where.not(id: @org.id).destroy_all
-    payload = { sub: "u-1", email: "joel@example.com", name: "Joel", apps: [ "accounting" ],
-                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
-    cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
+    sign_in_as_launchpad_user(@org)
     @bank = create_bank_account(@org, name: "PNC Checking", code: "1140")
     @card = create_bank_account(@org, name: "Rewards Card", code: "2068", kind: "credit_card")
     create_bank_account(@org, name: "Closed", code: "0900").archive!
@@ -38,13 +35,12 @@ class BankPickersTest < ActionDispatch::IntegrationTest
 
     ar    = Plutus::Asset.find_by!(code: "1200")
     sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
-    inv = @org.invoices.create!(client_name: "Acme", amount: 100, due_date: Date.current + 30,
-                                receivable_account: ar, revenue_account: sales)
-    get new_invoice_payment_path(inv)
+    inv = create_invoice(@org, client_name: "Acme", amount: 100, receivable: ar, revenue: sales)
+    get new_document_payment_path(inv)
     assert_response :success
     assert_select "select[name='payment[bank_account_id]'] option", text: "2068 — Rewards Card"
 
-    post invoice_payments_path(inv), params: { payment: { amount: 100, paid_on: Date.current, bank_account_id: @card.id } }
+    post document_payments_path(inv), params: { payment: { amount: 100, paid_on: Date.current, bank_account_id: @card.id } }
     assert_redirected_to invoice_path(inv)
     assert_equal BigDecimal("-100"), @card.reload.balance   # a receipt debits the card, so the amount owed falls
   end

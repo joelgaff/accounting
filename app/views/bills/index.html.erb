@@ -1,0 +1,35 @@
+<header class="page-header">
+  <h1>Bills</h1>
+  <%= link_to "New bill", new_bill_path, class: "btn btn-primary" %>
+</header>
+
+<% if @documents.any? %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Vendor</th>
+        <th>Category</th>
+        <th>Payable to</th>
+        <th>Status</th>
+        <th class="num">Amount</th>
+        <th class="num">Balance due</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @documents.each do |document| %>
+        <tr id="<%= dom_id(document) %>">
+          <td><%= document.date.iso8601 %></td>
+          <td><%= link_to document.counterparty, bill_path(document) %></td>
+          <td><%= document.bill.category_display %></td>
+          <td><%= document.bill.payable_account.name %></td>
+          <td><%= status_badge(document.status) %></td>
+          <td class="num"><%= money(document.total) %></td>
+          <td class="num"><%= money(document.balance_due) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="empty-state">No bills yet.</p>
+<% end %>

@@ -26,10 +26,10 @@ class RecurringInvoiceTest < ActiveSupport::TestCase
   test "generate! creates an Invoice with the line-items template and advances next_run_on" do
     ri = build_recurring(next_run_on: Date.new(2026, 7, 15))
     invoice = nil
-    assert_difference -> { @org.invoices.count }, 1 do
+    assert_difference -> { @org.documents.invoices.count }, 1 do
       invoice = ri.generate!(as_of: Date.new(2026, 7, 15))
     end
-    assert_equal BigDecimal("500"), invoice.amount
+    assert_equal BigDecimal("500"), invoice.total
     assert_equal 1, invoice.line_items.size
     ri.reload
     assert_equal Date.new(2026, 8, 15), ri.next_run_on
@@ -54,7 +54,7 @@ class RecurringInvoiceTest < ActiveSupport::TestCase
     future      = build_recurring(next_run_on: Date.current + 5.days, client_name: "Future")
     paused      = build_recurring(next_run_on: Date.current, active: false, client_name: "Paused")
 
-    assert_difference -> { @org.invoices.count }, 1 do
+    assert_difference -> { @org.documents.invoices.count }, 1 do
       GenerateRecurringInvoicesJob.new.perform(as_of: Date.current)
     end
     assert_equal Date.current + 5.days, future.reload.next_run_on   # unchanged

@@ -3,10 +3,7 @@ require "test_helper"
 class ImportPagesTest < ActionDispatch::IntegrationTest
   setup do
     @org = organizations(:one)
-    Organization.where.not(id: @org.id).destroy_all
-    payload = { sub: "u-1", email: "joel@example.com", name: "Joel", apps: [ "accounting" ],
-                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
-    cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
+    sign_in_as_launchpad_user(@org)
   end
 
   test "imports index lists the journal report and tax rates importers" do
@@ -28,7 +25,7 @@ class ImportPagesTest < ActionDispatch::IntegrationTest
 
     post imports_journals_path, params: { file: fixture_file_upload("xero/journals.csv", "text/csv") }
     assert_redirected_to journal_entries_path
-    assert_equal 4, @org.journal_entries.count
+    assert_equal 4, @org.documents.journal_entries.count
     assert_match(/Created 4/, flash[:notice])
   end
 

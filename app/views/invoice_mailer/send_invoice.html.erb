@@ -1,4 +1,4 @@
-<p>Hi <%= @invoice.customer_display %>,</p>
+<p>Hi <%= @invoice.counterparty %>,</p>
 
 <% if @body.present? %>
   <%= simple_format @body %>
@@ -11,8 +11,8 @@
 <h2>Invoice #<%= @invoice.id %></h2>
 <p>
   <strong>From:</strong> <%= @invoice.organization.name %><br>
-  <strong>To:</strong> <%= @invoice.customer_display %><br>
-  <strong>Due date:</strong> <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+  <strong>To:</strong> <%= @invoice.counterparty %><br>
+  <strong>Due date:</strong> <%= @invoice.invoice.due_date.strftime("%b %-d, %Y") %>
 </p>
 
 <table cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse;width:100%;max-width:500px;">
@@ -22,17 +22,17 @@
   <tbody>
     <tr>
       <td>Services rendered</td>
-      <td align="right">$<%= number_with_precision(@invoice.subtotal || @invoice.amount, precision: 2, delimiter: ",") %></td>
+      <td align="right">$<%= number_with_precision(@invoice.subtotal, precision: 2, delimiter: ",") %></td>
     </tr>
     <% if @invoice.tax_amount.positive? %>
       <tr>
-        <td>Tax (<%= @invoice.tax_rate_display %>)</td>
+        <td>Tax (<%= @invoice.invoice.tax_rate_display %>)</td>
         <td align="right">$<%= number_with_precision(@invoice.tax_amount, precision: 2, delimiter: ",") %></td>
       </tr>
     <% end %>
     <tr style="background:#f4f4f4;font-weight:bold;">
       <td>Total due</td>
-      <td align="right">$<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></td>
+      <td align="right">$<%= number_with_precision(@invoice.total, precision: 2, delimiter: ",") %></td>
     </tr>
   </tbody>
 </table>

@@ -63,8 +63,7 @@ class BankAccountTest < ActiveSupport::TestCase
     bank = create_bank_account(@org, name: "Bank")
     ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
     sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
-    inv = @org.invoices.create!(client_name: "Acme", amount: 100, due_date: Date.current + 30,
-                                receivable_account: ar, revenue_account: sales)
+    inv = create_invoice(@org, client_name: "Acme", amount: 100, receivable: ar, revenue: sales)
     inv.payments.create!(organization: @org, amount: 100, paid_on: Date.current, bank_account: bank)
     assert_not bank.destroy
   end

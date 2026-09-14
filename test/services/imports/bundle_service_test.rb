@@ -7,6 +7,10 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     @bundle = file_fixture("xero/bundle")
   end
 
+  def invoice_by_number(n)
+    Invoice.joins(:document).where(documents: { organization_id: @org.id }).find_by!(xero_invoice_number: n).document
+  end
+
   test "runs the bundle in order and wires settings from settings.yml" do
     report = Imports::BundleService.new(@bundle, organization: @org).call
 
@@ -19,20 +23,20 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     assert_equal "Main Checking",       s.bank_account.name          # matched by name, no code
 
     assert_equal 6, @org.plutus_accounts.count
-    assert_equal 2, @org.invoices.count
-    assert_equal 1, @org.expenses.count
+    assert_equal 2, @org.documents.invoices.count
+    assert_equal 1, @org.documents.bills.count
     assert_equal 3, Payment.count
 
     # BankAccount on the row wins; a blank one falls back to Settings.
-    assert_equal "Old Bank",      @org.invoices.find_by!(xero_invoice_number: "INV-1").payments.sole.bank_account.name
-    assert_equal "Main Checking", @org.invoices.find_by!(xero_invoice_number: "INV-2").payments.sole.bank_account.name
+    assert_equal "Old Bank",      invoice_by_number("INV-1").payments.sole.bank_account.name
+    assert_equal "Main Checking", invoice_by_number("INV-2").payments.sole.bank_account.name
 
     # journals.csv posts the conversion balance and spend money; the ACCREC journal
     # is skipped because invoices.csv already carried INV-1.
     journals = report.steps.find { |s| s.name == "journals" }.result
     assert_equal 2, journals.created, journals.errors.inspect
     assert_equal 1, journals.skipped
-    assert_equal 2, @org.journal_entries.count
+    assert_equal 2, @org.documents.journal_entries.count
     assert_equal BigDecimal("460"), s.bank_account.balance     # 100 opening + 500 INV-2 - 120 BILL-1 - 20 domain
     assert_equal 2, report.summary["journals"]
 
@@ -47,7 +51,7 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     assert_not report.failed?, report.to_s
     assert_equal 0, report.steps.find { |s| s.name == "sales invoices" }.result.created
     assert_equal 2, report.steps.find { |s| s.name == "sales invoices" }.result.updated
-    assert_equal 2, @org.invoices.count
+    assert_equal 2, @org.documents.invoices.count
     assert_equal 3, Payment.count
   end
 
@@ -60,7 +64,7 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
     assert_match(/DRY RUN/, report.to_s)
 
     assert_equal 0, @org.plutus_accounts.count
-    assert_equal 0, @org.invoices.count
+    assert_equal 0, @org.documents.invoices.count
     assert_equal 0, Payment.count
     assert_nil @org.reload.settings&.bank_account, "dry run should not leave a settings row behind"
   end
@@ -72,7 +76,7 @@ class Imports::BundleServiceTest < ActiveSupport::TestCase
 
       assert report.failed?
       assert_match(/chart_of_accounts.csv not found/, report.fatal)
-      assert_equal 0, @org.invoices.count
+      assert_equal 0, @org.documents.invoices.count
     end
   end
 

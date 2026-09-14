@@ -21,13 +21,12 @@ class RecurringInvoice < ApplicationRecord
   # Materialize one real Invoice for the current period and advance the schedule.
   def generate!(as_of: Date.current)
     ActiveRecord::Base.transaction do
-      invoice = organization.invoices.build(
-        contact:            contact,
-        client_name:        client_name,
-        issued_on:          as_of,
-        due_date:           as_of + net_days.days,
-        receivable_account: receivable_account,
-        reference:          "Recurring ##{id}"
+      invoice = organization.documents.build(
+        contact:      contact,
+        date:         as_of,
+        reference:    "Recurring ##{id}",
+        documentable: Invoice.new(client_name: client_name, due_date: as_of + net_days.days,
+                                  receivable_account: receivable_account)
       )
       line_items.each do |src|
         invoice.line_items.build(

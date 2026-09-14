@@ -10,13 +10,7 @@ class InvoiceTest < ActiveSupport::TestCase
 
   test "creating an invoice posts a balanced entry" do
     assert_difference -> { Plutus::Entry.count } => 1 do
-      @org.invoices.create!(
-        client_name: "Acme",
-        amount: 500,
-        due_date: Date.current + 30,
-        receivable_account: @ar,
-        revenue_account: @sales
-      )
+      create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
     end
 
     assert_equal BigDecimal("500"), @ar.balance
@@ -25,11 +19,20 @@ class InvoiceTest < ActiveSupport::TestCase
   end
 
   test "rejects non-positive amounts" do
-    invoice = @org.invoices.build(
-      client_name: "Acme", amount: 0, due_date: Date.current,
-      receivable_account: @ar, revenue_account: @sales
-    )
-    assert_not invoice.valid?
-    assert_includes invoice.errors[:amount].join, "greater than 0"
+    doc = @org.documents.build(date: Date.current,
+      documentable: Invoice.new(client_name: "Acme", due_date: Date.current, receivable_account: @ar),
+      line_items_attributes: [ { description: "x", quantity: 1, unit_amount: 0, account_id: @sales.id } ])
+    assert_not doc.valid?
+    assert_includes doc.errors[:total].join, "greater than 0"
+  end
+
+  test "status reads open, overdue, partial, paid" do
+    bank = create_bank_account(@org, name: "Bank")
+    inv  = create_invoice(@org, client_name: "Acme", amount: 100, receivable: @ar, revenue: @sales, due_date: Date.current - 1)
+    assert_equal "overdue", inv.status
+    inv.payments.create!(organization: @org, amount: 40, paid_on: Date.current, bank_account: bank)
+    assert_equal "partial", inv.reload.status
+    inv.payments.create!(organization: @org, amount: 60, paid_on: Date.current, bank_account: bank)
+    assert_equal "paid", inv.reload.status
   end
 end

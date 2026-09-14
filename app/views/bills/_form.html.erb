@@ -1,0 +1,49 @@
+<%= form_with model: document, url: bills_path, class: "app-form app-form-wide" do |f| %>
+  <%= render "documents/errors", document: document %>
+
+  <% if vendors.any? %>
+    <div class="field">
+      <%= f.label :contact_id, "Vendor" %>
+      <%= f.collection_select :contact_id, vendors, :id, :name, include_blank: "— pick a vendor or type a name below —" %>
+    </div>
+  <% end %>
+
+  <%= f.fields_for :documentable, document.bill do |bill| %>
+    <div class="field">
+      <%= bill.label :vendor, "Vendor name (used if no vendor picked)" %>
+      <%= bill.text_field :vendor, autofocus: vendors.empty? %>
+    </div>
+
+    <div class="field">
+      <%= f.label :date, "Bill date" %>
+      <%= f.date_field :date %>
+    </div>
+
+    <div class="field">
+      <%= bill.label :payable_account_id, "Accrue to (credit)" %>
+      <%= bill.collection_select :payable_account_id, liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, prompt: "Select a liability account" %>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
+  </div>
+
+  <%= render "shared/line_items_fields", form: f, accounts: expense_accounts, tax_rates: tax_rates %>
+
+  <div class="field">
+    <%= f.label :memo %>
+    <%= f.text_area :memo, rows: 3 %>
+  </div>
+
+  <div class="field">
+    <%= f.label :attachments, "Attachments (PDF, images)" %>
+    <%= f.file_field :attachments, multiple: true %>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "Record bill", class: "btn btn-primary" %>
+    <%= link_to "Cancel", bills_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

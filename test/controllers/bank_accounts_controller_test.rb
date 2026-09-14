@@ -3,10 +3,7 @@ require "test_helper"
 class BankAccountsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @org = organizations(:one)
-    Organization.where.not(id: @org.id).destroy_all
-    payload = { sub: "u-1", email: "joel@example.com", name: "Joel", apps: [ "accounting" ],
-                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
-    cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
+    sign_in_as_launchpad_user(@org)
   end
 
   test "lists bank accounts" do

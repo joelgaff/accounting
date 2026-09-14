@@ -14,7 +14,11 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     @org.settings.update!(payable_account: @ap)
   end
 
-  test "imports Xero bills as expenses accrued to AP" do
+  def bill_by_number(n)
+    Bill.joins(:document).where(documents: { organization_id: @org.id }).find_by!(xero_invoice_number: n).document
+  end
+
+  test "imports Xero bills accrued to AP" do
     csv = file_fixture("xero/bills.csv").read
     result = Imports::XeroBillsService.new(csv, organization: @org).call
 
@@ -22,12 +26,12 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     assert_equal 0, result.skipped, result.errors.inspect
 
     # BILL-500: two lines totaling 140 subtotal, +10% input tax = 14, total 154
-    bill = @org.expenses.find_by!(xero_invoice_number: "BILL-500")
+    bill = bill_by_number("BILL-500")
     assert_equal 2, bill.line_items.count
     assert_equal BigDecimal("140"), bill.subtotal
     assert_equal BigDecimal("14"),  bill.tax_amount
-    assert_equal BigDecimal("154"), bill.amount
-    assert_equal @ap, bill.paid_from_account
+    assert_equal BigDecimal("154"), bill.total
+    assert_equal @ap, bill.bill.payable_account
 
     # Ledger: AP credited 154 (+ BILL-501's 25 = 179 total), Hosting debited subtotals, recoverable asset debited tax
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
@@ -42,7 +46,7 @@ class Imports::XeroBillsServiceTest < ActiveSupport::TestCase
     assert_equal 1, result.created
     assert_empty result.errors
 
-    bill = @org.expenses.find_by!(xero_invoice_number: "BILL-900")
+    bill = bill_by_number("BILL-900")
     assert bill.paid?
     assert_equal BigDecimal("6657"), bill.paid_amount
     assert_equal Date.new(2026, 1, 6), bill.payments.sole.paid_on

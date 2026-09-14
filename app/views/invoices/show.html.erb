@@ -1,53 +1,28 @@
+<% invoice = @document.invoice %>
 <header class="page-header">
-  <h1>Invoice #<%= @invoice.id %></h1>
+  <h1><%= @document.label %></h1>
   <div style="display:flex;gap:8px;align-items:center;">
-    <span class="badge badge-<%= @invoice.status %>"><%= @invoice.status %></span>
-    <%= link_to "Print / PDF", print_invoice_path(@invoice), class: "btn btn-secondary" %>
-    <%= link_to "Email", email_invoice_path(@invoice), class: "btn btn-secondary" %>
-    <% unless @invoice.paid? %>
-      <%= link_to "Record payment", new_invoice_payment_path(@invoice), class: "btn btn-primary" %>
+    <%= status_badge(@document.status) %>
+    <%= link_to "Print / PDF", print_invoice_path(@document), class: "btn btn-secondary" %>
+    <%= link_to "Email", email_invoice_path(@document), class: "btn btn-secondary" %>
+    <% unless @document.paid? %>
+      <%= link_to "Record payment", new_document_payment_path(@document), class: "btn btn-primary" %>
     <% end %>
   </div>
 </header>
 
 <div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Customer</div><div><%= @invoice.customer_display %></div></div>
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Due</div><div><%= @invoice.due_date.strftime("%b %-d, %Y") %></div></div>
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div>$<%= number_with_precision(@invoice.amount, precision: 2, delimiter: ",") %></div></div>
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid</div><div>$<%= number_with_precision(@invoice.paid_amount, precision: 2, delimiter: ",") %></div></div>
-  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Balance due</div><div><strong>$<%= number_with_precision(@invoice.balance_due, precision: 2, delimiter: ",") %></strong></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Customer</div><div><%= @document.counterparty %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Due</div><div><%= invoice.due_date.strftime("%b %-d, %Y") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div><%= money(@document.total) %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid</div><div><%= money(@document.paid_amount) %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Balance due</div><div><strong><%= money(@document.balance_due) %></strong></div></div>
+  <% if @document.reference.present? %>
+    <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Reference</div><div><%= @document.reference %></div></div>
+  <% end %>
 </div>
 
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Payments</h2>
-  <% if @invoice.payments.any? %>
-    <table class="data-table">
-      <thead><tr><th>Date</th><th>Bank</th><th>Reference</th><th class="num">Amount</th></tr></thead>
-      <tbody>
-        <% @invoice.payments.order(paid_on: :desc).each do |p| %>
-          <tr>
-            <td><%= p.paid_on.iso8601 %></td>
-            <td><%= p.bank_account.name %></td>
-            <td><%= p.reference %></td>
-            <td class="num">$<%= number_with_precision(p.amount, precision: 2, delimiter: ",") %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p class="empty-state">No payments recorded.</p>
-  <% end %>
-</section>
-
-<% if @invoice.attachments.any? %>
-  <section style="margin-top:32px;">
-    <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Attachments</h2>
-    <ul>
-      <% @invoice.attachments.each do |a| %>
-        <li><%= link_to a.filename, rails_blob_path(a, disposition: "attachment") %> — <span class="muted"><%= number_to_human_size a.byte_size %></span></li>
-      <% end %>
-    </ul>
-  </section>
-<% end %>
+<%= render "documents/payments", document: @document %>
+<%= render "documents/attachments", document: @document %>
 
 <p style="margin-top:24px;"><%= link_to "← Back to invoices", invoices_path %></p>

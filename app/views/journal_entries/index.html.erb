@@ -3,18 +3,18 @@
   <%= link_to "New journal entry", new_journal_entry_path, class: "btn btn-primary" %>
 </header>
 
-<% if @journal_entries.any? %>
+<% if @documents.any? %>
   <table class="data-table">
     <thead>
       <tr><th>Date</th><th>Narrative</th><th>Reference</th><th class="num">Amount</th></tr>
     </thead>
     <tbody>
-      <% @journal_entries.each do |je| %>
-        <tr>
-          <td><%= je.posted_on.iso8601 %></td>
-          <td><%= link_to je.narrative, journal_entry_path(je) %></td>
-          <td class="muted"><%= je.reference %></td>
-          <td class="num">$<%= number_with_precision(je.total_debits, precision: 2, delimiter: ",") %></td>
+      <% @documents.each do |document| %>
+        <tr id="<%= dom_id(document) %>">
+          <td><%= document.date.iso8601 %></td>
+          <td><%= link_to document.journal_entry.narrative, journal_entry_path(document) %></td>
+          <td class="muted"><%= document.reference %></td>
+          <td class="num"><%= money(document.total) %></td>
         </tr>
       <% end %>
     </tbody>

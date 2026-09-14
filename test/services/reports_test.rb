@@ -11,10 +11,8 @@ class ReportsTest < ActiveSupport::TestCase
     @sales   = Plutus::Revenue.create!(tenant: @org, name: "Sales")
     @hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
 
-    inv = @org.invoices.create!(client_name: "Acme", amount: 1_000, due_date: Date.current + 30,
-                                receivable_account: @ar, revenue_account: @sales)
-    @org.expenses.create!(vendor: "AWS", amount: 200, incurred_on: Date.current,
-                          expense_account: @hosting, paid_from_account: @bank.account)
+    inv = create_invoice(@org, client_name: "Acme", amount: 1_000, receivable: @ar, revenue: @sales)
+    create_expense(@org, vendor: "AWS", amount: 200, category: @hosting, bank_account: @bank)
     inv.payments.create!(organization: @org, amount: 400, paid_on: Date.current, bank_account: @bank)
   end
 

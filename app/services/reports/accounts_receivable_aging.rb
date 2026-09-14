@@ -12,7 +12,7 @@ module Reports
 
     def rows
       @rows ||= outstanding_invoices
-        .group_by { |inv| inv.customer_display }
+        .group_by { |inv| inv.counterparty }
         .map { |name, invs| build_row(name, invs) }
         .sort_by { |r| -r.total }
     end
@@ -28,7 +28,7 @@ module Reports
     private
 
     def outstanding_invoices
-      organization.invoices.includes(:contact, :payments)
+      organization.documents.invoices.includes(:contact, :payments, :documentable)
                   .select { |inv| inv.balance_due.positive? }
     end
 
@@ -36,7 +36,7 @@ module Reports
       buckets = Hash.new(BigDecimal("0"))
       total   = BigDecimal("0")
       invs.each do |inv|
-        b = bucket_for(inv.due_date)
+        b = bucket_for(inv.invoice.due_date)
         buckets[b] += inv.balance_due
         total     += inv.balance_due
       end

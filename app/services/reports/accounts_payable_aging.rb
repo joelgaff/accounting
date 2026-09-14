@@ -12,7 +12,7 @@ module Reports
 
     def rows
       @rows ||= outstanding_bills
-        .group_by { |exp| exp.vendor_display }
+        .group_by { |bill| bill.counterparty }
         .map { |name, exps| build_row(name, exps) }
         .sort_by { |r| -r.total }
     end
@@ -30,20 +30,18 @@ module Reports
     def outstanding_bills
       payable = organization.settings.payable_account
       return [] unless payable
-      organization.expenses.where(paid_from_account: payable)
-                  .includes(:contact, :payments)
-                  .select { |exp| exp.balance_due.positive? }
+      organization.documents.bills.includes(:contact, :payments, :documentable)
+                  .select { |bill| bill.bill.payable_account_id == payable.id && bill.balance_due.positive? }
     end
 
     def build_row(name, exps)
       buckets = Hash.new(BigDecimal("0"))
       total   = BigDecimal("0")
-      exps.each do |exp|
-        # Bills don't have a strict due date; use incurred_on + 30 as a heuristic.
-        due = exp.incurred_on + 30
-        b = bucket_for(due)
-        buckets[b] += exp.balance_due
-        total     += exp.balance_due
+      exps.each do |bill|
+        # Bills don't carry a due date yet; treat them as due 30 days after the bill date.
+        b = bucket_for(bill.date + 30)
+        buckets[b] += bill.balance_due
+        total     += bill.balance_due
       end
       Row.new(contact_name: name, buckets: buckets, total: total)
     end

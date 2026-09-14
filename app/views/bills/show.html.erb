@@ -1,0 +1,31 @@
+<% bill = @document.bill %>
+<header class="page-header">
+  <h1><%= @document.label %></h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <%= status_badge(@document.status) %>
+    <% unless @document.paid? %>
+      <%= link_to "Record payment", new_document_payment_path(@document), class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</header>
+
+<div class="app-form" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:none;">
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Vendor</div><div><%= @document.counterparty %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Date</div><div><%= @document.date.strftime("%b %-d, %Y") %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Category</div><div><%= bill.category_display %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Payable to</div><div><%= bill.payable_account.name %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Amount</div><div><%= money(@document.total) %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Paid</div><div><%= money(@document.paid_amount) %></div></div>
+  <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Balance due</div><div><strong><%= money(@document.balance_due) %></strong></div></div>
+  <% if @document.reference.present? %>
+    <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Reference</div><div><%= @document.reference %></div></div>
+  <% end %>
+  <% if @document.memo.present? %>
+    <div style="grid-column:1/-1;"><div class="muted" style="font-size:12px;text-transform:uppercase;">Memo</div><div><%= simple_format @document.memo %></div></div>
+  <% end %>
+</div>
+
+<%= render "documents/payments", document: @document %>
+<%= render "documents/attachments", document: @document %>
+
+<p style="margin-top:24px;"><%= link_to "← Back to bills", bills_path %></p>

@@ -5,6 +5,7 @@ module ApplicationHelper
     dashboard: %(<path d="M2.5 13.5V9M8 13.5V3M13.5 13.5V6.5"/>),
     contacts:  %(<circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c0-2.5 2.2-4 5-4s5 1.5 5 4"/>),
     invoices:  %(<path d="M3.5 2h9v12l-2.25-1.3L8 14l-2.25-1.3L3.5 14z"/><path d="M6 5.5h4M6 8.5h4"/>),
+    bills:     %(<path d="M4 2.5h8v11l-1.5-1-1.5 1-1.5-1-1.5 1-1.5-1-1.5 1z"/><path d="M6.5 6h3M6.5 8.5h3"/>),
     expenses:  %(<path d="M2.5 4.5h11v7h-11z"/><path d="M2.5 7h11"/><path d="M10.5 9.5h1.5"/>),
     journal:   %(<path d="M4 2.5h8v11H4z"/><path d="M4 5h-1.5M4 8h-1.5M4 11h-1.5"/><path d="M6.5 6h3M6.5 9h3"/>),
     accounts:  %(<path d="M8 2 14 5.5H2z"/><path d="M4 7v4.5M8 7v4.5M12 7v4.5"/><path d="M2.5 13.5h11"/>),
@@ -21,6 +22,19 @@ module ApplicationHelper
     tag.svg(body.html_safe, viewBox: "0 0 16 16", fill: "none", stroke: "currentColor",
             "stroke-width": 1.4, "stroke-linecap": "round", "stroke-linejoin": "round",
             "aria-hidden": true)
+  end
+
+  # /invoices/:id, /bills/:id, ... for whichever type a document is.
+  def document_path_for(document)
+    public_send("#{document.documentable_name}_path", document)
+  end
+
+  def money(amount)
+    "$#{number_with_precision(amount, precision: 2, delimiter: ',')}"
+  end
+
+  def status_badge(status)
+    tag.span(status, class: "badge badge-#{status}")
   end
 
   # Sidebar entry: icon + label, marked active when the current controller is one

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_14_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -71,6 +71,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
     t.index ["organization_id"], name: "index_bank_transactions_on_organization_id"
   end
 
+  create_table "bills", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "payable_account_id", null: false
+    t.datetime "updated_at", null: false
+    t.string "vendor", null: false
+    t.string "xero_invoice_number"
+    t.index ["payable_account_id"], name: "index_bills_on_payable_account_id"
+    t.index ["xero_invoice_number"], name: "index_bills_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
+  end
+
   create_table "contacts", force: :cascade do |t|
     t.text "address"
     t.string "city"
@@ -93,66 +103,52 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
     t.index ["organization_id"], name: "index_contacts_on_organization_id"
   end
 
-  create_table "expenses", force: :cascade do |t|
-    t.decimal "amount", precision: 20, scale: 2, null: false
+  create_table "documents", force: :cascade do |t|
     t.integer "contact_id"
     t.datetime "created_at", null: false
-    t.integer "expense_account_id"
-    t.date "incurred_on", null: false
+    t.date "date", null: false
+    t.integer "documentable_id", null: false
+    t.string "documentable_type", null: false
     t.text "memo"
     t.integer "organization_id", null: false
-    t.integer "paid_from_account_id", null: false
     t.string "reference"
-    t.decimal "subtotal", precision: 20, scale: 2
+    t.decimal "subtotal", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
-    t.integer "tax_rate_id"
+    t.decimal "total", precision: 20, scale: 2, default: "0.0", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_documents_on_contact_id"
+    t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable", unique: true
+    t.index ["organization_id", "date"], name: "index_documents_on_organization_id_and_date"
+    t.index ["organization_id", "documentable_type", "date"], name: "idx_on_organization_id_documentable_type_date_0e28425c30"
+    t.index ["organization_id"], name: "index_documents_on_organization_id"
+  end
+
+  create_table "expenses", force: :cascade do |t|
+    t.integer "bank_account_id", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "vendor", null: false
-    t.string "xero_invoice_number"
-    t.index ["contact_id"], name: "index_expenses_on_contact_id"
-    t.index ["expense_account_id"], name: "index_expenses_on_expense_account_id"
-    t.index ["organization_id", "xero_invoice_number"], name: "index_expenses_on_organization_id_and_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
-    t.index ["organization_id"], name: "index_expenses_on_organization_id"
-    t.index ["paid_from_account_id"], name: "index_expenses_on_paid_from_account_id"
-    t.index ["tax_rate_id"], name: "index_expenses_on_tax_rate_id"
+    t.index ["bank_account_id"], name: "index_expenses_on_bank_account_id"
   end
 
   create_table "invoices", force: :cascade do |t|
-    t.decimal "amount", precision: 20, scale: 2, null: false
     t.string "client_name", null: false
-    t.integer "contact_id"
     t.datetime "created_at", null: false
     t.date "due_date", null: false
-    t.date "issued_on", null: false
-    t.integer "organization_id", null: false
     t.integer "receivable_account_id", null: false
-    t.string "reference"
-    t.integer "revenue_account_id"
-    t.decimal "subtotal", precision: 20, scale: 2
-    t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
-    t.integer "tax_rate_id"
     t.datetime "updated_at", null: false
     t.string "xero_invoice_number"
-    t.index ["contact_id"], name: "index_invoices_on_contact_id"
-    t.index ["organization_id", "issued_on"], name: "index_invoices_on_organization_id_and_issued_on"
-    t.index ["organization_id", "xero_invoice_number"], name: "index_invoices_on_organization_id_and_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
-    t.index ["organization_id"], name: "index_invoices_on_organization_id"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
-    t.index ["revenue_account_id"], name: "index_invoices_on_revenue_account_id"
-    t.index ["tax_rate_id"], name: "index_invoices_on_tax_rate_id"
+    t.index ["xero_invoice_number"], name: "index_invoices_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
   end
 
   create_table "journal_entries", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "narrative", null: false
-    t.integer "organization_id", null: false
-    t.date "posted_on", null: false
-    t.string "reference"
     t.datetime "updated_at", null: false
     t.string "xero_journal_number"
     t.string "xero_source_type"
-    t.index ["organization_id", "xero_journal_number"], name: "idx_journal_entries_xero_number", unique: true, where: "xero_journal_number IS NOT NULL"
-    t.index ["organization_id"], name: "index_journal_entries_on_organization_id"
+    t.index ["xero_journal_number"], name: "idx_journal_entries_xero_number", unique: true, where: "xero_journal_number IS NOT NULL"
   end
 
   create_table "journal_lines", force: :cascade do |t|
@@ -208,17 +204,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
     t.decimal "amount", precision: 20, scale: 2, null: false
     t.integer "bank_account_id", null: false
     t.datetime "created_at", null: false
+    t.integer "document_id", null: false
     t.text "memo"
     t.integer "organization_id", null: false
     t.date "paid_on", null: false
-    t.integer "payable_id", null: false
-    t.string "payable_type", null: false
     t.string "reference"
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_payments_on_bank_account_id"
+    t.index ["document_id"], name: "index_payments_on_document_id"
     t.index ["organization_id", "paid_on"], name: "index_payments_on_organization_id_and_paid_on"
     t.index ["organization_id"], name: "index_payments_on_organization_id"
-    t.index ["payable_type", "payable_id"], name: "index_payments_on_payable"
   end
 
   create_table "plutus_accounts", force: :cascade do |t|
@@ -308,16 +303,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_230000) do
   add_foreign_key "bank_accounts", "organizations"
   add_foreign_key "bank_accounts", "plutus_accounts", column: "account_id"
   add_foreign_key "bank_transactions", "organizations"
+  add_foreign_key "bills", "plutus_accounts", column: "payable_account_id"
   add_foreign_key "contacts", "organizations"
-  add_foreign_key "expenses", "contacts"
-  add_foreign_key "expenses", "organizations"
-  add_foreign_key "expenses", "tax_rates"
-  add_foreign_key "invoices", "contacts"
-  add_foreign_key "invoices", "organizations"
-  add_foreign_key "invoices", "tax_rates"
-  add_foreign_key "journal_entries", "organizations"
+  add_foreign_key "documents", "contacts"
+  add_foreign_key "documents", "organizations"
+  add_foreign_key "expenses", "bank_accounts"
+  add_foreign_key "invoices", "plutus_accounts", column: "receivable_account_id"
   add_foreign_key "journal_lines", "journal_entries"
+  add_foreign_key "journal_lines", "plutus_accounts", column: "account_id"
   add_foreign_key "organization_settings", "organizations"
+  add_foreign_key "payments", "bank_accounts"
+  add_foreign_key "payments", "documents"
   add_foreign_key "payments", "organizations"
   add_foreign_key "recurring_invoices", "organizations"
   add_foreign_key "tax_rates", "organizations"

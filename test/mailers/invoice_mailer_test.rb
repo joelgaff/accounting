@@ -6,8 +6,7 @@ class InvoiceMailerTest < ActionMailer::TestCase
     Current.organization = @org
     ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
     sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
-    @invoice = @org.invoices.create!(client_name: "Acme", amount: 500, due_date: Date.current + 30,
-                                     receivable_account: ar, revenue_account: sales)
+    @invoice = create_invoice(@org, client_name: "Acme", amount: 500, receivable: ar, revenue: sales)
   end
 
   test "renders default subject and address" do

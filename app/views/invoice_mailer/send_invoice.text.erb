@@ -1,4 +1,4 @@
-Hi <%= @invoice.customer_display %>,
+Hi <%= @invoice.counterparty %>,
 
 <% if @body.present? %><%= @body %>
 
@@ -8,9 +8,9 @@ Hi <%= @invoice.customer_display %>,
 ---
 Invoice #<%= @invoice.id %>
 From:     <%= @invoice.organization.name %>
-To:       <%= @invoice.customer_display %>
-Due date: <%= @invoice.due_date.strftime("%b %-d, %Y") %>
+To:       <%= @invoice.counterparty %>
+Due date: <%= @invoice.invoice.due_date.strftime("%b %-d, %Y") %>
 
-Services rendered .......... $<%= '%.2f' % (@invoice.subtotal || @invoice.amount) %>
-<% if @invoice.tax_amount.positive? %>Tax (<%= @invoice.tax_rate_display %>) . $<%= '%.2f' % @invoice.tax_amount %>
-<% end %>Total due .................. $<%= '%.2f' % @invoice.amount %>
+Services rendered .......... $<%= '%.2f' % (@invoice.subtotal) %>
+<% if @invoice.tax_amount.positive? %>Tax (<%= @invoice.invoice.tax_rate_display %>) . $<%= '%.2f' % @invoice.tax_amount %>
+<% end %>Total due .................. $<%= '%.2f' % @invoice.total %>

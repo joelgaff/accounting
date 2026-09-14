@@ -1,13 +1,5 @@
-<%= form_with model: invoice, class: "app-form app-form-wide" do |f| %>
-  <% if invoice.errors.any? %>
-    <div class="form-errors">
-      <ul>
-        <% invoice.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+<%= form_with model: document, url: invoices_path, class: "app-form app-form-wide" do |f| %>
+  <%= render "documents/errors", document: document %>
 
   <% if customers.any? %>
     <div class="field">
@@ -16,24 +8,31 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :client_name, "Client name (used if no customer picked)" %>
-    <%= f.text_field :client_name, autofocus: customers.empty? %>
-  </div>
+  <%= f.fields_for :documentable, document.invoice do |inv| %>
+    <div class="field">
+      <%= inv.label :client_name, "Client name (used if no customer picked)" %>
+      <%= inv.text_field :client_name, autofocus: customers.empty? %>
+    </div>
+
+    <div class="field">
+      <%= f.label :date, "Issue date" %>
+      <%= f.date_field :date %>
+    </div>
+
+    <div class="field">
+      <%= inv.label :due_date, "Due date" %>
+      <%= inv.date_field :due_date %>
+    </div>
+
+    <div class="field">
+      <%= inv.label :receivable_account_id, "Receivable account (debit)" %>
+      <%= inv.collection_select :receivable_account_id, receivable_accounts, :id, :name, prompt: "Select an asset account" %>
+    </div>
+  <% end %>
 
   <div class="field">
-    <%= f.label :issued_on, "Issue date" %>
-    <%= f.date_field :issued_on %>
-  </div>
-
-  <div class="field">
-    <%= f.label :due_date, "Due date" %>
-    <%= f.date_field :due_date %>
-  </div>
-
-  <div class="field">
-    <%= f.label :receivable_account_id, "Receivable account (debit)" %>
-    <%= f.collection_select :receivable_account_id, receivable_accounts, :id, :name, prompt: "Select an asset account" %>
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
   </div>
 
   <%# Line items — one row per service line, each with its own revenue account + optional tax. %>

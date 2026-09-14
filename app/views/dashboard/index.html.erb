@@ -60,7 +60,7 @@
             <td><%= entry.description %></td>
             <td>
               <% if entry.commercial_document %>
-                <span class="muted"><%= entry.commercial_document_type %></span> #<%= entry.commercial_document_id %>
+                <%= entry.commercial_document.label %>
               <% else %>
                 <span class="muted">—</span>
               <% end %>

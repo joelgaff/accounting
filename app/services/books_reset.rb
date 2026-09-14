@@ -1,7 +1,7 @@
 # Wipes an organisation's books so an import can be run again from scratch.
 # Users, the organisation and its Launchpad link are never touched.
 #
-#   scope: :transactions  — invoices, bills, payments, journal entries, bank
+#   scope: :transactions  — invoices, bills, expenses, payments, journal entries, bank
 #                           transactions and every ledger posting. The chart of
 #                           accounts, bank accounts, contacts and tax rates stay.
 #   scope: :everything    — the above plus the chart, bank accounts, contacts,
@@ -43,17 +43,19 @@ class BooksReset
     BankTransaction.where(organization: @org).delete_all
     Payment.where(organization: @org).delete_all
 
-    invoice_ids = @org.invoices.pluck(:id)
-    expense_ids = @org.expenses.pluck(:id)
-    purge_attachments("Invoice", invoice_ids)
-    purge_attachments("Expense", expense_ids)
-    LineItem.where(lineable_type: "Invoice", lineable_id: invoice_ids).delete_all
-    LineItem.where(lineable_type: "Expense", lineable_id: expense_ids).delete_all
-    Invoice.where(organization: @org).delete_all
-    Expense.where(organization: @org).delete_all
+    docs    = Document.where(organization: @org)
+    doc_ids = docs.pluck(:id)
+    purge_attachments("Document", doc_ids)
+    LineItem.where(lineable_type: "Document", lineable_id: doc_ids).delete_all
 
-    JournalLine.where(journal_entry_id: @org.journal_entries.select(:id)).delete_all
-    JournalEntry.where(organization: @org).delete_all
+    # Type rows go before the documents that point at them.
+    Invoice.where(id: docs.invoices.select(:documentable_id)).delete_all
+    Bill.where(id: docs.bills.select(:documentable_id)).delete_all
+    Expense.where(id: docs.expenses.select(:documentable_id)).delete_all
+    journal_ids = docs.journal_entries.pluck(:documentable_id)
+    JournalLine.where(journal_entry_id: journal_ids).delete_all
+    JournalEntry.where(id: journal_ids).delete_all
+    docs.delete_all
 
     # Every ledger posting hangs off an account owned by this organisation.
     entry_ids = Plutus::Amount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).distinct.pluck(:entry_id)
@@ -82,10 +84,11 @@ class BooksReset
 
   def counts
     {
-      "invoices"           => @org.invoices.count,
-      "expenses"           => @org.expenses.count,
+      "invoices"           => @org.documents.invoices.count,
+      "bills"              => @org.documents.bills.count,
+      "expenses"           => @org.documents.expenses.count,
       "payments"           => Payment.where(organization: @org).count,
-      "journal_entries"    => @org.journal_entries.count,
+      "journal_entries"    => @org.documents.journal_entries.count,
       "bank_transactions"  => @org.bank_transactions.count,
       "ledger_entries"     => Plutus::Amount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).distinct.count(:entry_id),
       "accounts"           => @org.plutus_accounts.count,

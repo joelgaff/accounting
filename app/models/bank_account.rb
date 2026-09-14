@@ -13,6 +13,7 @@ class BankAccount < ApplicationRecord
   belongs_to :organization
   belongs_to :account, class_name: "Plutus::Account", autosave: true
   has_many   :payments,          dependent: :restrict_with_error
+  has_many   :expenses,          dependent: :restrict_with_error
   has_many   :bank_transactions, dependent: :restrict_with_error
 
   validates :kind,      inclusion: { in: KINDS }

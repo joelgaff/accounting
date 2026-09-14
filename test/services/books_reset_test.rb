@@ -5,22 +5,24 @@ class BooksResetTest < ActiveSupport::TestCase
     @org = organizations(:one)
     Current.organization = @org
     Imports::BundleService.new(file_fixture("xero/bundle"), organization: @org).call
-    assert_equal 2, @org.invoices.count
-    assert_equal 2, @org.journal_entries.count
+    assert_equal 2, @org.documents.invoices.count
+    assert_equal 2, @org.documents.journal_entries.count
     assert Plutus::Entry.any?
   end
 
   test "transactions scope wipes documents and postings but keeps the chart" do
     report = BooksReset.new(@org, scope: :transactions).call
 
-    assert_equal 0, @org.invoices.count
-    assert_equal 0, @org.expenses.count
+    assert_equal 0, @org.documents.invoices.count
+    assert_equal 0, @org.documents.bills.count
     assert_equal 0, Payment.count
-    assert_equal 0, @org.journal_entries.count
+    assert_equal 0, @org.documents.journal_entries.count
     assert_equal 0, JournalLine.count
     assert_equal 0, LineItem.count
     assert_equal 0, Plutus::Entry.count
     assert_equal 0, Plutus::Amount.count
+    assert_equal 0, @org.documents.count
+    assert_equal 0, Bill.count
 
     assert_equal 6, @org.plutus_accounts.count
     assert_equal 2, @org.bank_accounts.count
@@ -46,7 +48,7 @@ class BooksResetTest < ActiveSupport::TestCase
     report = BooksReset.new(@org, scope: :everything, dry_run: true).call
     assert report.dry_run
     assert_equal 0, report.after["invoices"]
-    assert_equal 2, @org.invoices.count
+    assert_equal 2, @org.documents.invoices.count
     assert_equal 6, @org.plutus_accounts.count
   end
 
@@ -54,7 +56,7 @@ class BooksResetTest < ActiveSupport::TestCase
     BooksReset.new(@org, scope: :transactions).call
     report = Imports::BundleService.new(file_fixture("xero/bundle"), organization: @org).call
     assert_not report.failed?, report.to_s
-    assert_equal 2, @org.invoices.count
+    assert_equal 2, @org.documents.invoices.count
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
   end
 end

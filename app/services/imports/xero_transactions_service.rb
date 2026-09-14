@@ -1,5 +1,6 @@
 module Imports
-  # Base for Xero's Sales Invoices and Purchases (Bills) CSV exports.
+  # Base for Xero's Sales Invoices and Purchases (Bills) CSV exports; each row
+  # group becomes one Document (an Invoice or a Bill).
   # Both have identical shape:
   #   *ContactName, EmailAddress, POAddressLine1..4, POCity, PORegion, POPostalCode, POCountry,
   #   *InvoiceNumber, Reference, *InvoiceDate, *DueDate,
@@ -54,7 +55,7 @@ module Imports
         begin
           ActiveRecord::Base.transaction(requires_new: true) do
             resolved_lines = group.map.with_index { |row, i| resolve_line(row, group.first) }
-            existed = @organization.public_send(transaction_class.model_name.collection).exists?(xero_invoice_number: number)
+            existed = find_existing(number).present?
 
             record = upsert_record!(number: number, header_row: group.first, lines: resolved_lines)
             warning = sync_payment!(record, group.first)
@@ -82,8 +83,25 @@ module Imports
     def contact_kind      = raise NotImplementedError
 
     # Subclass hook. Given the header row (any row from the group) and the resolved lines,
-    # build/find the Invoice or Expense and replace its line items.
+    # build/find the document and replace its line items.
     def upsert_record!(number:, header_row:, lines:) = raise NotImplementedError
+
+    # The document already imported under this Xero number, if any.
+    def find_existing(number)
+      transaction_class.joins(:document)
+                       .where(documents: { organization_id: @organization.id })
+                       .find_by(xero_invoice_number: number)&.document
+    end
+
+    # Replace the document's lines and re-post it; a brand-new document posts
+    # itself on create.
+    def replace_lines!(document, lines, was_new:)
+      document.line_items.destroy_all unless was_new
+      document.line_items.reload      unless was_new
+      lines.each { |attrs| document.line_items.build(attrs) }
+      document.save!
+      document.repost_to_ledger! unless was_new
+    end
 
     # Mirrors Xero's settlement onto the record: one payment for the amount Xero
     # reports as paid, dated the day it was fully settled. Returns a warning
@@ -102,9 +120,9 @@ module Imports
       bank, problem = resolve_bank_account(header_row)
       return problem if problem
 
-      if paid > record.amount
+      if paid > record.total
         return "Xero reports #{'%.2f' % paid} paid but the imported lines total " \
-               "#{'%.2f' % record.amount} — payment not recorded"
+               "#{'%.2f' % record.total} — payment not recorded"
       end
 
       paid_on = BaseService.parse_xero_date(header_row["fullypaidondate"]) ||

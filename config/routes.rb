@@ -3,14 +3,15 @@ Rails.application.routes.draw do
 
   # Auth lives entirely at the Launchpad hub (see LaunchpadAuthentication).
   resources :invoices, only: %i[index show new create] do
-    resources :payments, only: %i[new create]
     member do
       get  :print
       get  :email
       post :send_email
     end
   end
-  resources :expenses, only: %i[index show new create] do
+  resources :bills,           only: %i[index show new create]
+  resources :expenses,        only: %i[index show new create]
+  resources :documents, only: [] do
     resources :payments, only: %i[new create]
   end
   resources :accounts, only: %i[index]
@@ -27,8 +28,7 @@ Rails.application.routes.draw do
   end
   resources :bank_transactions, only: %i[index] do
     member do
-      post :match_invoice
-      post :match_expense
+      post :match
       post :categorize
       post :ignore
     end

@@ -13,6 +13,10 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     @org.settings.update!(receivable_account: @ar)
   end
 
+  def invoice_by_number(n)
+    Invoice.joins(:document).where(documents: { organization_id: @org.id }).find_by!(xero_invoice_number: n).document
+  end
+
   test "imports Xero sales invoices grouped by invoice number" do
     csv = file_fixture("xero/invoices.csv").read
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
@@ -22,11 +26,11 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     assert_empty result.errors
 
     # INV-1001 has two lines summing to 10*150 + 20*150 = 4500, +10% tax = 4950
-    inv = @org.invoices.find_by!(xero_invoice_number: "INV-1001")
+    inv = invoice_by_number("INV-1001")
     assert_equal 2, inv.line_items.count
     assert_equal BigDecimal("4500"), inv.subtotal
     assert_equal BigDecimal("450"),  inv.tax_amount
-    assert_equal BigDecimal("4950"), inv.amount
+    assert_equal BigDecimal("4950"), inv.total
     assert_equal "Acme Widgets",     inv.contact.name
 
     # Trial balance across the whole import
@@ -43,7 +47,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     assert_equal 3, result.updated
     # ledger reset + reposted → same totals
     assert_equal debits_before, Plutus::DebitAmount.sum(:amount)
-    assert_equal 3, @org.invoices.count
+    assert_equal 3, @org.documents.invoices.count
   end
 
   test "errors clearly if the CoA is missing the account code" do
@@ -72,16 +76,16 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
 
     assert_equal 4, result.created
 
-    paid = @org.invoices.find_by!(xero_invoice_number: "INV-2001")
+    paid = invoice_by_number("INV-2001")
     assert_equal BigDecimal("1000"), paid.paid_amount
     assert paid.paid?
     assert_equal Date.new(2026, 7, 20), paid.payments.sole.paid_on
 
-    part = @org.invoices.find_by!(xero_invoice_number: "INV-2002")
+    part = invoice_by_number("INV-2002")
     assert_equal BigDecimal("250"), part.paid_amount
     assert_equal "partial", part.status
 
-    unpaid = @org.invoices.find_by!(xero_invoice_number: "INV-2003")
+    unpaid = invoice_by_number("INV-2003")
     assert_equal 0, unpaid.payments.count
 
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
@@ -93,7 +97,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     Imports::XeroInvoicesService.new(csv, organization: @org).call
     Imports::XeroInvoicesService.new(csv, organization: @org).call
 
-    paid = @org.invoices.find_by!(xero_invoice_number: "INV-2001")
+    paid = invoice_by_number("INV-2001")
     assert_equal 1, paid.payments.count
     assert_equal BigDecimal("1000"), paid.paid_amount
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
@@ -104,7 +108,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     csv = file_fixture("xero/invoices_with_payments.csv").read
     Imports::XeroInvoicesService.new(csv, organization: @org).call
 
-    part = @org.invoices.find_by!(xero_invoice_number: "INV-2002")
+    part = invoice_by_number("INV-2002")
     part.payments.create!(organization: @org, amount: 100, paid_on: Date.new(2026, 8, 1), bank_account: @bank)
 
     Imports::XeroInvoicesService.new(csv, organization: @org).call
@@ -117,7 +121,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     csv = file_fixture("xero/invoices_with_payments.csv").read
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
 
-    over = @org.invoices.find_by!(xero_invoice_number: "INV-2004")
+    over = invoice_by_number("INV-2004")
     assert_equal 0, over.payments.count
     assert(result.errors.any? { |e| e.include?("INV-2004") && e.match?(/lines total/) })
   end
@@ -145,8 +149,8 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     csv = file_fixture("xero/invoices.csv").read
     Imports::XeroInvoicesService.new(csv, organization: @org).call
 
-    inv = @org.invoices.find_by!(xero_invoice_number: "INV-1001")
-    assert_equal Date.new(2026, 7, 15), inv.issued_on
+    inv = invoice_by_number("INV-1001")
+    assert_equal Date.new(2026, 7, 15), inv.date
 
     # …and the ledger entry is dated then too, so period reports line up.
     assert_equal Date.new(2026, 7, 15), inv.entries.sole.date
@@ -159,7 +163,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
 
     assert_equal 4, result.created
-    by_number = ->(n) { @org.invoices.find_by!(xero_invoice_number: n) }
+    by_number = ->(n) { invoice_by_number(n) }
 
     assert_equal @bank, by_number.("INV-3001").payments.sole.bank_account    # by code
     assert_equal chase, by_number.("INV-3002").payments.sole.bank_account    # by name

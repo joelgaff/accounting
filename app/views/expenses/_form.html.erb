@@ -1,13 +1,5 @@
-<%= form_with model: expense, class: "app-form app-form-wide" do |f| %>
-  <% if expense.errors.any? %>
-    <div class="form-errors">
-      <ul>
-        <% expense.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+<%= form_with model: document, url: expenses_path, class: "app-form app-form-wide" do |f| %>
+  <%= render "documents/errors", document: document %>
 
   <% if vendors.any? %>
     <div class="field">
@@ -16,22 +8,28 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= f.label :vendor, "Vendor name (used if no vendor picked)" %>
-    <%= f.text_field :vendor, autofocus: vendors.empty? %>
-  </div>
+  <%= f.fields_for :documentable, document.expense do |exp| %>
+    <div class="field">
+      <%= exp.label :vendor, "Vendor name (used if no vendor picked)" %>
+      <%= exp.text_field :vendor, autofocus: vendors.empty? %>
+    </div>
+
+    <div class="field">
+      <%= f.label :date, "Date" %>
+      <%= f.date_field :date %>
+    </div>
+
+    <div class="field">
+      <%= exp.label :bank_account_id, "Paid from" %>
+      <%= exp.collection_select :bank_account_id, bank_accounts, :id, :display_name, prompt: "Select a bank account or card" %>
+    </div>
+  <% end %>
 
   <div class="field">
-    <%= f.label :incurred_on, "Date incurred" %>
-    <%= f.date_field :incurred_on %>
+    <%= f.label :reference, "Reference (optional)" %>
+    <%= f.text_field :reference %>
   </div>
 
-  <div class="field">
-    <%= f.label :paid_from_account_id, "Paid from (credit)" %>
-    <%= f.collection_select :paid_from_account_id, paid_from_accounts, :id, ->(a) { "#{a.name} (#{a.type.demodulize})" }, prompt: "Select an asset or liability account" %>
-  </div>
-
-  <%# Line items — one row per expense line, each with its own category + optional tax. %>
   <%= render "shared/line_items_fields", form: f, accounts: expense_accounts, tax_rates: tax_rates %>
 
   <div class="field">
@@ -40,8 +38,8 @@
   </div>
 
   <div class="field">
-    <%= f.label :receipts, "Receipts (PDF, images)" %>
-    <%= f.file_field :receipts, multiple: true %>
+    <%= f.label :attachments, "Receipts (PDF, images)" %>
+    <%= f.file_field :attachments, multiple: true %>
   </div>
 
   <div class="form-actions">

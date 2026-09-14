@@ -1,15 +1,15 @@
 <header class="page-header">
-  <h1>Email invoice #<%= @invoice.id %></h1>
+  <h1>Email <%= @document.label.downcase %></h1>
 </header>
 
-<%= form_with url: send_email_invoice_path(@invoice), method: :post, class: "app-form" do |f| %>
+<%= form_with url: send_email_invoice_path(@document), method: :post, class: "app-form" do |f| %>
   <div class="field">
     <%= f.label :to, "Send to (email)" %>
-    <%= f.email_field :to, value: @invoice.contact&.email, required: true %>
+    <%= f.email_field :to, value: @document.contact&.email, required: true %>
   </div>
   <div class="field">
     <%= f.label :subject %>
-    <%= f.text_field :subject, value: "Invoice ##{@invoice.id} from #{@invoice.organization.name}" %>
+    <%= f.text_field :subject, value: "Invoice ##{@document.id} from #{@document.organization.name}" %>
   </div>
   <div class="field">
     <%= f.label :body, "Personal note (optional)" %>
@@ -17,6 +17,6 @@
   </div>
   <div class="form-actions">
     <%= f.submit "Send email", class: "btn btn-primary" %>
-    <%= link_to "Cancel", print_invoice_path(@invoice), class: "btn btn-secondary" %>
+    <%= link_to "Cancel", print_invoice_path(@document), class: "btn btn-secondary" %>
   </div>
 <% end %>

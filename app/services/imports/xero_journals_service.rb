@@ -112,20 +112,23 @@ module Imports
             total = lines.sum { |l| l[:debit_amount] - l[:credit_amount] }
             raise Halt, "does not balance (off by #{'%.2f' % total})" unless total.abs < BigDecimal("0.005")
 
-            existing = @organization.journal_entries.find_by(xero_journal_number: number)
+            existing = JournalEntry.joins(:document).where(documents: { organization_id: @organization.id })
+                                   .find_by(xero_journal_number: number)&.document
             if existing
               Ledger.reset_for(existing)
               existing.destroy!
             end
 
             first = group.first
-            @organization.journal_entries.create!(
-              posted_on:           BaseService.parse_xero_date(first[cols[:date]]),
-              narrative:           narrative_for(first, cols, source, raw_source, number),
-              reference:           cols[:reference] ? first[cols[:reference]].to_s.strip.presence : nil,
-              xero_journal_number: number,
-              xero_source_type:    source.presence,
-              lines_attributes:    lines
+            @organization.documents.create!(
+              date:      BaseService.parse_xero_date(first[cols[:date]]),
+              reference: cols[:reference] ? first[cols[:reference]].to_s.strip.presence : nil,
+              documentable: JournalEntry.new(
+                narrative:           narrative_for(first, cols, source, raw_source, number),
+                xero_journal_number: number,
+                xero_source_type:    source.presence,
+                lines_attributes:    lines
+              )
             )
             existing ? updated += 1 : created += 1
           end

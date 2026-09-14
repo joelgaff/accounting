@@ -1,5 +1,5 @@
 class BankTransactionsController < ApplicationController
-  before_action :load_transaction, only: %i[match_invoice match_expense categorize ignore]
+  before_action :load_transaction, only: %i[match categorize ignore]
 
   def index
     scope = Current.organization.bank_transactions.includes(:bank_account, :matched)
@@ -11,10 +11,10 @@ class BankTransactionsController < ApplicationController
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
   end
 
-  # Match a deposit to an outstanding invoice → creates a Payment received.
-  def match_invoice
-    invoice = Current.organization.invoices.find(params[:invoice_id])
-    payment = invoice.payments.create!(
+  # Settle an outstanding invoice or bill with this statement line.
+  def match
+    document = Current.organization.documents.find(params[:document_id])
+    payment  = document.payments.create!(
       organization: Current.organization,
       amount:       @txn.amount.abs,
       paid_on:      @txn.posted_on,
@@ -25,31 +25,16 @@ class BankTransactionsController < ApplicationController
     respond_with_updated_row
   end
 
-  # Match a withdrawal to an outstanding expense → creates a Payment made.
-  def match_expense
-    expense = Current.organization.expenses.find(params[:expense_id])
-    payment = expense.payments.create!(
-      organization: Current.organization,
-      amount:       @txn.amount.abs,
-      paid_on:      @txn.posted_on,
-      bank_account: @txn.bank_account,
-      reference:    @txn.reference
-    )
-    @txn.update!(status: "matched", matched: payment)
-    respond_with_updated_row
-  end
-
-  # Categorize a withdrawal as a fresh Expense (already paid from this bank).
+  # Record a withdrawal as a fresh expense paid from this bank.
   def categorize
     expense_account = Current.organization.plutus_accounts.find(params[:expense_account_id])
-    expense = Current.organization.expenses.create!(
-      vendor:            @txn.description.presence || "(bank import)",
-      incurred_on:       @txn.posted_on,
-      paid_from_account: @txn.bank_account.account,
-      expense_account:   expense_account,
-      amount:            @txn.amount.abs
+    document = Current.organization.documents.create!(
+      date:         @txn.posted_on,
+      reference:    @txn.reference,
+      documentable: Expense.new(vendor: @txn.description.presence || "(bank import)", bank_account: @txn.bank_account),
+      line_items_attributes: [ { description: @txn.description.to_s, quantity: 1, unit_amount: @txn.amount.abs, account: expense_account } ]
     )
-    @txn.update!(status: "matched", matched: expense)
+    @txn.update!(status: "matched", matched: document)
     respond_with_updated_row
   end
 

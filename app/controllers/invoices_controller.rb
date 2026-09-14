@@ -1,60 +1,36 @@
-class InvoicesController < ApplicationController
-  before_action :load_accounts, only: %i[new create]
+class InvoicesController < DocumentsController
+  before_action :load_document, only: %i[print email send_email]
 
-  def index
-    @invoices = Current.organization.invoices.order(issued_on: :desc, id: :desc)
-  end
-
-  def show
-    @invoice = Current.organization.invoices.find(params[:id])
-  end
-
-  def print
-    @invoice = Current.organization.invoices.find(params[:id])
-  end
-
-  def email
-    @invoice = Current.organization.invoices.find(params[:id])
-  end
+  def print; end
+  def email; end
 
   def send_email
-    invoice = Current.organization.invoices.find(params[:id])
     to      = params.require(:to)
     subject = params[:subject].presence
     body    = params[:body].presence
 
-    InvoiceMailer.send_invoice(invoice, to: to, subject: subject, body: body).deliver_later
-    redirect_to invoice_path(invoice), notice: "Invoice emailed to #{to}."
-  end
-
-  def new
-    @invoice = Current.organization.invoices.build(issued_on: Date.current, due_date: Date.current + 30.days)
-  end
-
-  def create
-    @invoice = Current.organization.invoices.build(invoice_params)
-    if @invoice.save
-      redirect_to invoices_path, notice: "Invoice created."
-    else
-      render :new, status: :unprocessable_entity
-    end
+    InvoiceMailer.send_invoice(@document, to: to, subject: subject, body: body).deliver_later
+    redirect_to invoice_path(@document), notice: "Invoice emailed to #{to}."
   end
 
   private
 
-  def load_accounts
+  def documentable_class     = Invoice
+  def documentable_permitted = %i[client_name due_date receivable_account_id]
+  def after_create_path      = invoices_path
+
+  def build_document
+    super.tap { |doc| doc.invoice.due_date = Date.current + 30.days }
+  end
+
+  def load_document
+    @document = scope.find(params[:id])
+  end
+
+  def load_form_collections
     @receivable_accounts = Plutus::Asset.where(tenant: Current.organization).order(:name)
     @revenue_accounts    = Plutus::Revenue.where(tenant: Current.organization).order(:name)
     @customers           = Current.organization.contacts.customers.ordered
     @tax_rates           = Current.organization.tax_rates.ordered
-  end
-
-  def invoice_params
-    params.require(:invoice).permit(
-      :contact_id, :client_name, :amount, :issued_on, :due_date,
-      :receivable_account_id, :revenue_account_id, :tax_rate_id,
-      attachments: [],
-      line_items_attributes: %i[id description quantity unit_amount account_id tax_rate_id _destroy]
-    )
   end
 end

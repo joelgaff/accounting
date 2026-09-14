@@ -37,7 +37,7 @@ class ContactsController < ApplicationController
     @contact.destroy
     redirect_to contacts_path, notice: "Contact removed."
   rescue ActiveRecord::DeleteRestrictionError
-    redirect_to contacts_path, alert: "Can't remove — this contact has invoices or expenses."
+    redirect_to contacts_path, alert: "Can't remove — this contact has documents."
   end
 
   private

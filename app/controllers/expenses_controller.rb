@@ -1,43 +1,19 @@
-class ExpensesController < ApplicationController
-  before_action :load_accounts, only: %i[new create]
-
-  def index
-    @expenses = Current.organization.expenses.order(incurred_on: :desc, created_at: :desc)
-  end
-
-  def show
-    @expense = Current.organization.expenses.find(params[:id])
-  end
-
-  def new
-    @expense = Current.organization.expenses.build(incurred_on: Date.current)
-  end
-
-  def create
-    @expense = Current.organization.expenses.build(expense_params)
-    if @expense.save
-      redirect_to expenses_path, notice: "Expense recorded."
-    else
-      render :new, status: :unprocessable_entity
-    end
-  end
-
+class ExpensesController < DocumentsController
   private
 
-  def load_accounts
-    scope = Plutus::Account.where(tenant: Current.organization)
-    @expense_accounts   = scope.where(type: "Plutus::Expense").order(:name)
-    @paid_from_accounts = scope.where(type: %w[Plutus::Asset Plutus::Liability]).order(:type, :name)
-    @vendors            = Current.organization.contacts.vendors.ordered
-    @tax_rates          = Current.organization.tax_rates.ordered
+  def documentable_class     = Expense
+  def documentable_permitted = %i[vendor bank_account_id]
+  def after_create_path      = expenses_path
+  def created_notice         = "Expense recorded."
+
+  def build_document
+    super.tap { |doc| doc.expense.bank_account ||= Current.organization.settings.bank_account }
   end
 
-  def expense_params
-    params.require(:expense).permit(
-      :contact_id, :vendor, :amount, :incurred_on, :memo,
-      :expense_account_id, :paid_from_account_id, :tax_rate_id,
-      receipts: [],
-      line_items_attributes: %i[id description quantity unit_amount account_id tax_rate_id _destroy]
-    )
+  def load_form_collections
+    @expense_accounts = Plutus::Expense.where(tenant: Current.organization).order(:name)
+    @bank_accounts    = Current.organization.bank_accounts.active.ordered
+    @vendors          = Current.organization.contacts.vendors.ordered
+    @tax_rates        = Current.organization.tax_rates.ordered
   end
 end

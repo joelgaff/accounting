@@ -28,11 +28,8 @@ class ContactTest < ActiveSupport::TestCase
     Current.organization = @org
     contact = @org.contacts.create!(name: "Big Client", kind: "customer")
 
-    inv = @org.invoices.create!(
-      contact: contact, amount: 100, due_date: Date.current + 10,
-      receivable_account: ar, revenue_account: sales
-    )
-    assert_equal "Big Client", inv.client_name
-    assert_equal "Big Client", inv.customer_display
+    inv = create_invoice(@org, contact: contact, amount: 100, due_date: Date.current + 10, receivable: ar, revenue: sales)
+    assert_equal "Big Client", inv.invoice.client_name
+    assert_equal "Big Client", inv.counterparty
   end
 end

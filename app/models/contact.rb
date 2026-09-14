@@ -2,8 +2,7 @@ class Contact < ApplicationRecord
   KINDS = %w[customer vendor both].freeze
 
   belongs_to :organization
-  has_many :invoices, dependent: :restrict_with_error
-  has_many :expenses, dependent: :restrict_with_error
+  has_many :documents, dependent: :restrict_with_error
 
   validates :name, presence: true
   validates :kind, inclusion: { in: KINDS }
