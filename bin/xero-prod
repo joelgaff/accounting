@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Run the Xero toolkit against the Hatchbox production app.
+#
+#   bin/xero-prod status
+#   bin/xero-prod import ~/Downloads/xero-bundle            # DRY_RUN=1 to preview
+#   bin/xero-prod reset                                     # keeps the chart; needs CONFIRM=<org>
+#   bin/xero-prod reset everything
+#
+# The bundle directory is rsynced to the server first. Override the target with
+# HATCHBOX_HOST (default deploy@SERVER-IP-REDACTED) and HATCHBOX_APP (default accounting).
+set -euo pipefail
+
+host="${HATCHBOX_HOST:-deploy@SERVER-IP-REDACTED}"
+app="${HATCHBOX_APP:-accounting}"
+remote_dir="~/$app/current"
+remote_bundle="~/$app/shared/xero-bundle"
+
+cmd="${1:-}"; shift || true
+passthrough=""
+for var in DRY_RUN CONFIRM ORG_ID; do
+  [ -n "${!var:-}" ] && passthrough+="$var=$(printf %q "${!var}") "
+done
+
+case "$cmd" in
+  status)
+    ssh -t "$host" "cd $remote_dir && $passthrough bin/rails xero:status"
+    ;;
+  import)
+    bundle="${1:-}"
+    [ -d "$bundle" ] || { echo "usage: bin/xero-prod import /path/to/bundle" >&2; exit 1; }
+    echo "==> syncing $bundle to $host:$remote_bundle"
+    rsync -az --delete "$bundle/" "$host:$remote_bundle/"
+    ssh -t "$host" "cd $remote_dir && $passthrough bin/rails 'xero:import[$remote_bundle]'"
+    ;;
+  reset)
+    scope="${1:-transactions}"
+    ssh -t "$host" "cd $remote_dir && $passthrough bin/rails 'xero:reset[$scope]'"
+    ;;
+  *)
+    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+    exit 1
+    ;;
+esac

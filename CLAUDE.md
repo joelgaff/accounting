@@ -36,6 +36,12 @@
   bill importers don't (spend/receive money, transfers, manual journals, conversion
   balances) and skips ACCREC/ACCPAY/payment journals unless told otherwise.
 
+## Xero migration toolkit (rake)
+- `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
+  `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs
+  `CONFIRM=<org name>`. `bin/xero-prod <status|import DIR|reset [scope]>` rsyncs a bundle
+  to the Hatchbox server and runs the same tasks there.
+
 ## Run locally
 - `bin/dev` boots the Launchpad SSO hub (`../launchpad`, port 3000) and this app (port 3001)
   together via `Procfile.dev`. Open **http://accounting.lvh.me:3001** — the SSO cookie is scoped
