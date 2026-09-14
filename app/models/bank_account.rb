@@ -37,6 +37,16 @@ class BankAccount < ApplicationRecord
     super || build_account(type: LEDGER_CLASS.fetch(kind), tenant: organization, xero_type: "BANK")
   end
 
+  # Xero exports every bank account as plain "Bank"; the name is the only hint
+  # of what it really is. Used when an import creates one.
+  def self.guess_kind(name)
+    case name.to_s
+    when /card|visa|mastercard|amex|discover/i then "credit_card"
+    when /saving/i                               then "savings"
+    else "checking"
+    end
+  end
+
   def credit_card? = kind == "credit_card"
   def archived?    = archived_at.present?
   def kind_label   = kind.humanize

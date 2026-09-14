@@ -142,7 +142,7 @@ class ChartOfAccountsImportService < Imports::BaseService
 
   def ensure_bank_account(account)
     return if account.bank_account
-    kind = account.is_a?(Plutus::Liability) ? "credit_card" : "checking"
+    kind = account.is_a?(Plutus::Liability) ? "credit_card" : BankAccount.guess_kind(account.name)
     @organization.bank_accounts.create!(account: account, kind: kind)
   end
 

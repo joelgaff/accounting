@@ -149,19 +149,22 @@ class ChartOfAccountsImportServiceTest < ActiveSupport::TestCase
   end
 
   test "Bank rows become bank accounts, and a reclassified credit card stays a liability" do
-    csv = "*Code,*Name,*Type\n1140,PNC Checking,Bank\n2068,Rewards Card,Bank\n1200,AR,Accounts Receivable\n"
+    csv = "*Code,*Name,*Type\n1140,PNC Checking,Bank\n2068,Rewards Card,Bank\n1150,Chase Business Savings,Bank\n1200,AR,Accounts Receivable\n"
     ChartOfAccountsImportService.new(csv, organization: @org).call
 
     checking = @org.bank_accounts.find_by_code_or_name("1140")
     card     = @org.bank_accounts.find_by_code_or_name("2068")
     assert_equal "checking", checking.kind
     assert_kind_of Plutus::Asset, checking.account
+    assert_equal "savings", @org.bank_accounts.find_by_code_or_name("1150").kind
     assert_nil @org.bank_accounts.find_by_code_or_name("1200")
 
-    card.update!(kind: "credit_card")
+    # The name gave it away: a card lands in liabilities on first import.
+    assert_equal "credit_card", card.kind
+    assert_kind_of Plutus::Liability, card.account
     result = ChartOfAccountsImportService.new(csv, organization: @org).call
     assert_empty result.errors
     assert_kind_of Plutus::Liability, Plutus::Account.find(card.account_id)
-    assert_equal 2, @org.bank_accounts.count
+    assert_equal 3, @org.bank_accounts.count
   end
 end
