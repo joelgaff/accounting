@@ -66,6 +66,7 @@ class BankAccount < ApplicationRecord
   def align_ledger_class
     account.tenant ||= organization
     account.xero_type ||= "BANK"
+    account.code = nil if account.code.blank?   # the chart's unique code index treats "" as a value
     wanted = LEDGER_CLASS.fetch(kind, LEDGER_CLASS["checking"])
     return if account.type == wanted
 

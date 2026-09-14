@@ -65,4 +65,11 @@ class LineItemTest < ActiveSupport::TestCase
     assert_not inv.valid?
     assert_includes inv.errors[:base].join, "line item"
   end
+
+  test "a line with a blank unit amount is a validation error, not a crash" do
+    inv = @org.documents.build(date: Date.current, documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar),
+                               line_items_attributes: [ { description: "x", quantity: 1, unit_amount: nil, account_id: @sales1.id } ])
+    assert_not inv.valid?
+    assert inv.errors.full_messages.any? { |m| m =~ /unit amount/i }, inv.errors.full_messages.inspect
+  end
 end

@@ -67,4 +67,13 @@ class BankAccountTest < ActiveSupport::TestCase
     inv.payments.create!(organization: @org, amount: 100, paid_on: Date.current, bank_account: bank)
     assert_not bank.destroy
   end
+
+  test "a blank code is stored as nil so two code-less accounts don't collide" do
+    a = @org.bank_accounts.create!(name: "A", code: "")
+    b = @org.bank_accounts.create!(name: "B", code: "")
+    assert_nil a.code
+    assert_nil b.code
+    a.update!(name: "A2", code: "", kind: "credit_card")
+    assert_nil a.reload.code
+  end
 end
