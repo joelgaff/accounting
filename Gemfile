@@ -38,7 +38,7 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 2.0"
+gem "image_processing", "~> 2.1"
 # Active Storage's variant processor defaults to vips, and since activestorage
 # 8.1.3.1 the transformer requires it at boot rather than on first variant.
 # require: false keeps Bundler.require from FFI-loading libvips in processes
@@ -84,5 +84,5 @@ gem "csv"
 # JWT validation for Launchpad SSO (shared secret, HS256).
 gem "jwt", "~> 3.2"
 
-gem "prawn", "~> 2.4"
+gem "prawn", "~> 2.5"
 gem "prawn-table", "~> 0.2.2"
