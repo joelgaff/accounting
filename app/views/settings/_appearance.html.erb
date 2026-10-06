@@ -1,0 +1,19 @@
+<%# The theme picker. Replaced over turbo_stream after a change so the active
+    state follows; the theme itself is applied the instant you click. %>
+<%= tag.section id: dom_id(Current.user, :appearance), style: "margin-top:32px;" do %>
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Appearance</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">Saved to your profile, so it follows you to any device; other people signing in keep their own choice.</p>
+  <%= form_with model: Current.user, url: appearance_settings_path, method: :patch, class: "app-form", data: { controller: "theme" } do |f| %>
+    <div class="theme-choice">
+      <% User::THEMES.each do |theme| %>
+        <label class="theme-option <%= 'is-active' if Current.user.theme == theme %>">
+          <%= f.radio_button :theme, theme, data: { action: "change->theme#change" } %>
+          <span class="theme-swatch theme-swatch-<%= theme %>" aria-hidden="true"></span>
+          <%= theme.capitalize %>
+        </label>
+      <% end %>
+    </div>
+    <noscript><%= f.submit "Save", class: "btn btn-secondary" %></noscript>
+    <% if local_assigns[:saved] %><p class="muted" style="font-size:12px;margin:8px 0 0;">Saved.</p><% end %>
+  <% end %>
+<% end %>

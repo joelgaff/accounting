@@ -39,22 +39,7 @@
   </div>
 <% end %>
 
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Appearance</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">Yours alone; other people signing in keep their own choice.</p>
-  <%= form_with model: Current.user, url: appearance_settings_path, method: :patch, class: "app-form", data: { controller: "autosubmit" } do |f| %>
-    <div class="theme-choice">
-      <% User::THEMES.each do |theme| %>
-        <label class="theme-option <%= 'is-active' if Current.user.theme == theme %>">
-          <%= f.radio_button :theme, theme, data: { action: "change->autosubmit#submit" } %>
-          <span class="theme-swatch theme-swatch-<%= theme %>" aria-hidden="true"></span>
-          <%= theme.capitalize %>
-        </label>
-      <% end %>
-    </div>
-    <noscript><%= f.submit "Save", class: "btn btn-secondary" %></noscript>
-  <% end %>
-</section>
+<%= render "settings/appearance" %>
 
 <section style="margin-top:32px;">
   <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Tracking categories</h2>

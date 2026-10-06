@@ -14,11 +14,16 @@ class SettingsController < ApplicationController
     end
   end
 
-  # Per-person, not per-organisation: the theme follows the signed-in user.
+  # Per-person, not per-organisation: the theme is saved on the user record
+  # and follows them to any device. The page paints it before this returns.
   def appearance
     if Current.user.update(theme: params.require(:user)[:theme])
-      redirect_to settings_path, notice: "Switched to the #{Current.user.theme} theme."
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to settings_path, notice: "Switched to the #{Current.user.theme} theme." }
+      end
     else
+      Current.user.reload
       redirect_to settings_path, alert: "That isn't one of the themes."
     end
   end

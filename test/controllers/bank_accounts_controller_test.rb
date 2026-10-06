@@ -83,10 +83,14 @@ class AppearanceSettingsTest < ActionDispatch::IntegrationTest
     assert_select "html[data-theme=dark]"
     assert_select ".theme-option.is-active", text: /Dark/
 
-    patch appearance_settings_path, params: { user: { theme: "light" } }
-    assert_redirected_to settings_path
-    assert_equal "light", User.find_by!(launchpad_public_id: "u-#{org.id}").theme
+    patch appearance_settings_path, params: { user: { theme: "light" } }, as: :turbo_stream
+    assert_response :success
+    assert_match(/turbo-stream action="replace"/, response.body)
+    assert_match(/theme-option is-active[^>]*>\s*<input[^>]*value="light"[^>]*checked/m, response.body)
+    assert_equal "light", User.find_by!(launchpad_public_id: "u-#{org.id}").theme, "saved on the user, not the session"
 
+    reset!   # a fresh browser with no session still gets the saved theme
+    sign_in_as_launchpad_user(org)
     get root_path
     assert_select "html[data-theme=light]"
     assert_select "meta[name=theme-color][content=?]", "#eef2f7"
