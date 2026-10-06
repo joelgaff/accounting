@@ -149,6 +149,12 @@ class PeopleAndProfileTest < ActionDispatch::IntegrationTest
     patch confirm_email_settings_path, params: { code: "000000" }
     assert_equal "joel@example.com", @joel.reload.email_address
 
+    # A sign-in code sent to the current address must not confirm the move.
+    signin = @joel.issue_login_code!
+    patch confirm_email_settings_path, params: { code: signin }
+    assert_equal "joel@example.com", @joel.reload.email_address
+    assert_equal "new@example.com", @joel.pending_email_address, "and the pending change survives a sign-in code"
+
     perform_enqueued_jobs do
       patch confirm_email_settings_path, params: { code: code }
     end

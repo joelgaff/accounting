@@ -9,7 +9,7 @@ if Rails.env.development?
 
     def call(env)
       request = Rack::Request.new(env)
-      return @app.call(env) unless LOCAL_HOSTS.include?(request.host)
+      return @app.call(env) unless Auth.launchpad? && LOCAL_HOSTS.include?(request.host)
 
       target = "#{request.scheme}://accounting.lvh.me:#{request.port}#{request.fullpath}"
       [ 302, { "location" => target, "content-type" => "text/plain" }, [ "Redirecting to #{target}\n" ] ]

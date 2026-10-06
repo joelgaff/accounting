@@ -18,6 +18,8 @@ class SessionsController < ApplicationController
       rescue User::TooManyRequests
         # Silently: the page still moves on, and the last code they were sent remains valid.
       end
+    else
+      BCrypt::Password.create(SecureRandom.hex(3))   # same cost as a real issue, so timing says nothing
     end
     redirect_to verify_session_path(token: email_token(email)), notice: "If that address has an account, a 6-digit code is on its way."
   end

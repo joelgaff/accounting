@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -434,6 +434,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_210000) do
     t.string "name"
     t.integer "organization_id", null: false
     t.string "pending_email_address"
+    t.string "pending_email_code_digest"
+    t.datetime "pending_email_expires_at"
     t.string "theme", default: "dark", null: false
     t.datetime "updated_at", null: false
     t.index "LOWER(email_address)", name: "index_users_on_lower_email_for_local_sign_in", unique: true, where: "launchpad_public_id IS NULL"

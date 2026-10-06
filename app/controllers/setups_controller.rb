@@ -17,9 +17,11 @@ class SetupsController < ApplicationController
 
     user = nil
     ActiveRecord::Base.transaction do
+      raise ActiveRecord::Rollback if User.local.exists?   # two first-runs at once: the second loses
       @organization.save!
       user = @organization.users.create!(email_address: email, name: name.presence || email.split("@").first)
     end
+    return redirect_to new_session_path, alert: "Someone just set this up; sign in instead." if user.nil?
     code = user.issue_login_code!
     LoginMailer.code(user, code).deliver_later
     redirect_to verify_session_path(token: Rails.application.message_verifier(:login).generate(email, expires_in: 15.minutes)),

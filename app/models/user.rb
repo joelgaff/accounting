@@ -62,4 +62,24 @@ class User < ApplicationRecord
   end
 
   class TooManyRequests < StandardError; end
+
+  # ── Changing the sign-in email: its own code, proven at the new address ──
+
+  def issue_email_change_code!(new_email)
+    raise TooManyRequests if login_code_throttled?
+    code = format("%06d", SecureRandom.random_number(1_000_000))
+    update!(pending_email_address: new_email, pending_email_code_digest: BCrypt::Password.create(code),
+            pending_email_expires_at: CODE_TTL.from_now,
+            login_code_sent_at: Time.current, login_code_sends: (login_code_sent_at && login_code_sent_at > SEND_WINDOW.ago ? login_code_sends + 1 : 1))
+    code
+  end
+
+  def email_change_code_valid?(submitted)
+    return false if pending_email_code_digest.blank? || pending_email_expires_at.blank? || pending_email_expires_at.past?
+    BCrypt::Password.new(pending_email_code_digest) == submitted.to_s.strip
+  end
+
+  def cancel_email_change!
+    update!(pending_email_address: nil, pending_email_code_digest: nil, pending_email_expires_at: nil)
+  end
 end

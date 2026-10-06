@@ -40,8 +40,7 @@ class SettingsController < ApplicationController
     wanted = User.normalize_value_for(:email_address, params[:email])
     return redirect_to settings_path, alert: "That's already your email." if wanted == Current.user.email_address
     return redirect_to settings_path, alert: "That address is already in use." if User.local.where(email_address: wanted).where.not(id: Current.user.id).exists?
-    Current.user.update!(pending_email_address: wanted)
-    code = Current.user.issue_login_code!
+    code = Current.user.issue_email_change_code!(wanted)
     LoginMailer.code(Current.user, code, to: wanted).deliver_later
     redirect_to settings_path, notice: "A code is on its way to #{wanted}."
   rescue User::TooManyRequests
@@ -51,10 +50,10 @@ class SettingsController < ApplicationController
   def confirm_email
     user = Current.user
     return redirect_to settings_path if user.pending_email_address.blank?
-    if user.login_code_valid?(params[:code])
+    if user.email_change_code_valid?(params[:code])
       old = user.email_address
-      user.update!(email_address: user.pending_email_address, pending_email_address: nil)
-      user.clear_login_code!
+      user.update!(email_address: user.pending_email_address)
+      user.cancel_email_change!
       LoginMailer.email_changed(user, old_address: old).deliver_later
       redirect_to settings_path, notice: "Email changed to #{user.email_address}."
     else
@@ -63,8 +62,7 @@ class SettingsController < ApplicationController
   end
 
   def cancel_email
-    Current.user.update!(pending_email_address: nil)
-    Current.user.clear_login_code!
+    Current.user.cancel_email_change!
     redirect_to settings_path, notice: "Email change cancelled."
   end
 
