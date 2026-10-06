@@ -74,6 +74,7 @@ Rails.application.routes.draw do
   resource :xero_connection, only: %i[show update destroy], path: "settings/xero" do
     post :connect
     get  :callback
+    get  :progress
   end
   resources :tax_rates
 

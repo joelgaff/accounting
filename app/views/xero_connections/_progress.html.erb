@@ -1,0 +1,48 @@
+<%# Everything that changes while an import runs, inside one polled frame. %>
+<% steps = connection.steps; done = steps.count { |s| s["done"] }; total = Xero::Import::STEPS.size; current = steps.find { |s| !s["done"] } %>
+<%# src lets the poll controller reload the frame; only set while running so an idle page fetches nothing. %>
+<%= turbo_frame_tag dom_id(connection, :progress), src: (progress_xero_connection_path if connection.running?) do %>
+  <div data-controller="poll" data-poll-active-value="<%= connection.running? %>" data-poll-interval-value="2000">
+    <%= render "xero_connections/status", connection: connection %>
+
+    <% if connection.running? %>
+      <pre class="tui-progress"><span data-controller="spinner">⠋</span> <%= "▓" * done %><%= "░" * (total - done) %> <%= done %>/<%= total %>  <%= current ? current["step"] : "finishing" %>…  <span class="muted"><%= distance_of_time_in_words(connection.started_at, Time.current) %> elapsed</span></pre>
+    <% end %>
+
+    <h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Import from Xero</h2>
+    <p class="muted" style="font-size:13px;margin:0 0 12px;">
+      Every step is idempotent: re-running updates what changed in Xero and never duplicates. Leave the date blank for everything since your Xero conversion date.
+    </p>
+    <%= form_with url: xero_connection_path, method: :patch, class: "app-form filter-bar", data: { turbo_frame: "_top" } do |f| %>
+      <div class="field" style="margin:0;">
+        <%= f.label :import_from, "From date (optional)" %>
+        <%= f.date_field :import_from, value: connection.import_from %>
+      </div>
+      <%= f.submit (connection.last_import_at ? "Run again" : "Run import"), class: "btn btn-primary", disabled: connection.running? %>
+    <% end %>
+
+    <% if steps.any? %>
+      <table class="data-table" style="margin-top:16px;max-width:720px;">
+        <thead><tr><th>Step</th><th class="num">Created</th><th class="num">Updated</th><th class="num">Skipped</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% steps.each do |s| %>
+            <tr>
+              <td><%= s["done"] ? "✓" : "…" %> <%= s["step"] %></td>
+              <td class="num"><%= s["created"] %></td>
+              <td class="num"><%= s["updated"] %></td>
+              <td class="num"><%= s["skipped"] %></td>
+              <td class="muted" style="font-size:12px;white-space:normal;"><%= s["errors"].to_a.first(5).join("; ") %><%= " (+#{s['errors'].size - 5} more)" if s["errors"].to_a.size > 5 %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+
+    <% if (summary = connection.summary) %>
+      <h2 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Books after the last import</h2>
+      <table class="data-table" style="max-width:520px;">
+        <tbody><% summary.each do |k, v| %><tr><td class="muted"><%= k %></td><td><%= v %></td></tr><% end %></tbody>
+      </table>
+    <% end %>
+  </div>
+<% end %>

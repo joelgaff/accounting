@@ -48,7 +48,22 @@ class XeroConnectionPagesTest < ActionDispatch::IntegrationTest
     assert_equal "running", @org.xero_connection.reload.status
     assert_equal Date.new(2019, 1, 1), @org.xero_connection.import_from
     get xero_connection_path
-    assert_select "meta[http-equiv=refresh]"
+    assert_select "turbo-frame[id=?][src=?]", "progress_xero_connection_#{@org.xero_connection.id}", progress_xero_connection_path
+    assert_select "[data-controller=poll][data-poll-active-value=true]"
+    assert_select "pre.tui-progress", text: /0\/11/
+
+    @org.xero_connection.record_step!("chart of accounts", Imports::BaseService::Result.new(created: 5))
+    @org.xero_connection.record_step!("tax rates")
+    get progress_xero_connection_path
+    assert_response :success
+    assert_select "turbo-frame[id=?]", "progress_xero_connection_#{@org.xero_connection.id}"
+    assert_select "pre.tui-progress", text: /▓░{10} 1\/11  tax rates/
+
+    @org.xero_connection.update!(status: "done", last_import_at: Time.current)
+    get xero_connection_path
+    assert_select "[data-controller=poll][data-poll-active-value=false]"
+    assert_select "pre.tui-progress", count: 0
+    @org.xero_connection.update!(status: "running")
 
     patch xero_connection_path
     assert_redirected_to xero_connection_path

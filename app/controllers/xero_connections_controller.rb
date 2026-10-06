@@ -1,10 +1,15 @@
 # Settings → Xero: connect this organisation to its Xero organisation over
 # OAuth, run the migration from the API, watch it, disconnect.
 class XeroConnectionsController < ApplicationController
-  before_action :load_connection, only: %i[show update destroy]
+  before_action :load_connection, only: %i[show update destroy progress]
 
   def show
     @configured = Xero::Client.configured?
+  end
+
+  # The polled frame: status, progress bar and step table.
+  def progress
+    render partial: "xero_connections/progress", locals: { connection: @connection }, layout: false
   end
 
   # Off to Xero's consent screen.

@@ -8,6 +8,9 @@ module Xero
   # ledger journals, so conversion balances and Xero's own system journals
   # (depreciation, payroll) need a manual journal here.
   class Import
+    STEPS = [ "chart of accounts", "tax rates", "contacts (customers)", "contacts (vendors)", "contacts (both)", "tracking categories",
+              "sales invoices", "bills", "spend and receive money", "transfers", "manual journals" ].freeze
+
     def initialize(connection, client: connection.client, from: connection.import_from)
       @connection = connection
       @client     = client

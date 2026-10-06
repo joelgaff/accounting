@@ -529,6 +529,19 @@ textarea { resize: vertical; min-height: 60px; }
 
 .btn-danger:hover { border-color: var(--debit, #f87171); color: var(--debit, #f87171); }
 
+/* ── TUI progress line ──────────────────────────────────────────────────── */
+.tui-progress {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  font: 13px/1.6 var(--font-mono);
+  color: var(--cyan);
+  background: rgba(34, 211, 238, 0.05);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+}
+
 /* ── History & notes ────────────────────────────────────────────────────── */
 .note-form { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 16px; max-width: none; }
 .note-form textarea { flex: 1; min-height: 44px; }
