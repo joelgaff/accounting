@@ -95,7 +95,8 @@ class DocumentTest < ActiveSupport::TestCase
 
   test "label and scopes come from the delegated type" do
     inv = create_invoice(@org, client_name: "Acme", amount: 1, receivable: @ar, revenue: @sales)
-    assert_equal "Invoice ##{inv.id}", inv.label
+    assert_equal "Invoice #{inv.invoice.number}", inv.label
+    assert_match(/\AINV-\d{4}\z/, inv.invoice.number)
     assert inv.invoice?
     assert_equal [ inv ], @org.documents.invoices.to_a
     assert_empty @org.documents.bills

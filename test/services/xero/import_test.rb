@@ -34,6 +34,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_not klass.options.find_by!(name: "z Old").active?
 
     inv = Invoice.find_by!(xero_invoice_number: "INV-4001").document
+    assert_equal "Invoice INV-4001", inv.label
     assert_equal BigDecimal("5500"), inv.total
     assert_equal "IRONMAN", inv.counterparty
     assert_equal [ "IRONMAN", "EE Timing" ], inv.line_items.order(:id).map { |l| l.tracking_option_for(klass).name }
@@ -48,6 +49,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal BigDecimal("917.64"), bill.total
     assert_equal "IRONMAN", bill.line_items.sole.tracking_option_for(klass).name
     unnumbered = Bill.find_by!(xero_invoice_number: "XERO-b2c3d4e5").document
+    assert_equal "Bill ##{unnumbered.id}", unnumbered.label, "a made-up Xero key is not shown as a number"
     assert unnumbered.paid?
     assert_equal "Chase United", unnumbered.payments.sole.bank_account.name
 

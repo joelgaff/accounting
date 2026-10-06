@@ -5,7 +5,7 @@ Hi <%= @invoice.counterparty %>,
 <% else %>Please find your invoice attached as a PDF and summarised below.
 
 <% end %>---
-Invoice #<%= @invoice.id %>
+Invoice <%= @invoice.invoice.number %>
 From:     <%= @invoice.organization.name %>
 To:       <%= @invoice.counterparty %>
 Issued:   <%= @invoice.date.strftime("%b %-d, %Y") %>

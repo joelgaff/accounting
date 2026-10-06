@@ -51,7 +51,11 @@ class Document < ApplicationRecord
   def status  = voided? ? "voided" : documentable.status
   def voided? = voided_at.present?
 
-  def label        = "#{documentable.model_name.human} ##{id}"
+  # "Invoice INV-2378" when the type carries a number, else "Expense #12".
+  def label
+    number = documentable.try(:number).presence
+    number ? "#{documentable.model_name.human} #{number}" : "#{documentable.model_name.human} ##{id}"
+  end
   def counterparty = contact&.name.presence || party_name
   def display_name = counterparty.presence || memo.to_s.truncate(40).presence || label
 

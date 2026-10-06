@@ -42,7 +42,7 @@
 <div class="invoice-header">
   <div>
     <h1>Invoice</h1>
-    <p style="margin:8px 0 0;color:var(--text-muted);">#<%= @document.id %></p>
+    <p style="margin:8px 0 0;color:var(--text-muted);"><%= invoice.number %></p>
   </div>
   <div class="invoice-meta">
     <strong><%= @document.organization.name %></strong><br>

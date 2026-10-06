@@ -2,7 +2,7 @@ class BillsController < DocumentsController
   private
 
   def documentable_class     = Bill
-  def documentable_permitted = %i[vendor payable_account_id]
+  def documentable_permitted = %i[number vendor payable_account_id]
   def after_create_path      = bills_path
   def created_notice         = "Bill recorded."
 

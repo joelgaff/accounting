@@ -37,7 +37,7 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match(/turbo-stream action="replace" target="#{row_id(txn)}"/, response.body)
     assert_match(/turbo-stream action="update" target="#{counter_id}"/, response.body)
-    assert_match(/Invoice #\d+ \$100\.00/, response.body)
+    assert_match(/Invoice INV-\d+ \$100\.00/, response.body)
     assert inv.reload.paid?
   end
 

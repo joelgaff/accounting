@@ -15,7 +15,6 @@ Open items, roughly in priority order. Nothing here blocks daily use.
 - [ ] Reconciliation report per period (statement balance vs ledger with the outstanding lines listed), on top of the summary strip.
 
 ## Documents
-- [ ] Invoice numbering separate from the document id (Xero numbers survive on imported invoices; new ones show "Invoice #<id>").
 - [ ] Recurring bills (recurring invoices exist).
 - [ ] Attachments on deposits and transfers in the UI (the model already supports them).
 

@@ -75,6 +75,6 @@ class DocumentHistoryTest < ActiveSupport::TestCase
     pdf = InvoicePdf.new(inv).render
     assert pdf.start_with?("%PDF-")
     assert_operator pdf.bytesize, :>, 5_000
-    assert_equal "invoice-#{inv.id}.pdf", InvoicePdf.filename(inv)
+    assert_equal "invoice-#{inv.invoice.number.downcase}.pdf", InvoicePdf.filename(inv)
   end
 end

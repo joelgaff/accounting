@@ -8,7 +8,7 @@
 
 <hr style="border:0;border-top:1px solid #ccc;margin:24px 0;">
 
-<h2>Invoice #<%= @invoice.id %></h2>
+<h2>Invoice <%= @invoice.invoice.number %></h2>
 <p>
   <strong>From:</strong> <%= @invoice.organization.name %><br>
   <strong>To:</strong> <%= @invoice.counterparty %><br>

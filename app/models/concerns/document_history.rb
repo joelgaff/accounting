@@ -8,7 +8,7 @@ module DocumentHistory
   # are added from the documentable row itself.
   UNIVERSAL_FIELDS = { "date" => "Date", "reference" => "Reference", "memo" => "Memo" }.freeze
   TYPE_FIELD_LABELS = {
-    "client_name" => "Customer", "due_date" => "Due date", "vendor" => "Vendor", "narrative" => "Narrative"
+    "number" => "Number", "client_name" => "Customer", "due_date" => "Due date", "vendor" => "Vendor", "narrative" => "Narrative"
   }.freeze
   IGNORED_TYPE_FIELDS = %w[id created_at updated_at xero_invoice_number xero_journal_number xero_source_type].freeze
 

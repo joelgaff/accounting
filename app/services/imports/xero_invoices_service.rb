@@ -15,7 +15,7 @@ module Imports
 
     def upsert_record!(number:, header_row:, lines:)
       contact  = resolve_contact(header_row["contactname"])
-      document = find_existing(number) || @organization.documents.build(documentable: Invoice.new(xero_invoice_number: number))
+      document = find_existing(number) || @organization.documents.build(documentable: Invoice.new(xero_invoice_number: number, number: number))
       was_new  = document.new_record?
 
       document.assign_attributes(

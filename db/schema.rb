@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -129,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130000) do
 
   create_table "bills", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "number"
     t.integer "payable_account_id", null: false
     t.datetime "updated_at", null: false
     t.string "vendor", null: false
@@ -214,9 +215,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_130000) do
     t.string "client_name", null: false
     t.datetime "created_at", null: false
     t.date "due_date", null: false
+    t.string "number"
     t.integer "receivable_account_id", null: false
     t.datetime "updated_at", null: false
     t.string "xero_invoice_number"
+    t.index ["number"], name: "index_invoices_on_number", unique: true, where: "number IS NOT NULL"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["xero_invoice_number"], name: "index_invoices_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
   end

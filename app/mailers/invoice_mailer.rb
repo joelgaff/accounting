@@ -7,6 +7,6 @@ class InvoiceMailer < ApplicationMailer
   end
 
   def self.default_subject(invoice)
-    "Invoice ##{invoice.id} from #{invoice.organization.name} — $#{'%.2f' % invoice.total}"
+    "Invoice #{invoice.invoice.number} from #{invoice.organization.name} — $#{'%.2f' % invoice.total}"
   end
 end

@@ -15,6 +15,11 @@
     </div>
 
     <div class="field">
+      <%= bill.label :number, "Vendor's invoice number (optional)" %>
+      <%= bill.text_field :number, style: "max-width:200px;" %>
+    </div>
+
+    <div class="field">
       <%= f.label :date, "Bill date" %>
       <%= f.date_field :date %>
     </div>

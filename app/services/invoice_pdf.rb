@@ -7,7 +7,7 @@ class InvoicePdf
   FONT_DIR = Rails.root.join("vendor/fonts")
   INK, DIM, RULE = "14181F", "5D6672", "D8DDE4"
 
-  def self.filename(document) = "invoice-#{document.id}.pdf"
+  def self.filename(document) = "invoice-#{document.invoice.number.to_s.parameterize.presence || document.id}.pdf"
 
   def initialize(document)
     @document = document
@@ -16,7 +16,7 @@ class InvoicePdf
   end
 
   def render
-    Prawn::Document.new(page_size: "LETTER", margin: 54, info: { Title: "Invoice ##{@document.id}", Author: @org.name, Creator: @org.name }) do |pdf|
+    Prawn::Document.new(page_size: "LETTER", margin: 54, info: { Title: "Invoice #{@invoice.number}", Author: @org.name, Creator: @org.name }) do |pdf|
       pdf.font_families.update("Body" => { normal: FONT_DIR.join("LiberationSans-Regular.ttf").to_s, bold: FONT_DIR.join("LiberationSans-Bold.ttf").to_s })
       pdf.font "Body"
       pdf.fill_color INK
@@ -34,7 +34,7 @@ class InvoicePdf
     top = pdf.cursor
     pdf.font_size(26) { pdf.text "INVOICE", style: :bold, character_spacing: 1.5 }
     pdf.fill_color DIM
-    pdf.text "##{@document.id}", size: 11
+    pdf.text @invoice.number.to_s, size: 11
     pdf.fill_color INK
     pdf.bounding_box([ pdf.bounds.width - 240, top ], width: 240) do
       pdf.text @org.name, size: 12, style: :bold, align: :right
@@ -106,7 +106,7 @@ class InvoicePdf
   end
 
   def footer(pdf)
-    pdf.number_pages "Invoice ##{@document.id} · #{@org.name} · page <page> of <total>", at: [ 0, -20 ], width: pdf.bounds.width, align: :center, size: 8, color: DIM
+    pdf.number_pages "Invoice #{@invoice.number} · #{@org.name} · page <page> of <total>", at: [ 0, -20 ], width: pdf.bounds.width, align: :center, size: 8, color: DIM
   end
 
   def label(pdf, text)

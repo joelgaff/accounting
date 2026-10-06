@@ -10,6 +10,11 @@
 
   <%= f.fields_for :documentable, document.invoice do |inv| %>
     <div class="field">
+      <%= inv.label :number, "Invoice number" %>
+      <%= inv.text_field :number, style: "max-width:200px;" %>
+    </div>
+
+    <div class="field">
       <%= inv.label :client_name, "Client name (used if no customer picked)" %>
       <%= inv.text_field :client_name, autofocus: customers.empty? %>
     </div>

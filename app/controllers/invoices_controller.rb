@@ -20,11 +20,14 @@ class InvoicesController < DocumentsController
   private
 
   def documentable_class     = Invoice
-  def documentable_permitted = %i[client_name due_date receivable_account_id]
+  def documentable_permitted = %i[number client_name due_date receivable_account_id]
   def after_create_path      = invoices_path
 
   def build_document
-    super.tap { |doc| doc.invoice.due_date = Date.current + 30.days }
+    super.tap do |doc|
+      doc.invoice.due_date = Date.current + 30.days
+      doc.invoice.number   = Invoice.next_number(Current.organization)
+    end
   end
 
   def load_form_collections
