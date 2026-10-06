@@ -57,10 +57,11 @@
         <% @recent_entries.each do |entry| %>
           <tr>
             <td class="muted"><%= entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
-            <td><%= entry.description %></td>
+            <% target = entry_path_for(entry.commercial_document) %>
+            <td><%= target ? link_to(entry.description, target) : entry.description %></td>
             <td>
               <% if entry.commercial_document %>
-                <%= entry.commercial_document.label %>
+                <%= target ? link_to(entry.commercial_document.label, target) : entry.commercial_document.label %>
               <% else %>
                 <span class="muted">—</span>
               <% end %>

@@ -32,6 +32,15 @@ module ApplicationHelper
   end
 
   def edit_document_path_for(document) = public_send("edit_#{document.documentable_name}_path", document)
+
+  # Where a ledger entry's record lives: a document's page, or the document a
+  # payment settled. Nil for entries with no record behind them.
+  def entry_path_for(record)
+    case record
+    when Document then document_path_for(record)
+    when Payment  then document_path_for(record.document)
+    end
+  end
   def void_document_path_for(document) = public_send("void_#{document.documentable_name}_path", document)
   def documents_path_for(document)     = public_send("#{document.documentable_name.pluralize}_path")
 

@@ -128,3 +128,19 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
     end
   end
 end
+
+class DashboardLinksTest < ActionDispatch::IntegrationTest
+  test "recent activity rows link to the document behind each entry" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    ar    = Plutus::Asset.create!(tenant: org, name: "AR")
+    sales = Plutus::Revenue.create!(tenant: org, name: "Sales")
+    bank  = create_bank_account(org, name: "Checking")
+    inv = create_invoice(org, client_name: "Acme", amount: 300, receivable: ar, revenue: sales)
+    inv.payments.create!(organization: org, amount: 300, paid_on: Date.current, bank_account: bank)
+
+    get root_path
+    assert_response :success
+    assert_select "td a[href=?]", invoice_path(inv), minimum: 3, text: /Invoice|Payment/
+  end
+end
