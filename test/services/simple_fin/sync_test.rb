@@ -82,3 +82,46 @@ class SimpleFin::BackfillTest < ActiveSupport::TestCase
     assert_equal BigDecimal("999"), @checking.reload.statement_balance
   end
 end
+
+class SimpleFin::BackfillServiceTest < ActiveSupport::TestCase
+  setup do
+    @org = organizations(:one)
+    Current.organization = @org
+    @feed     = @org.create_bank_feed!(access_url: "https://u:p@bridge.simplefin.org/simplefin")
+    @checking = create_bank_account(@org, name: "Checking")
+    @checking.update!(bank_feed: @feed, feed_account_id: "ACT-checking-4821", feed_name: "Business Checking 4821")
+    windows = @windows = []
+    payload = SimpleFin::Client.new("https://u:p@x.example/simplefin", transport: ->(*) { Struct.new(:code, :body) { def is_a?(k) = k == Net::HTTPSuccess }.new("200", file_fixture("simplefin/accounts.json").read) }).accounts(start_date: Date.current - 1)
+    @client = Object.new
+    @client.define_singleton_method(:accounts) { |start_date:, end_date:, **| windows << [ start_date, end_date ]; payload }
+  end
+
+  test "walks 90-day windows to today and records each on the feed" do
+    result = SimpleFin::Backfill.new(@feed, from: Date.current - 200, client: @client).call
+    assert_equal 3, @windows.size
+    assert_equal Date.current - 200, @windows.first.first
+    assert_equal Date.current, @windows.last.last
+    assert_nil result[:resume]
+    b = @feed.reload.backfill
+    assert_equal 3, b["windows"].size
+    assert_equal 2, b["imported"], "the fixture's two lines land once, later windows see duplicates"
+    assert_equal 2, b["windows"].last["duplicates"]
+    assert @feed.backfill_finished_at.present?
+    assert_not @feed.backfill_running?
+  end
+
+  test "stops at the daily window cap and says where to resume" do
+    result = SimpleFin::Backfill.new(@feed, from: Date.current - (89 * 25), client: @client).call
+    assert_equal SimpleFin::Backfill::MAX_WINDOWS, @windows.size
+    assert_equal @windows.last.last + 1, result[:resume]
+    assert_equal result[:resume].iso8601, @feed.reload.backfill["resume"]
+  end
+
+  test "a feed error is recorded and the run ends" do
+    failing = Object.new
+    failing.define_singleton_method(:accounts) { |**| raise SimpleFin::Error, "SimpleFIN returned 402" }
+    assert_raises(SimpleFin::Error) { SimpleFin::Backfill.new(@feed, from: Date.current - 10, client: failing).call }
+    assert_match(/402/, @feed.reload.backfill["error"])
+    assert_not @feed.backfill_running?
+  end
+end

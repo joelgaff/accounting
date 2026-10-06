@@ -86,3 +86,32 @@ class BankFeedAndOfxTest < ActionDispatch::IntegrationTest
     end
   end
 end
+
+class BankFeedBackfillPageTest < ActionDispatch::IntegrationTest
+  setup do
+    @org = organizations(:one)
+    sign_in_as_launchpad_user(@org)
+    @feed = @org.create_bank_feed!(access_url: "https://u:p@bridge.simplefin.org/simplefin", accounts: [])
+  end
+
+  test "pull history starts a background job and the page shows it running" do
+    get bank_feed_path
+    assert_select "input[type=submit][value='Pull history']"
+
+    assert_enqueued_with(job: SimpleFinBackfillJob, args: [ @feed.id, "2025-01-01" ]) do
+      post backfill_bank_feed_path, params: { from: "2025-01-01" }
+    end
+    assert_redirected_to bank_feed_path
+    assert @feed.reload.backfill_running?
+
+    get bank_feed_path
+    assert_select "meta[http-equiv=refresh]"
+    assert_select "strong", text: /Pulling history from Jan 1, 2025/
+
+    post backfill_bank_feed_path, params: { from: "2024-01-01" }
+    assert_match(/already running/, flash[:alert])
+
+    post backfill_bank_feed_path, params: { from: Date.current.iso8601 }
+    assert_match(/already running/, flash[:alert])
+  end
+end

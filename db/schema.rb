@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_130000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -63,6 +63,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_120000) do
   create_table "bank_feeds", force: :cascade do |t|
     t.text "access_url", null: false
     t.json "accounts", default: [], null: false
+    t.datetime "backfill_finished_at"
+    t.date "backfill_from"
+    t.datetime "backfill_started_at"
+    t.text "backfill_summary"
     t.datetime "created_at", null: false
     t.text "last_error"
     t.text "last_summary"

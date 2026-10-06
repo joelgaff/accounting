@@ -1,7 +1,7 @@
 # One bank feed per organisation (SimpleFIN). Claim a setup token, map the
 # provider's accounts onto ours, sync on demand, disconnect.
 class BankFeedsController < ApplicationController
-  before_action :load_feed, only: %i[show update destroy sync]
+  before_action :load_feed, only: %i[show update destroy sync backfill]
 
   def show
     @bank_accounts = Current.organization.bank_accounts.active.ordered.to_a
@@ -41,6 +41,18 @@ class BankFeedsController < ApplicationController
     respond_with_status(notice: "Imported #{summary.imported} (#{summary.duplicates} already there), #{summary.rules_applied} categorized by rules.")
   rescue SimpleFin::Error, SocketError, Timeout::Error => e
     respond_with_status(alert: "Sync failed: #{e.message}")
+  end
+
+  # Pull history from a date, in the background; the page shows each window as it lands.
+  def backfill
+    return redirect_to bank_feed_path, alert: "A history pull is already running." if @feed.backfill_running?
+    from = Date.parse(params.require(:from))
+    return redirect_to bank_feed_path, alert: "Pick a date in the past." if from >= Date.current
+    @feed.update!(backfill_from: from, backfill_started_at: Time.current, backfill_finished_at: nil, backfill_summary: nil, last_error: nil)
+    SimpleFinBackfillJob.perform_later(@feed.id, from.iso8601)
+    redirect_to bank_feed_path, notice: "Pulling history from #{from.strftime('%b %-d, %Y')}. This page refreshes while it runs."
+  rescue ArgumentError, ActionController::ParameterMissing
+    redirect_to bank_feed_path, alert: "Pick a start date."
   end
 
   def destroy

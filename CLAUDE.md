@@ -48,8 +48,9 @@
 - **SimpleFIN** (`SimpleFin::Client`, `SimpleFin::Sync`, nightly `SimpleFinSyncJob`): one `BankFeed` per
   organisation holds the encrypted access URL and the provider's account list; each `BankAccount`
   maps to a feed account by `feed_account_id`. Setup token → claim → access URL happens on the
-  Settings → Bank feed page. Never render the access URL. `bin/rails 'simplefin:backfill[YYYY-MM-DD]'`
-  pulls history in 90-day windows (about 20 per day, SimpleFIN's limit); `simplefin:sync` runs one sync now.
+  Settings → Bank feed page. Never render the access URL. History comes from "Pull history" on that
+  page (`SimpleFin::Backfill` via `SimpleFinBackfillJob`, progress on the feed) or `bin/rails
+  'simplefin:backfill[YYYY-MM-DD]'`: 90-day windows, about 20 a day, SimpleFIN's limit.
 - **Statements** (`Imports::BankStatementService`) take a CSV or an array of row hashes; OFX/QFX
   files go through `Imports::OfxParser` (SGML 1.x and XML 2.x). Lines with the bank's own id
   (`external_id`) dedupe on it and adopt an earlier id-less CSV row; id-less rows dedupe on

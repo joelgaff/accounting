@@ -69,6 +69,7 @@ Rails.application.routes.draw do
   resources :tracking_categories, except: :show, path: "settings/tracking_categories"
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
     post :sync
+    post :backfill
   end
   resource :xero_connection, only: %i[show update destroy], path: "settings/xero" do
     post :connect

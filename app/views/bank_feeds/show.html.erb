@@ -1,3 +1,4 @@
+<% if @feed&.backfill_running? %><% content_for :head do %><meta http-equiv="refresh" content="5"><% end %><% end %>
 <header class="page-header">
   <h1>Bank feed</h1>
   <%= link_to "← Settings", settings_path, class: "btn btn-secondary" %>
@@ -46,4 +47,6 @@
             form: { style: "display:inline", data: { turbo_confirm: "Disconnect the bank feed? Accounts and transactions stay; syncing stops." } } %>
     </div>
   <% end %>
+
+  <%= render "bank_feeds/backfill", feed: @feed %>
 <% end %>

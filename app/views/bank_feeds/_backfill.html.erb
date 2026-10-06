@@ -1,0 +1,43 @@
+<%# Pull statement history from a date, 90 days at a time, in the background. %>
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">History</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">
+    The nightly sync only reaches back 90 days from the day it was connected. Pull earlier statement lines from a date
+    of your choosing, 90 days at a time, so older invoices and bills can be reconciled here. Lines already imported are
+    skipped, and your bank decides how far back is available; empty early windows are normal.
+  </p>
+  <% if feed.backfill_running? %>
+    <p><strong>Pulling history from <%= feed.backfill_from.strftime("%b %-d, %Y") %>…</strong> started <%= time_ago_in_words(feed.backfill_started_at) %> ago.</p>
+  <% else %>
+    <%= form_with url: backfill_bank_feed_path, method: :post, class: "app-form filter-bar" do |f| %>
+      <div class="field" style="margin:0;">
+        <%= f.label :from, "From date" %>
+        <%= f.date_field :from, value: feed.backfill_from || Date.current.beginning_of_year, max: Date.current - 1, required: true %>
+      </div>
+      <%= f.submit "Pull history", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+  <% if (b = feed.backfill) %>
+    <% if b["error"].present? %><p class="neg">Stopped: <%= b["error"] %></p><% end %>
+    <% if b["windows"].to_a.any? %>
+      <table class="data-table" style="max-width:560px;margin-top:12px;">
+        <thead><tr><th>Window</th><th class="num">New lines</th><th class="num">Already there</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% b["windows"].each do |w| %>
+            <tr>
+              <td><%= w["from"] %> → <%= w["to"] %></td>
+              <td class="num"><%= w["imported"] %></td>
+              <td class="num"><%= w["duplicates"] %></td>
+              <td class="muted" style="font-size:12px;white-space:normal;"><%= w["errors"].to_a.join("; ") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+    <% if b["resume"].present? && !feed.backfill_running? %>
+      <p class="muted" style="font-size:13px;margin-top:8px;">SimpleFIN's daily limit was reached. Run Pull history again tomorrow from <strong><%= b["resume"] %></strong> to continue.</p>
+    <% elsif feed.backfill_finished_at && !b["error"] %>
+      <p class="muted" style="font-size:13px;margin-top:8px;">Finished <%= time_ago_in_words(feed.backfill_finished_at) %> ago: <%= b["imported"] %> new lines.</p>
+    <% end %>
+  <% end %>
+</section>

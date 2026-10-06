@@ -16,6 +16,15 @@ class BankFeed < ApplicationRecord
 
   def sync_allowed? = last_synced_at.nil? || last_synced_at < MIN_GAP.ago
 
+  def backfill_running? = backfill_started_at.present? && backfill_finished_at.nil?
+
+  def backfill
+    return nil if backfill_summary.blank?
+    JSON.parse(backfill_summary)
+  rescue JSON::ParserError
+    nil
+  end
+
   # Provider accounts not yet mapped to one of ours.
   def unmapped_accounts
     mapped = bank_accounts.pluck(:feed_account_id)
