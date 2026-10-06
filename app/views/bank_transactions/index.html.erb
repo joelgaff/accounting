@@ -38,20 +38,16 @@
     <table class="data-table recon-table">
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Bank</th>
-          <th>Payee / description</th>
-          <th>Reference</th>
+          <th class="recon-date">Date</th>
+          <th>Payee</th>
           <th class="num">Amount</th>
           <th>Status</th>
           <th class="recon-actions">Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <% @transactions.each do |txn| %>
-          <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn), suggestion: @suggestions.top(txn), candidates_index: @candidates %>
-        <% end %>
-      </tbody>
+      <% @transactions.each do |txn| %>
+        <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn), suggestion: @suggestions.top(txn), candidates_index: @candidates %>
+      <% end %>
     </table>
     <%= render "shared/pagination" %>
   <% else %>

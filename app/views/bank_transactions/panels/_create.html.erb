@@ -1,5 +1,5 @@
 <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
-  <div class="field">
+  <div class="field grow">
     <%= f.label :account_id, txn.deposit? ? "Income account" : "Expense category" %>
     <% accounts = txn.deposit? ? @income_accts : @expense_accts %>
     <%= f.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}#{txn.deposit? && !a.is_a?(Plutus::Revenue) ? " (#{a.type.demodulize})" : ""}" }, prompt: "Choose…" %>
@@ -13,15 +13,15 @@
   <% if tracking_categories.any? %>
     <div class="field">
       <label>Tracking</label>
-      <div style="display:flex;gap:6px;"><%= tracking_selects("", txn, style: "width:100%;font-size:12px;") %></div>
+      <div style="display:flex;gap:6px;"><%= tracking_selects("", txn, style: "font-size:12px;min-width:120px;") %></div>
     </div>
   <% end %>
   <div class="field">
     <%= f.label :contact_name, txn.deposit? ? "From (optional)" : "Vendor (optional)" %>
     <%= f.text_field :contact_name, list: dom_id(Current.organization, :contact_names), placeholder: "Existing or new contact" %>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;">
+  <div class="recon-submit">
     <%= f.submit (txn.deposit? ? "Create deposit" : "Create expense"), class: "btn btn-primary" %>
-    <%= link_to "Make a rule from this line", new_bank_rule_path(bank_transaction_id: txn.id), class: "muted", style: "font-size:11.5px;" %>
+    <%= link_to "Make a rule", new_bank_rule_path(bank_transaction_id: txn.id), class: "muted", style: "font-size:11.5px;", title: "Make a rule from this line" %>
   </div>
 <% end %>

@@ -1,5 +1,5 @@
 <%# Several invoices or bills from one line; whatever is left can become an expense or deposit. %>
-<%= form_with url: allocate_bank_transaction_path(txn), method: :post, class: "app-form recon-form",
+<%= form_with url: allocate_bank_transaction_path(txn), method: :post, class: "app-form recon-form recon-form-stacked",
       data: { controller: "allocations", allocations_total_value: txn.remaining.to_s("F"), allocations_index_value: 1 } do |f| %>
   <table class="data-table sheet" style="margin-bottom:6px;">
     <thead><tr><th>Document</th><th class="num" style="width:110px;">Amount</th><th style="width:30px;"></th></tr></thead>

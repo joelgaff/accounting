@@ -120,13 +120,13 @@ class DocumentEditingTest < ActionDispatch::IntegrationTest
   test "indexes paginate" do
     60.times { |i| @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: 1, description: "L#{i}") }
     get bank_transactions_path
-    assert_select "tbody tr", 60
+    assert_select "tr.recon-row", 60
     120.times { |i| @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: 2, description: "M#{i}") }
     get bank_transactions_path
-    assert_select "tbody tr", 100
+    assert_select "tr.recon-row", 100
     assert_select "a", text: "Older →"
     get bank_transactions_path(page: 2)
-    assert_select "tbody tr", 80
+    assert_select "tr.recon-row", 80
   end
 end
 

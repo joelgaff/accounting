@@ -869,6 +869,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .data-table.sheet tbody { display: table-row-group; }
   .data-table.sheet tfoot { display: table-footer-group; }
   .data-table.sheet td > input, .data-table.sheet td > select, .data-table.sheet td > .combobox > input { font-size: 16px; padding: 10px 10px; }
+
   .app-form-wide, .app-form { max-width: none; }
   .page-header { align-items: flex-start; }
 }
@@ -903,12 +904,24 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .app-main { padding: 0; }
 }
 
-/* ── Reconcile row: Match / Create / Transfer segments ──────────────────── */
+/* ── Reconcile rows: one line each, a drawer beneath when a tab is open ── */
 
-.recon-table .recon-actions { width: 380px; }
-.segments { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 6px; }
+.recon-table td, .recon-table th { padding: 6px 10px; font-size: 12.5px; vertical-align: middle; }
+.recon-table .recon-date { width: 96px; white-space: nowrap; }
+.recon-table .recon-amount { width: 110px; white-space: nowrap; }
+.recon-table .recon-status { width: 110px; }
+.recon-table .recon-actions { width: 440px; }
+.recon-table .badge { font-size: 9.5px; padding: 1px 6px; }
+.recon-item { border-bottom: 1px solid var(--rule); }
+.recon-row:focus-visible { outline: 1px solid var(--cyan); outline-offset: -1px; }
+.recon-meta { font-size: 11px; line-height: 1.4; }
+.recon-bank { color: var(--dim); }
+.recon-bank::before { content: "▸ "; color: var(--dimmer); }
+.recon-strip { display: flex; flex-direction: column; gap: 4px; }
+
+.segments { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .segments [role="tab"] {
-  font: inherit; font-size: 11.5px; padding: 3px 10px; cursor: pointer;
+  font: inherit; font-size: 11px; line-height: 1; padding: 5px 9px; cursor: pointer;
   border: 1px solid var(--rule-lit); border-radius: var(--radius-sm);
   background: transparent; color: var(--dim);
 }
@@ -916,15 +929,33 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .segments [role="tab"][aria-selected="true"] {
   color: var(--cyan); border-color: rgba(34, 211, 238, 0.5); background: rgba(34, 211, 238, 0.1);
 }
-.segments .segments-aside, .segments-aside { margin-left: auto; padding: 3px 10px; font-size: 11.5px; }
+.segments .segments-aside, .segments-aside { margin-left: auto; padding: 4px 9px; font-size: 11px; }
 .segments form.button_to { margin-left: auto; }
 .segments form.button_to .segments-aside { margin-left: 0; }
-.recon-form { max-width: none; }
-.recon-form .field { margin: 0 0 6px; }
-.recon-form .field label { font-size: 11px; }
-.recon-form select, .recon-form input[type="text"] { font-size: 12px; width: 100%; }
-.recon-form .btn { padding: 3px 10px; font-size: 11.5px; }
-.recon-error { margin: 4px 0 8px; font-size: 12px; }
+
+.suggestion {
+  display: flex; gap: 8px; align-items: center; justify-content: space-between; min-width: 0;
+  padding: 3px 8px; font-size: 11.5px;
+  border: 1px dashed rgba(34, 211, 238, 0.45); border-radius: var(--radius-sm); background: rgba(34, 211, 238, 0.05);
+}
+.suggestion-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.suggestion form { margin: 0; flex: none; }
+.suggestion .btn { padding: 2px 10px; font-size: 11px; }
+
+/* The drawer: a full-width row under the transaction, fields on one line. */
+.recon-panel td { padding: 8px 10px 10px 110px; background: rgba(41, 74, 120, 0.08); }
+.recon-form { max-width: none; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
+.recon-form .field { margin: 0; flex: 0 1 220px; }
+.recon-form .field.grow { flex: 1 1 320px; }
+.recon-form .field label { font-size: 10.5px; margin-bottom: 3px; }
+.recon-form select, .recon-form input[type="text"], .recon-form .combobox-input { font-size: 12px; width: 100%; padding: 5px 8px; }
+.recon-form .btn { padding: 5px 12px; font-size: 11.5px; }
+.recon-form .recon-submit { display: flex; gap: 10px; align-items: center; }
+.recon-form.recon-form-stacked { display: block; }
+.recon-form.recon-form-stacked .data-table.sheet { max-width: 640px; }
+.recon-error { margin: 0 0 8px; font-size: 12px; }
+.recon-panel + .recon-row { border-top: 1px solid var(--rule); }
+
 .badge-received { background: rgba(52, 211, 153, 0.1);  color: var(--credit);  border-color: rgba(52, 211, 153, 0.45); }
 .badge-posted   { background: rgba(167, 139, 250, 0.1); color: var(--violet);  border-color: rgba(167, 139, 250, 0.45); }
 
@@ -932,14 +963,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .badge-voided { background: rgba(41, 74, 120, 0.2); color: var(--dim); border-color: var(--rule-lit); text-decoration: line-through; }
 .data-table tr.muted td.num { text-decoration: line-through; }
 
-/* ── Reconcile: suggestions, summary strip ──────────────────────────────── */
-.suggestion {
-  display: flex; gap: 8px; align-items: center; justify-content: space-between;
-  margin: 0 0 6px; padding: 5px 8px; font-size: 12px;
-  border: 1px dashed rgba(34, 211, 238, 0.45); border-radius: var(--radius-sm); background: rgba(34, 211, 238, 0.05);
-}
-.suggestion form { margin: 0; }
-.suggestion .btn { padding: 2px 10px; font-size: 11.5px; }
+/* ── Reconcile: summary strip ───────────────────────────────────────────── */
 .recon-summary { margin-bottom: 16px; }
 .recon-summary .kpi-source { line-height: 1.5; }
 
@@ -947,3 +971,24 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .data-table.sheet td > input, .data-table.sheet td > .combobox > input { background: rgba(41, 74, 120, 0.1); box-shadow: inset 0 -1px 0 var(--rule); }
 .data-table.sheet td > input::placeholder { color: var(--dimmer); }
 .data-table.sheet td > select { background: rgba(41, 74, 120, 0.06); }
+
+/* Phones: the reconcile list is cards, declared after the table rules so it wins. */
+@media (max-width: 900px) {
+  /* Reconcile: each transaction is a card, the drawer opens full width beneath. */
+  .recon-table { white-space: normal; overflow: visible; }
+  .recon-table thead { display: none; }
+  .recon-table .recon-item { display: block; padding: 8px 0; }
+  .recon-table .recon-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+    grid-template-areas: "payee amount" "date status" "actions actions";
+  }
+  .recon-table .recon-row td { display: block; padding: 2px 4px; width: auto; }
+  .recon-table .recon-payee { grid-area: payee; }
+  .recon-table .recon-amount { grid-area: amount; text-align: right; }
+  .recon-table .recon-date { grid-area: date; color: var(--dim); font-size: 11px; }
+  .recon-table .recon-status { grid-area: status; text-align: right; }
+  .recon-table .recon-actions { grid-area: actions; margin-top: 4px; }
+  .recon-table .recon-panel { display: block; }
+  .recon-table .recon-panel td { display: block; padding: 8px 4px; }
+  .recon-form .field, .recon-form .field.grow { flex: 1 1 100%; }
+}
