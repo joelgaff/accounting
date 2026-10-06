@@ -13,15 +13,11 @@ step below can ship on its own.
    (plan below, all eight commits, including the You panel and People page);
    hub and host settings moved into credentials; `config/credentials.yml.example`
    and the README written in the same pass.
-3. **Fixture pass.** Test fixtures lose real customer and vendor names.
-   (The credentials example is done.)
-4. **Docs and license.** README for self-hosters (setup, Xero app registration
-   with the March 2026 scope rules and the conversion-balance gap, SimpleFIN,
-   stated assumptions: USD, single sales-tax rate, calendar year, single
-   organisation). License (MIT or AGPL, Joel to pick). CONTRIBUTING note on the
-   pre-push CI hook. DEPLOY.md and CLAUDE.md separate app guidance from Joel's
-   Hatchbox deployment; `bin/xero-prod` is documented as his.
-5. Publish.
+3. **Fixture pass.** Done 2026-10-06: fixtures and tests use made-up
+   counterparties and banks.
+4. **Docs and license.** README, CONTRIBUTING, DEPLOY.md and CLAUDE.md done
+   2026-10-06. **Open:** the license file (MIT or AGPL, Joel to pick).
+5. Publish: add the license, push, make the GitHub repo public.
 
 Left alone: Hatchbox deploy, the rake bundle importer, the design.
 
