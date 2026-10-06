@@ -5,6 +5,8 @@ class Deposit < ApplicationRecord
 
   belongs_to :bank_account
 
+  scoped_to_organization :bank_account, organization: ->(d) { d.document&.organization }
+
   def status = "received"
 
   # DR the bank for the gross; CR each line's account and the tax it carries

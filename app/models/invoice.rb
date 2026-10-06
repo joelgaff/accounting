@@ -9,6 +9,7 @@ class Invoice < ApplicationRecord
   before_validation :assign_number, on: :create
   validates :client_name, :due_date, :number, presence: true
   validate  :number_unique_in_organization
+  scoped_to_organization :receivable_account, organization: ->(i) { i.document&.organization }
 
   # The next number in the organisation's run: same prefix and width as the
   # highest one so far (INV-2378 → INV-2379), or INV-0001 to start.

@@ -4,6 +4,7 @@ class TaxRate < ApplicationRecord
   belongs_to :asset_account,     class_name: "Plutus::Asset",     optional: true
 
   validates :name, presence: true, uniqueness: { scope: :organization_id }
+  scoped_to_organization :liability_account, :asset_account, organization: ->(t) { t.organization }
   validates :rate, numericality: { greater_than_or_equal_to: 0, less_than: 1 }
 
   scope :ordered, -> { order(:name) }

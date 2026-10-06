@@ -3,6 +3,7 @@ class JournalLine < ApplicationRecord
 
   belongs_to :journal_entry, inverse_of: :lines
   belongs_to :account, class_name: "Plutus::Account"
+  scoped_to_organization :account, organization: ->(l) { l.journal_entry&.document&.organization }
 
   validates :debit_amount,  numericality: { greater_than_or_equal_to: 0 }
   validates :credit_amount, numericality: { greater_than_or_equal_to: 0 }

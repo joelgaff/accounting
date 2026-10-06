@@ -8,6 +8,7 @@ class Transfer < ApplicationRecord
   belongs_to :to_bank_account,   class_name: "BankAccount"
 
   validate :distinct_accounts
+  scoped_to_organization :from_bank_account, :to_bank_account, organization: ->(t) { t.document&.organization }
 
   def line_items? = false
   def status      = "posted"

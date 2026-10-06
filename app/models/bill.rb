@@ -5,6 +5,8 @@ class Bill < ApplicationRecord
 
   belongs_to :payable_account, class_name: "Plutus::Liability"
 
+  scoped_to_organization :payable_account, organization: ->(b) { b.document&.organization }
+
   def settleable? = true
 
   def status

@@ -12,6 +12,8 @@ class LineItem < ApplicationRecord
   scope :ordered, -> { order(:position, :id) }
 
   # Nil-safe: totals are computed before validation gets a chance to reject a blank field.
+  scoped_to_organization :account, :tax_rate, organization: ->(line) { line.lineable&.organization }
+
   def amount    = (quantity.to_d * unit_amount.to_d).round(2)
   def tax_total = tax_rate ? (amount * tax_rate.rate).round(2) : BigDecimal("0")
   def gross     = amount + tax_total

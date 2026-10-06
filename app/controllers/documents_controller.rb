@@ -9,7 +9,9 @@ class DocumentsController < ApplicationController
 
   def index
     @status    = params[:status].presence
-    @documents = paginate(filtered.includes(:documentable, :contact, :payments).chronological)
+    scope      = filtered.includes(:documentable, :contact, :payments)
+    scope      = scope.preload(*index_preloads) if index_preloads.any?
+    @documents = paginate(scope.chronological)
   end
 
   def show; end
@@ -63,6 +65,7 @@ class DocumentsController < ApplicationController
   def documentable_class     = raise(NotImplementedError)
   def documentable_permitted = raise(NotImplementedError)
   def load_form_collections; end
+  def index_preloads = []          # what a type's index row shows beyond the document
   def after_failed_create; end
   def after_failed_update; end
   def after_create_path      = helpers.document_path_for(@document)

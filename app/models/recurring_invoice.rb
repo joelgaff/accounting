@@ -9,6 +9,7 @@ class RecurringInvoice < ApplicationRecord
 
   before_validation :sync_client_name_from_contact
   validates :client_name, :frequency, :next_run_on, presence: true
+  scoped_to_organization :contact, :receivable_account, organization: ->(r) { r.organization }
   validates :frequency, inclusion: { in: FREQUENCIES }
   validates :interval,  numericality: { greater_than: 0 }
   validates :net_days,  numericality: { greater_than_or_equal_to: 0 }

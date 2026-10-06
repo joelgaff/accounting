@@ -5,6 +5,8 @@ class Expense < ApplicationRecord
 
   belongs_to :bank_account
 
+  scoped_to_organization :bank_account, organization: ->(e) { e.document&.organization }
+
   def status = "paid"
 
   def ledger_legs(document)

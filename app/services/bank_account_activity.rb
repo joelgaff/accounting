@@ -19,7 +19,9 @@ class BankAccountActivity
   def rows
     @rows ||= begin
       running = opening_balance
-      movements.map do |entry, debit, credit|
+      moves   = movements
+      preload_records(moves.map(&:first))
+      moves.map do |entry, debit, credit|
         received, spent = debit, credit   # money in debits the bank's account whatever its kind
         running += received - spent
         record   = entry.commercial_document
@@ -61,6 +63,16 @@ class BankAccountActivity
 
   # One word naming the document behind the movement: a payment is labelled
   # by what it settled (Invoice or Bill), which also tells AR from AP.
+  # One query per association instead of one per row: payments' documents,
+  # then every document's contact and type record.
+  def preload_records(entries)
+    records   = entries.map(&:commercial_document).compact
+    payments  = records.grep(Payment)
+    ActiveRecord::Associations::Preloader.new(records: payments, associations: :document).call if payments.any?
+    documents = (records.grep(Document) + payments.map(&:document)).compact.uniq
+    ActiveRecord::Associations::Preloader.new(records: documents, associations: [ :contact, :documentable ]).call if documents.any?
+  end
+
   def kind_of(record)
     case record
     when Payment  then record.document.documentable.model_name.human

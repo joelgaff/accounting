@@ -3,6 +3,7 @@ class BillsController < DocumentsController
 
   def documentable_class     = Bill
   def documentable_permitted = %i[number vendor payable_account_id]
+  def index_preloads         = [ { documentable: :payable_account }, { line_items: :account } ]
   def after_create_path      = bills_path
   def created_notice         = "Bill recorded."
 

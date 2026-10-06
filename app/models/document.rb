@@ -23,6 +23,7 @@ class Document < ApplicationRecord
   before_validation :default_date
   before_validation :link_documentable
   before_validation :sync_totals
+  scoped_to_organization :contact, organization: ->(doc) { doc.organization }
   validates :date, presence: true
   validates :source, inclusion: { in: SOURCES }
   validates :total, numericality: { greater_than: 0 }

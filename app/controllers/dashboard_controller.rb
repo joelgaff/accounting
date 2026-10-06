@@ -22,5 +22,10 @@ class DashboardController < ApplicationController
                         .distinct
                         .order(date: :desc, id: :desc)
                         .limit(10)
+                        .preload(:commercial_document)
+    @entry_totals = Plutus::DebitAmount.where(entry_id: @recent_entries.map(&:id)).group(:entry_id).sum(:amount)
+    documents = @recent_entries.map(&:commercial_document).compact
+    ActiveRecord::Associations::Preloader.new(records: documents.grep(Payment), associations: { document: :documentable }).call
+    ActiveRecord::Associations::Preloader.new(records: documents.grep(Document), associations: :documentable).call
   end
 end

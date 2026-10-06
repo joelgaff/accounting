@@ -11,7 +11,8 @@ class Payment < ApplicationRecord
   validates :paid_on, presence: true
   validate  :document_takes_payments
   validate  :document_belongs_to_org
-  validate  :amount_within_balance_due, on: :create
+  scoped_to_organization :bank_account, organization: ->(p) { p.organization }
+  validate :amount_within_balance_due, on: :create
 
   after_create :post_to_ledger
   after_create :record_history
