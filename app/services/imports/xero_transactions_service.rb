@@ -14,10 +14,10 @@ module Imports
   # BankAccount settles against the bank account in Settings; files without
   # any of the columns import exactly as before.
   #
-  # Rows are grouped by *InvoiceNumber; each group becomes one Invoice
-  # (Sales) or Expense (Bills), each row within the group becomes one
-  # LineItem. Idempotent: matches on invoice number and replaces line
-  # items in place.
+  # Rows are grouped by *InvoiceNumber, or by InvoiceID when that column is
+  # present (the API feed sends it for bills, whose numbers repeat: Gusto
+  # issues "Regular Payroll Jan 1 - Mar 31" every year). Each group becomes
+  # one Invoice or Bill, each row one LineItem. Idempotent on the key.
   #
   # Subclasses fill in transaction_class, kind, and how to build the
   # scaffold from group metadata.
@@ -45,7 +45,8 @@ module Imports
       missing = REQUIRED - rows.headers.compact
       return Result.new(errors: [ "Missing required columns: #{missing.join(", ")}" ]) if missing.any?
 
-      rows.group_by { |r| r["invoicenumber"].to_s.strip }.each do |number, group|
+      key_column = rows.headers.include?("invoiceid") ? "invoiceid" : "invoicenumber"
+      rows.group_by { |r| r[key_column].to_s.strip }.each do |number, group|
         if number.blank?
           skipped += group.size
           errors << "invoice number missing on #{group.size} row(s)"
@@ -120,9 +121,12 @@ module Imports
       bank, problem = resolve_bank_account(header_row)
       return problem if problem
 
+      # Xero occasionally reports a total a few cents off its own lines; settle
+      # what the lines add up to and say so rather than leave it open.
+      warning = nil
       if paid > record.total
-        return "Xero reports #{'%.2f' % paid} paid but the imported lines total " \
-               "#{'%.2f' % record.total} — payment not recorded"
+        warning = "Xero reports #{'%.2f' % paid} paid but the lines total #{'%.2f' % record.total}; recorded #{'%.2f' % record.total}"
+        paid = record.total
       end
 
       paid_on = BaseService.parse_xero_date(header_row["fullypaidondate"]) ||
@@ -136,7 +140,7 @@ module Imports
         bank_account: bank,
         reference:    PAYMENT_REFERENCE
       )
-      nil
+      warning
     end
 
     # The row's BankAccount wins; Settings is the fallback. Returns [account, nil]

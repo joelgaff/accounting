@@ -51,25 +51,30 @@ module Xero
     INVOICE_HEADERS = %w[ContactName EmailAddress InvoiceNumber Reference InvoiceDate DueDate Description Quantity UnitAmount
                          AccountCode TaxType TrackingName1 TrackingOption1 TrackingName2 TrackingOption2
                          AmountPaid FullyPaidOnDate BankAccount].freeze
+    BILL_HEADERS    = (INVOICE_HEADERS + %w[InvoiceID]).freeze
 
     # type: "ACCREC" (sales invoices) or "ACCPAY" (bills), issued on or after from.
     def invoices_csv(type, from: nil)
       clauses = [ %(Type=="#{type}") ]
       clauses << %(Date>=DateTime(#{from.year},#{from.month},#{from.day})) if from
       params = { where: clauses.join("&&") }
-      csv(INVOICE_HEADERS) do |out|
+      bills = type == "ACCPAY"
+      csv(bills ? BILL_HEADERS : INVOICE_HEADERS) do |out|
         @client.each_page("Invoices", params, key: "Invoices").each do |inv|
           next unless LIVE_INVOICE_STATUSES.include?(inv["Status"])
-          number = inv["InvoiceNumber"].presence || "XERO-#{inv['InvoiceID'].to_s[0, 8]}"
+          number = inv["InvoiceNumber"].presence || ("XERO-#{inv['InvoiceID'].to_s[0, 8]}" unless bills)
           paid_from = bank_code_for(inv)
           Array(inv["LineItems"]).each do |li|
             next if li["AccountCode"].blank?
+            qty, unit = net_quantity_and_unit(li, inv["LineAmountTypes"])
             t1, t2 = Array(li["Tracking"]).first(2)
-            out << [ inv.dig("Contact", "Name"), inv.dig("Contact", "EmailAddress"), number, inv["Reference"],
-                     date(inv["DateString"] || inv["Date"]), date(inv["DueDateString"] || inv["DueDate"]),
-                     li["Description"].presence || "Line", li["Quantity"] || 1, li["UnitAmount"],
-                     li["AccountCode"], li["TaxType"], t1&.dig("Name"), t1&.dig("Option"), t2&.dig("Name"), t2&.dig("Option"),
-                     inv["AmountPaid"], date(inv["FullyPaidOnDate"]), paid_from ]
+            row = [ inv.dig("Contact", "Name"), inv.dig("Contact", "EmailAddress"), number, inv["Reference"],
+                    date(inv["DateString"] || inv["Date"]), date(inv["DueDateString"] || inv["DueDate"]),
+                    li["Description"].presence || "Line", qty, unit,
+                    li["AccountCode"], li["TaxType"], t1&.dig("Name"), t1&.dig("Option"), t2&.dig("Name"), t2&.dig("Option"),
+                    inv["AmountPaid"], date(inv["FullyPaidOnDate"]), paid_from ]
+            row << inv["InvoiceID"] if bills
+            out << row
           end
         end
       end
@@ -141,11 +146,11 @@ module Xero
     # quantity and unit when they multiply out to the net exactly; otherwise
     # one line at the net amount, so totals land to the cent.
     def net_quantity_and_unit(li, line_amount_types)
-      gross = BigDecimal(li["LineAmount"].to_s.presence || "0")
-      tax   = BigDecimal(li["TaxAmount"].to_s.presence || "0")
-      net   = line_amount_types == "Inclusive" ? gross - tax : gross
       qty   = BigDecimal(li["Quantity"].to_s.presence || "1")
       unit  = BigDecimal(li["UnitAmount"].to_s.presence || "0")
+      gross = li["LineAmount"].nil? ? (qty * unit).round(2) : BigDecimal(li["LineAmount"].to_s)
+      tax   = BigDecimal(li["TaxAmount"].to_s.presence || "0")
+      net   = line_amount_types == "Inclusive" ? gross - tax : gross
       (qty * unit).round(2) == net ? [ qty.to_s("F"), unit.to_s("F") ] : [ "1", net.to_s("F") ]
     end
 

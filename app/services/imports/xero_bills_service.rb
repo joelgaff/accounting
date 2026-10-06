@@ -15,7 +15,7 @@ module Imports
 
     def upsert_record!(number:, header_row:, lines:)
       contact  = resolve_contact(header_row["contactname"])
-      document = find_existing(number) || @organization.documents.build(documentable: Bill.new(xero_invoice_number: number, number: (number unless number.start_with?("XERO-"))))
+      document = find_existing(number) || @organization.documents.build(documentable: Bill.new(xero_invoice_number: number))
       was_new  = document.new_record?
 
       document.assign_attributes(
@@ -24,6 +24,7 @@ module Imports
         reference: header_row["reference"].to_s.strip.presence
       )
       document.bill.assign_attributes(
+        number:          header_row["invoicenumber"].to_s.strip.presence,
         vendor:          contact.name,
         payable_account: @organization.settings.payable_account   # bills accrue as AP
       )

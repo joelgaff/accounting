@@ -1,12 +1,111 @@
-{"Invoices":[
- {"Type":"ACCREC","InvoiceID":"i1","InvoiceNumber":"INV-4001","Reference":"70.3 Oregon","Status":"PAID","Contact":{"Name":"IRONMAN","EmailAddress":"ops@ironman.example"},
-  "DateString":"2026-07-10T00:00:00","DueDateString":"2026-08-10T00:00:00","AmountPaid":5500.0,"FullyPaidOnDate":"/Date(1785283200000+0000)/","Total":5500.0,
-  "LineItems":[
-    {"Description":"Course ops","Quantity":1.0,"UnitAmount":4000.0,"AccountCode":"200","TaxType":"NONE","Tracking":[{"Name":"Event Year","Option":"2026"},{"Name":"Class","Option":"IRONMAN"}]},
-    {"Description":"Timing","Quantity":1.0,"UnitAmount":1500.0,"AccountCode":"210","TaxType":"NONE","Tracking":[{"Name":"Event Year","Option":"2026"},{"Name":"Class","Option":"EE Timing"}]}]},
- {"Type":"ACCREC","InvoiceID":"i2","InvoiceNumber":"INV-4002","Status":"AUTHORISED","Contact":{"Name":"IRONMAN"},
-  "DateString":"2026-08-01T00:00:00","DueDateString":"2026-09-01T00:00:00","AmountPaid":0,"Total":250.0,
-  "LineItems":[{"Description":"Extra timing","Quantity":1.0,"UnitAmount":250.0,"AccountCode":"210","TaxType":"NONE","Tracking":[{"Name":"Event Year","Option":"2026"}]}]},
- {"Type":"ACCREC","InvoiceID":"i3","InvoiceNumber":"INV-0001","Status":"VOIDED","Contact":{"Name":"IRONMAN"},"DateString":"2026-01-01T00:00:00","DueDateString":"2026-01-31T00:00:00","AmountPaid":0,
-  "LineItems":[{"Description":"Mistake","Quantity":1.0,"UnitAmount":9.0,"AccountCode":"200"}]}
-]}
+{
+ "Invoices": [
+  {
+   "Type": "ACCREC",
+   "InvoiceID": "i1",
+   "InvoiceNumber": "INV-4001",
+   "Reference": "70.3 Oregon",
+   "Status": "PAID",
+   "Contact": {
+    "Name": "IRONMAN",
+    "EmailAddress": "ops@ironman.example"
+   },
+   "DateString": "2026-07-10T00:00:00",
+   "DueDateString": "2026-08-10T00:00:00",
+   "AmountPaid": 5500.0,
+   "FullyPaidOnDate": "/Date(1785283200000+0000)/",
+   "Total": 5500.0,
+   "LineItems": [
+    {
+     "Description": "Course ops",
+     "Quantity": 1.0,
+     "UnitAmount": 4000.0,
+     "AccountCode": "200",
+     "TaxType": "NONE",
+     "Tracking": [
+      {
+       "Name": "Event Year",
+       "Option": "2026"
+      },
+      {
+       "Name": "Class",
+       "Option": "IRONMAN"
+      }
+     ],
+     "LineAmount": 4000.0
+    },
+    {
+     "Description": "Timing",
+     "Quantity": 1.0,
+     "UnitAmount": 1500.0,
+     "AccountCode": "210",
+     "TaxType": "NONE",
+     "Tracking": [
+      {
+       "Name": "Event Year",
+       "Option": "2026"
+      },
+      {
+       "Name": "Class",
+       "Option": "EE Timing"
+      }
+     ],
+     "LineAmount": 1500.0
+    }
+   ],
+   "LineAmountTypes": "Exclusive"
+  },
+  {
+   "Type": "ACCREC",
+   "InvoiceID": "i2",
+   "InvoiceNumber": "INV-4002",
+   "Status": "AUTHORISED",
+   "Contact": {
+    "Name": "IRONMAN"
+   },
+   "DateString": "2026-08-01T00:00:00",
+   "DueDateString": "2026-09-01T00:00:00",
+   "AmountPaid": 0,
+   "Total": 250.0,
+   "LineItems": [
+    {
+     "Description": "Extra timing",
+     "Quantity": 3.0,
+     "UnitAmount": 83.3333,
+     "AccountCode": "210",
+     "TaxType": "NONE",
+     "Tracking": [
+      {
+       "Name": "Event Year",
+       "Option": "2026"
+      }
+     ],
+     "LineAmount": 250.0
+    }
+   ],
+   "LineAmountTypes": "Exclusive"
+  },
+  {
+   "Type": "ACCREC",
+   "InvoiceID": "i3",
+   "InvoiceNumber": "INV-0001",
+   "Status": "VOIDED",
+   "Contact": {
+    "Name": "IRONMAN"
+   },
+   "DateString": "2026-01-01T00:00:00",
+   "DueDateString": "2026-01-31T00:00:00",
+   "AmountPaid": 0,
+   "LineItems": [
+    {
+     "Description": "Mistake",
+     "Quantity": 1.0,
+     "UnitAmount": 9.0,
+     "AccountCode": "200",
+     "LineAmount": 9.0
+    }
+   ],
+   "LineAmountTypes": "Exclusive"
+  }
+ ]
+}

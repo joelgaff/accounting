@@ -13,7 +13,11 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "done", @conn.status
     assert_equal %w[chart\ of\ accounts tax\ rates contacts\ (customers) contacts\ (vendors) contacts\ (both) tracking\ categories sales\ invoices bills spend\ and\ receive\ money transfers manual\ journals], @conn.steps.map { |s| s["step"] }
     assert @conn.steps.all? { |s| s["done"] }, @conn.steps.inspect
-    assert_empty @conn.steps.flat_map { |s| s["errors"] }
+    errs = @conn.steps.flat_map { |s| s["errors"] }
+    assert_equal 1, errs.size, errs.inspect
+    extra = Invoice.find_by!(xero_invoice_number: "INV-4002").document
+    assert_equal BigDecimal("250"), extra.total, "3 × 83.3333 lands on Xero's line total, not 249.99"
+    assert_equal BigDecimal("3"), extra.line_items.sole.quantity, "quantity kept because it multiplies out to the cent"
 
     # chart, with Xero's own idea of which bank is a card, and Settings pointed at the control accounts
     assert_equal 9, @org.plutus_accounts.count, "archived account skipped"
@@ -45,10 +49,14 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_nil Invoice.find_by(xero_invoice_number: "INV-0001"), "voided invoice not imported"
     assert_equal 2, @org.documents.invoices.count
 
-    bill = Bill.find_by!(xero_invoice_number: "79738R").document
+    bill = Bill.find_by!(xero_invoice_number: "b1").document
+    assert_equal "Bill 79738R", bill.label
     assert_equal BigDecimal("917.64"), bill.total
+    assert bill.paid?, "a total a few cents above the lines still settles"
     assert_equal "IRONMAN", bill.line_items.sole.tracking_option_for(klass).name
-    unnumbered = Bill.find_by!(xero_invoice_number: "XERO-b2c3d4e5").document
+    assert_equal 2, Bill.where(number: "79738R").count, "the same vendor number in two years stays two bills"
+    assert_match(/recorded 917\.64/, @conn.steps.find { |s| s["step"] == "bills" }["errors"].join)
+    unnumbered = Bill.find_by!(xero_invoice_number: "b2c3d4e5-0000-0000-0000-000000000000").document
     assert_equal "Bill ##{unnumbered.id}", unnumbered.label, "a made-up Xero key is not shown as a number"
     assert unnumbered.paid?
     assert_equal "Chase United", unnumbered.payments.sole.bank_account.name
@@ -106,6 +114,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
   test "a from date limits invoices and journals" do
     Xero::Import.new(@conn, client: @client, from: Date.new(2026, 7, 15)).call
     assert_equal 1, @org.documents.invoices.count, "only INV-4002 is on or after the date"
+    assert_equal 0, @org.documents.bills.count, "every bill is before the date"
     assert_equal 0, @org.documents.journal_entries.count, "the manual journal is before the date (the fake honours Date>= on every collection)"
   end
 end

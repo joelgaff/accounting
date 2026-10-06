@@ -116,14 +116,16 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     assert_equal BigDecimal("350"), part.reload.paid_amount
   end
 
-  test "reports rather than records a paid amount larger than the invoice" do
+  test "settles the lines' total and notes it when Xero reports more paid than the lines add up to" do
     @org.settings.update!(bank_account: @bank)
     csv = file_fixture("xero/invoices_with_payments.csv").read
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
 
     over = invoice_by_number("INV-2004")
-    assert_equal 0, over.payments.count
-    assert(result.errors.any? { |e| e.include?("INV-2004") && e.match?(/lines total/) })
+    assert_equal 1, over.payments.count
+    assert_equal over.total, over.payments.sole.amount
+    assert over.reload.paid?
+    assert(result.errors.any? { |e| e.include?("INV-2004") && e.match?(/lines total .*; recorded/) })
   end
 
   test "warns when a paid amount arrives with no bank account configured" do
