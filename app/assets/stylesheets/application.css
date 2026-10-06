@@ -585,10 +585,27 @@ textarea { resize: vertical; min-height: 60px; }
 .combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
 .filter-bar .combobox { min-width: 260px; }
 
-/* ── Plain link lists (Settings) ─────────────────────────────────────────── */
-.link-list { list-style: none; margin: 0; padding: 0; font-size: 13px; }
-.link-list li { padding: 6px 0; border-top: 1px solid var(--rule); }
-.link-list li:first-child { border-top: 0; }
+/* ── Settings: a stack of panels, each a list of label / detail / action rows ── */
+.settings-stack { display: flex; flex-direction: column; gap: 16px; max-width: 860px; }
+.settings-stack .app-form { max-width: none; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.settings-row {
+  display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 8px 16px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--rule); font-size: 13px;
+}
+.panel-body > .settings-row:first-child, .panel-body > form.settings-row:first-child, .panel-body > .app-form > .settings-row:first-of-type { border-top: 0; padding-top: 0; }
+.panel-body > .settings-row:last-child, .panel-body > form.settings-row:last-child, .panel-body > .app-form > .settings-row:last-of-type { padding-bottom: 0; }
+.settings-row-label, .settings-row-label label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin: 0; }
+.settings-row-main { min-width: 0; color: var(--ink); }
+.settings-row-main select, .settings-row-main input[type="text"] { width: 100%; max-width: 420px; }
+.settings-row-help { margin: 6px 0 0; font-size: 12px; color: var(--dim); }
+.settings-row-action { white-space: nowrap; }
+.settings-actions { display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--rule); }
+.settings-actions .btn { padding: 6px 12px; font-size: 12px; }
+.settings-row-action .btn { padding: 6px 12px; font-size: 12px; }
+@media (max-width: 700px) {
+  .settings-row { grid-template-columns: 1fr; gap: 6px; }
+  .settings-row-action { justify-self: start; }
+}
 
 /* ── Checkbox rows and cells ─────────────────────────────────────────────── */
 .app-form .check-row, .check-row { display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }

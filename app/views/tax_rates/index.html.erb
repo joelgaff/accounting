@@ -1,6 +1,9 @@
 <header class="page-header">
   <h1>Tax rates</h1>
-  <%= link_to "New tax rate", new_tax_rate_path, class: "btn btn-primary" %>
+  <div style="display:flex;gap:8px;">
+    <%= link_to "← Settings", settings_path, class: "btn btn-secondary" %>
+    <%= link_to "New tax rate", new_tax_rate_path, class: "btn btn-primary" %>
+  </div>
 </header>
 
 <% if @tax_rates.any? %>

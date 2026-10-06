@@ -1,17 +1,22 @@
 <%# The theme picker. Replaced over turbo_stream after a change so the active
     state follows; the theme itself is applied the instant you click. %>
-<%= tag.section id: dom_id(Current.user, :appearance), style: "margin-top:32px;" do %>
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Appearance</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">Saved to your profile, so it follows you to any device; other people signing in keep their own choice.</p>
-  <%= form_with model: Current.user, url: appearance_settings_path, method: :patch, class: "app-form", data: { controller: "theme" } do |f| %>
-    <div class="theme-choice">
-      <% User::THEMES.each do |theme| %>
-        <label class="theme-option <%= 'is-active' if Current.user.theme == theme %>">
-          <%= f.radio_button :theme, theme, class: "theme-radio", data: { action: "change->theme#change" } %>
-          <span class="theme-mark" aria-hidden="true"></span><%= theme.capitalize %>
-        </label>
-      <% end %>
-    </div>
-    <noscript><%= f.submit "Save", class: "btn btn-secondary" %></noscript>
-  <% end %>
+<%= tag.section id: dom_id(Current.user, :appearance), class: "panel" do %>
+  <div class="panel-head"><h2 class="panel-title">Appearance</h2><span class="meta">just you</span></div>
+  <div class="panel-body">
+    <%= form_with model: Current.user, url: appearance_settings_path, method: :patch, class: "app-form settings-row", data: { controller: "theme" } do |f| %>
+      <div class="settings-row-label">Theme</div>
+      <div class="settings-row-main">
+        <div class="theme-choice">
+          <% User::THEMES.each do |theme| %>
+            <label class="theme-option <%= 'is-active' if Current.user.theme == theme %>">
+              <%= f.radio_button :theme, theme, class: "theme-radio", data: { action: "change->theme#change" } %>
+              <span class="theme-mark" aria-hidden="true"></span><%= theme.capitalize %>
+            </label>
+          <% end %>
+        </div>
+        <p class="settings-row-help">Saved to your profile, so it follows you to any device; other people keep their own.</p>
+        <noscript><%= f.submit "Save", class: "btn btn-secondary" %></noscript>
+      </div>
+    <% end %>
+  </div>
 <% end %>

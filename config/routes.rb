@@ -79,7 +79,7 @@ Rails.application.routes.draw do
     get  :callback
     get  :progress
   end
-  resources :tax_rates
+  resources :tax_rates, path: "settings/tax_rates"
 
   get "reports" => "reports#index", as: :reports
   namespace :reports do

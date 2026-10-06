@@ -44,9 +44,9 @@ class ImportsLiveUnderSettingsTest < ActionDispatch::IntegrationTest
     sign_in_as_launchpad_user(org)
     get settings_path
     assert_select ".nav-links a span", text: "Import", count: 0
-    assert_select "section h2", text: "Imports and data"
-    assert_select ".link-list a[href=?]", new_imports_bank_path
-    assert_select ".link-list a[href=?]", imports_path
+    assert_select ".panel-title", text: "Imports and data"
+    assert_select ".settings-row-action a[href=?]", new_imports_bank_path
+    assert_select ".settings-row-action a[href=?]", imports_path
 
     get imports_path
     assert_select "h1", text: "Import Xero exports by file"

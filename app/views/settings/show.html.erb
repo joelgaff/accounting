@@ -2,98 +2,112 @@
   <h1>Settings</h1>
 </header>
 
-<section style="margin:0 0 32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Whose books</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">The entity's name, as it appears in the sidebar, on invoices and in email.</p>
-  <%= form_with model: Current.organization, url: organization_settings_path, method: :patch, class: "app-form filter-bar" do |f| %>
-    <div class="field" style="margin:0;flex:1;max-width:420px;">
-      <%= f.label :name, "Entity name" %>
-      <%= f.text_field :name, required: true %>
+<div class="settings-stack">
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Organisation</h2><span class="meta">everyone</span></div>
+    <div class="panel-body">
+      <%= form_with model: Current.organization, url: organization_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+        <div class="settings-row-label"><%= f.label :name, "Entity name" %></div>
+        <div class="settings-row-main">
+          <%= f.text_field :name, required: true, style: "max-width:420px;" %>
+          <p class="settings-row-help">Appears in the sidebar as "<%= possessive(Current.organization.name) %> Books", on invoices and in email.</p>
+        </div>
+        <div class="settings-row-action"><%= f.submit "Save name", class: "btn btn-primary" %></div>
+      <% end %>
     </div>
-    <%= f.submit "Save name", class: "btn btn-primary" %>
-  <% end %>
-</section>
+  </section>
 
-<%= form_with model: @settings, url: settings_path, method: :patch, class: "app-form" do |f| %>
-  <% if @settings.errors.any? %>
-    <div class="form-errors">
-      <ul>
-        <% @settings.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Dashboard accounts</h2><span class="meta">chart of accounts</span></div>
+    <div class="panel-body">
+      <%= form_with model: @settings, url: settings_path, method: :patch, class: "app-form" do |f| %>
+        <% if @settings.errors.any? %>
+          <div class="form-errors"><ul><% @settings.errors.full_messages.each { |m| %><li><%= m %></li><% } %></ul></div>
         <% end %>
-      </ul>
+        <p class="settings-row-help" style="margin:0 0 14px;">The accounts behind the three dashboard cards. Bank accounts are managed under <%= link_to "Banking", bank_accounts_path %>.</p>
+        <div class="settings-row">
+          <div class="settings-row-label"><%= f.label :bank_account_id, "Operating bank" %></div>
+          <div class="settings-row-main"><%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, include_blank: "—" %></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label"><%= f.label :receivable_account_id, "Receivable" %></div>
+          <div class="settings-row-main"><%= f.collection_select :receivable_account_id, @asset_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label"><%= f.label :payable_account_id, "Payable" %></div>
+          <div class="settings-row-main"><%= f.collection_select :payable_account_id, @liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %></div>
+        </div>
+        <div class="settings-actions"><%= f.submit "Save accounts", class: "btn btn-primary" %></div>
+      <% end %>
     </div>
-  <% end %>
+  </section>
 
-  <fieldset style="border:0;padding:0;margin:0 0 20px">
-    <legend style="font-weight:600;padding:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);">Dashboard KPIs</legend>
-    <p class="muted" style="margin:0 0 16px;font-size:13px;">Pick which accounts back each KPI card on the dashboard. Only accounts in your Chart of Accounts show up.</p>
-
-    <div class="field">
-      <%= f.label :bank_account_id, "Operating bank account" %>
-      <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, include_blank: "—" %>
-      <p class="muted" style="margin:6px 0 0;font-size:12px;">Manage these under <%= link_to "Banking", bank_accounts_path %>.</p>
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Connections</h2><span class="meta">xero · bank feed</span></div>
+    <div class="panel-body">
+      <div class="settings-row">
+        <div class="settings-row-label">Xero</div>
+        <div class="settings-row-main">
+          <% if (xc = Current.organization.xero_connection) %>
+            Connected to <strong><%= xc.tenant_name %></strong><%= xc.last_import_at ? ", last imported #{time_ago_in_words(xc.last_import_at)} ago" : ", not imported yet" %>.
+          <% else %>
+            Not connected. <span class="settings-row-help">Pulls the whole history, tracking included, from Xero's API.</span>
+          <% end %>
+        </div>
+        <div class="settings-row-action"><%= link_to (xc ? "Manage" : "Connect"), xero_connection_path, class: "btn btn-secondary" %></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Bank feed</div>
+        <div class="settings-row-main">
+          <% if (feed = Current.organization.bank_feed) %>
+            Connected via SimpleFIN<%= feed.last_synced_at ? ", last synced #{time_ago_in_words(feed.last_synced_at)} ago" : ", not synced yet" %>.
+          <% else %>
+            Not connected. <span class="settings-row-help">Pulls bank and card lines in every night.</span>
+          <% end %>
+        </div>
+        <div class="settings-row-action"><%= link_to (feed ? "Manage" : "Connect"), bank_feed_path, class: "btn btn-secondary" %></div>
+      </div>
     </div>
+  </section>
 
-    <div class="field">
-      <%= f.label :receivable_account_id, "Accounts receivable" %>
-      <%= f.collection_select :receivable_account_id, @asset_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Books</h2><span class="meta">tracking · tax</span></div>
+    <div class="panel-body">
+      <div class="settings-row">
+        <div class="settings-row-label">Tracking categories</div>
+        <div class="settings-row-main">
+          <% cats = Current.organization.tracking_categories.ordered.includes(:options) %>
+          <% if cats.any? %>
+            <%= cats.map { |c| "#{c.name} (#{c.options.size})" }.to_sentence %>
+          <% else %>
+            None yet. <span class="settings-row-help">Slice the books by event year, business line, or anything else.</span>
+          <% end %>
+        </div>
+        <div class="settings-row-action"><%= link_to "Manage", tracking_categories_path, class: "btn btn-secondary" %></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Tax rates</div>
+        <div class="settings-row-main"><%= pluralize(Current.organization.tax_rates.count, "rate") %> defined.</div>
+        <div class="settings-row-action"><%= link_to "Manage", tax_rates_path, class: "btn btn-secondary" %></div>
+      </div>
     </div>
+  </section>
 
-    <div class="field">
-      <%= f.label :payable_account_id, "Accounts payable" %>
-      <%= f.collection_select :payable_account_id, @liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %>
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Imports and data</h2><span class="meta">fallbacks</span></div>
+    <div class="panel-body">
+      <div class="settings-row">
+        <div class="settings-row-label">Bank statement</div>
+        <div class="settings-row-main">CSV, OFX or QFX, for a window the feed missed or an account it can't see.</div>
+        <div class="settings-row-action"><%= link_to "Upload", new_imports_bank_path, class: "btn btn-secondary" %></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Xero exports by file</div>
+        <div class="settings-row-main">Chart of accounts, contacts, invoices, bills, journal report, tax rates.</div>
+        <div class="settings-row-action"><%= link_to "Open", imports_path, class: "btn btn-secondary" %></div>
+      </div>
     </div>
-  </fieldset>
+  </section>
 
-  <div class="form-actions">
-    <%= f.submit "Save settings", class: "btn btn-primary" %>
-  </div>
-<% end %>
-
-<%= render "settings/appearance" %>
-
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Tracking categories</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">
-    <% cats = Current.organization.tracking_categories.ordered.includes(:options) %>
-    <%= cats.any? ? cats.map { |c| "#{c.name} (#{c.options.size} options)" }.to_sentence : "Slice the books by event year, business line, or anything else, one option per line." %>
-  </p>
-  <%= link_to "Manage tracking categories", tracking_categories_path, class: "btn btn-secondary" %>
-</section>
-
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Xero</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">
-    <% if (xc = Current.organization.xero_connection) %>
-      Connected to <%= xc.tenant_name %><%= xc.last_import_at ? ", last imported #{time_ago_in_words(xc.last_import_at)} ago" : "" %>.
-    <% else %>
-      Pull the whole history, tracking included, straight from Xero's API.
-    <% end %>
-  </p>
-  <%= link_to "Manage Xero connection", xero_connection_path, class: "btn btn-secondary" %>
-</section>
-
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Bank feed</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">
-    <% if Current.organization.bank_feed %>
-      Connected via SimpleFIN<%= Current.organization.bank_feed.last_synced_at ? ", last synced #{time_ago_in_words(Current.organization.bank_feed.last_synced_at)} ago" : "" %>.
-    <% else %>
-      Pull transactions from your bank every night instead of uploading statements.
-    <% end %>
-  </p>
-  <%= link_to "Manage bank feed", bank_feed_path, class: "btn btn-secondary" %>
-</section>
-
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Imports and data</h2>
-  <p class="muted" style="font-size:13px;margin:0 0 12px;">
-    Fallbacks for when the Xero connection and the bank feed above don't cover something: a statement file for a
-    gap in the feed, or a Xero export by file.
-  </p>
-  <ul class="link-list">
-    <li><%= link_to "Upload a bank statement (CSV, OFX, QFX)", new_imports_bank_path %> <span class="muted">— for a window the feed missed or an account it can't see</span></li>
-    <li><%= link_to "Import Xero exports by file", imports_path %> <span class="muted">— chart of accounts, contacts, invoices, bills, journal report, tax rates</span></li>
-  </ul>
-</section>
+  <%= render "settings/appearance" %>
+</div>
