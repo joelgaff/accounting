@@ -159,7 +159,7 @@ class BrandingTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=application-name][content=?]", "Partita Doppia"
     assert_select ".tb-name", text: "Partita Doppia"
     assert_select ".nav-footer strong", text: "Partita Doppia"
-    assert_select ".app-statusbar", text: /Partita Doppia v0\.1/
+    assert_select ".app-statusbar", text: /Partita Doppia/
     assert_no_match(/LEDGER|>Ledger</, response.body)
 
     get pwa_manifest_path(format: :json)

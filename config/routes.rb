@@ -67,6 +67,7 @@ Rails.application.routes.draw do
 
   resource :settings, only: %i[show update] do
     patch :appearance
+    patch :organization
   end
   resources :tracking_categories, except: :show, path: "settings/tracking_categories"
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do

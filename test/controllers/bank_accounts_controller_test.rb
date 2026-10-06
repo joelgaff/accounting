@@ -100,3 +100,26 @@ class AppearanceSettingsTest < ActionDispatch::IntegrationTest
     assert_match(/isn't one of the themes/, flash[:alert])
   end
 end
+
+class OrganizationNameSettingsTest < ActionDispatch::IntegrationTest
+  test "the entity name is editable and the chrome calls them its books" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    patch organization_settings_path, params: { organization: { name: "Endurance Evolution" } }
+    assert_redirected_to settings_path
+    assert_equal "Endurance Evolution", org.reload.name
+
+    get root_path
+    assert_select ".nav-footer", text: /Endurance Evolution's Books/
+    assert_select ".app-statusbar", text: /Endurance Evolution — books as at/
+    assert_no_match(/v0\.1|Every line balanced/, response.body)
+
+    patch organization_settings_path, params: { organization: { name: "" } }
+    assert_equal "Endurance Evolution", org.reload.name
+    assert_match(/can't be blank/, flash[:alert])
+
+    org.update!(name: "Williams")
+    get root_path
+    assert_select ".nav-footer", text: /Williams' Books/
+  end
+end

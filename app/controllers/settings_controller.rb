@@ -14,6 +14,15 @@ class SettingsController < ApplicationController
     end
   end
 
+  # The entity whose books these are; shown in the sidebar, status bar, mail and PDFs.
+  def organization
+    if Current.organization.update(params.require(:organization).permit(:name))
+      redirect_to settings_path, notice: "Books renamed to #{Current.organization.name}."
+    else
+      redirect_to settings_path, alert: "The name can't be blank."
+    end
+  end
+
   # Per-person, not per-organisation: the theme is saved on the user record
   # and follows them to any device. The page paints it before this returns.
   def appearance

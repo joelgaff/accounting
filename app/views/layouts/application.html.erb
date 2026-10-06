@@ -32,9 +32,9 @@
       <div class="app-shell">
         <header class="app-titlebar">
           <div class="tb-brand">
-            <span class="tb-mark"><%= render "shared/logo_mark", size: 18 %></span><span class="tb-name"><%= app_name %></span><span class="tb-version">v0.1</span>
+            <span class="tb-mark"><%= render "shared/logo_mark", size: 18 %></span><span class="tb-name"><%= app_name %></span>
           </div>
-          <div class="tb-tagline">Double-entry bookkeeping <em>//</em> Every line balanced.</div>
+          <div class="tb-tagline"></div>
           <div class="tb-session">
             <span><%= current_user.email %></span>
             <%= button_to "Sign out", "#{Rails.application.config.x.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
@@ -67,7 +67,7 @@
               <span class="mark"><%= render "shared/logo_mark", size: 14 %></span>
               <span>
                 <strong><%= app_name %></strong>
-                Books for <%= Current.organization.name %>
+                <%= possessive(Current.organization.name) %> Books
               </span>
             </div>
           </nav>
@@ -83,7 +83,7 @@
 
         <footer class="app-statusbar">
           <span><span class="live">●</span> <%= Current.organization.name %> — books as at <%= Date.current.strftime("%b %-d, %Y") %></span>
-          <span><%= app_name %> v0.1</span>
+          <span><%= app_name %></span>
         </footer>
       </div>
     <% else %>

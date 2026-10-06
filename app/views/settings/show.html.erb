@@ -2,6 +2,18 @@
   <h1>Settings</h1>
 </header>
 
+<section style="margin:0 0 32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Whose books</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">The entity's name, as it appears in the sidebar, on invoices and in email.</p>
+  <%= form_with model: Current.organization, url: organization_settings_path, method: :patch, class: "app-form filter-bar" do |f| %>
+    <div class="field" style="margin:0;flex:1;max-width:420px;">
+      <%= f.label :name, "Entity name" %>
+      <%= f.text_field :name, required: true %>
+    </div>
+    <%= f.submit "Save name", class: "btn btn-primary" %>
+  <% end %>
+</section>
+
 <%= form_with model: @settings, url: settings_path, method: :patch, class: "app-form" do |f| %>
   <% if @settings.errors.any? %>
     <div class="form-errors">

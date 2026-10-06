@@ -74,6 +74,11 @@ module ApplicationHelper
     end)
   end
 
+  # "Acme's Books", "Williams' Books".
+  def possessive(name)
+    name.to_s.end_with?("s") ? "#{name}'" : "#{name}'s"
+  end
+
   # "Partita Doppia", never split or shortened.
   def app_name = Rails.application.config.x.app_name
 
