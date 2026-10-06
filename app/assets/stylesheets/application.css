@@ -53,9 +53,42 @@
   --radius-sm: 2px;
   --shadow-sm: none;
   --shadow-md: 0 28px 70px rgba(0, 0, 0, 0.65);
+  --wash: rgba(6, 10, 18, 0.4);          /* sidebar and status bar sit a shade below the frame */
 
   --font-body: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   --font-mono: var(--font-body);
+}
+
+/* Light theme: the same tokens, daylight values. Meaning colours darken so
+   they still read as text on paper-white; every tint in the sheet is a
+   translucent wash of one of these and follows along. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --void:       #eef2f7;
+  --frame:      #ffffff;
+  --panel:      #ffffff;
+  --panel-head: #f4f7fb;
+  --well:       #f6f8fb;
+
+  --rule:       #d9e0ea;
+  --rule-lit:   #b6c4d8;
+
+  --ink:        #1f2d40;
+  --ink-bright: #0b1424;
+  --dim:        #5b6b82;
+  --dimmer:     #8795a8;
+
+  --cyan:    #0e7490;
+  --cyan-lit:#0891b2;
+  --credit:  #047857;
+  --debit:   #be123c;
+  --pending: #b45309;
+  --violet:  #6d28d9;
+  --magenta: #a21caf;
+
+  --shadow-md: 0 18px 50px rgba(15, 30, 60, 0.12);
+  --wash: rgba(15, 30, 60, 0.035);
 }
 
 * { box-sizing: border-box; }
@@ -198,7 +231,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   gap: 18px;
   padding: 16px 12px;
   border-right: 1px solid var(--rule);
-  background: rgba(6, 10, 18, 0.4);
+  background: var(--wash);
   overflow-y: auto;
   min-height: 0;
 }
@@ -267,7 +300,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   height: 32px;
   padding: 0 16px;
   border-top: 1px solid var(--rule);
-  background: rgba(6, 10, 18, 0.5);
+  background: var(--wash);
   color: var(--dimmer);
   font-size: 10.5px;
   letter-spacing: 0.04em;
@@ -528,6 +561,19 @@ textarea { resize: vertical; min-height: 60px; }
 .app-form .form-errors ul { margin: 0; padding-left: 18px; }
 
 .btn-danger:hover { border-color: var(--debit, #f87171); color: var(--debit, #f87171); }
+
+/* ── Theme picker ───────────────────────────────────────────────────────── */
+.theme-choice { display: flex; gap: 10px; flex-wrap: wrap; }
+.theme-option {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border: 1px solid var(--rule); border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 13px; color: var(--ink);
+}
+.theme-option.is-active { border-color: var(--cyan); color: var(--cyan); }
+.theme-option input { margin: 0; }
+.theme-swatch { width: 28px; height: 16px; border-radius: 2px; border: 1px solid var(--rule-lit); }
+.theme-swatch-dark  { background: linear-gradient(90deg, #060a12 50%, #22d3ee 50%); }
+.theme-swatch-light { background: linear-gradient(90deg, #ffffff 50%, #0e7490 50%); }
 
 /* ── TUI progress line ──────────────────────────────────────────────────── */
 .tui-progress {

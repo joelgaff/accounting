@@ -74,3 +74,25 @@ class BankAccountShowTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", expense_path(exp)
   end
 end
+
+class AppearanceSettingsTest < ActionDispatch::IntegrationTest
+  test "each person picks a theme that persists and paints the page" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    get settings_path
+    assert_select "html[data-theme=dark]"
+    assert_select ".theme-option.is-active", text: /Dark/
+
+    patch appearance_settings_path, params: { user: { theme: "light" } }
+    assert_redirected_to settings_path
+    assert_equal "light", User.find_by!(launchpad_public_id: "u-#{org.id}").theme
+
+    get root_path
+    assert_select "html[data-theme=light]"
+    assert_select "meta[name=theme-color][content=?]", "#eef2f7"
+
+    patch appearance_settings_path, params: { user: { theme: "neon" } }
+    assert_equal "light", User.find_by!(launchpad_public_id: "u-#{org.id}").theme
+    assert_match(/isn't one of the themes/, flash[:alert])
+  end
+end

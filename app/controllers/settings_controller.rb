@@ -14,6 +14,15 @@ class SettingsController < ApplicationController
     end
   end
 
+  # Per-person, not per-organisation: the theme follows the signed-in user.
+  def appearance
+    if Current.user.update(theme: params.require(:user)[:theme])
+      redirect_to settings_path, notice: "Switched to the #{Current.user.theme} theme."
+    else
+      redirect_to settings_path, alert: "That isn't one of the themes."
+    end
+  end
+
   private
 
   def load_accounts

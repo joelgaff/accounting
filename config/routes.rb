@@ -65,7 +65,9 @@ Rails.application.routes.draw do
     resource :tax_rates, only: %i[new create]
   end
 
-  resource  :settings, only: %i[show update]
+  resource :settings, only: %i[show update] do
+    patch :appearance
+  end
   resources :tracking_categories, except: :show, path: "settings/tracking_categories"
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
     post :sync
