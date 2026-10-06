@@ -7,9 +7,17 @@
 - Deploy: Hatchbox on Hetzner. CDN/DNS: Cloudflare. Storage: Active Storage → Hetzner Object Storage.
 
 ## What already exists (built by the foundation script — do NOT recreate)
-- **Auth:** Identity/User split, passwordless **6-digit magic-link** login. Working end to end:
-  email → code emailed → code entry → session. See `SessionsController`, `Authentication`
-  concern, `LoginMailer`, `Identity#issue_login_code!` / `#login_code_valid?`.
+- **Auth, two strategies behind one concern.** `Authentication#require_authentication`
+  delegates by `Auth.mode`: **local** is the built-in passwordless login (rails-now's shape:
+  `SessionsController` new → create emails a 6-digit code → verify → confirm → `session[:user_id]`;
+  `User#issue_login_code!` / `#login_code_valid?` / `#clear_login_code!`, bcrypt digest, 10-minute
+  TTL, five guesses, three sends per quarter hour; `SetupsController` creates the organisation and
+  first user when none exist; `PeopleController` adds and removes users; `LoginMailer`).
+  **launchpad** when the credentials carry a `launchpad:` block: the hub's JWT cookie
+  (`LaunchpadAuthentication`, `Ee::Jwt`), users synced from claims, People and profile fields owned
+  by the hub. `AUTH_MODE=local|launchpad` overrides in the environment. Tests run in launchpad mode
+  (the test credentials carry the block) and set `AUTH_MODE=local` where they exercise the built-in
+  flow.
 - **Tenancy:** `Current.organization` resolved in `ApplicationController#set_organization`
   (single-tenant via `Organization.first` today). `Current.user` set on sign-in.
 - Root route → `home#index` (a trivial signed-in landing page).

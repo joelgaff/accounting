@@ -1,12 +1,29 @@
-# Deploy checklist — Hatchbox on Hetzner
+# Deploying Partita Doppia
 
-Domain: `accounting.enduranceevolution.com`
+Any host that runs Rails 8 with SQLite works. What the app needs:
 
-Everything Slice A–M is shipped. This file tracks the remaining work to get the app live and drop it once done. Check items off in-place as you complete them.
+1. `RAILS_MASTER_KEY` in the environment; everything else in the encrypted
+   credentials (see `config/credentials.yml.example`): `secret_key_base`,
+   `active_record_encryption`, `app.host`, `smtp`, and optionally `xero` and
+   `launchpad`.
+2. A persistent `storage/` directory (the SQLite databases and Active Storage).
+3. The Solid Queue worker (`bin/jobs`, or `SOLID_QUEUE_IN_PUMA=true`) for the
+   nightly SimpleFIN sync, Xero imports and email.
+4. `bin/rails db:prepare` on each deploy.
+
+Then open the site: with no users it shows the setup page.
+
+---
+
+## Joel's deployment — Hatchbox on Hetzner
+
+Domain: `accounting.enduranceevolution.com`. Sign-in is the Launchpad hub
+(`launchpad:` block in credentials; app key `partita_doppia`, the old
+`accounting` key still accepted). The notes below are the original checklist.
 
 ## Before first deploy
 
-- [ ] **Rotate `RAILS_MASTER_KEY`** (the current one was pasted into chat — treat as leaked)
+- [x] ~~Rotate `RAILS_MASTER_KEY`~~ Decided 2026-09-14 not to rotate.
   - `rm config/credentials.yml.enc config/master.key`
   - `EDITOR=nvim bin/rails credentials:edit` (regenerates both)
   - Commit the new `config/credentials.yml.enc`

@@ -9,12 +9,12 @@ step below can ship on its own.
    sidebar; Settings is a stack of panels (Organisation, Dashboard accounts,
    Connections, Books, Imports and data, Appearance). Importer services, tests
    and the rake bundle task untouched.
-2. **Sign-in: magic codes by default, Launchpad as an option** (plan below), with
-   the domain and hub settings moved into credentials in the same pass.
-3. **Example credentials and fixture pass.** `config/credentials.yml.example`
-   naming every key the app reads (optional `launchpad` block, Xero client id and
-   secret, Active Record encryption keys, mail, Hatchbox host). Test fixtures lose
-   real customer and vendor names.
+2. **Sign-in: magic codes by default, Launchpad as an option.** Done 2026-10-06
+   (plan below, all eight commits, including the You panel and People page);
+   hub and host settings moved into credentials; `config/credentials.yml.example`
+   and the README written in the same pass.
+3. **Fixture pass.** Test fixtures lose real customer and vendor names.
+   (The credentials example is done.)
 4. **Docs and license.** README for self-hosters (setup, Xero app registration
    with the March 2026 scope rules and the conversion-balance gap, SimpleFIN,
    stated assumptions: USD, single sales-tax rate, calendar year, single
