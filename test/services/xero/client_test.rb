@@ -7,11 +7,9 @@ class Xero::ClientTest < ActiveSupport::TestCase
     @conn = @org.create_xero_connection!(tenant_id: "tenant-1", tenant_name: "EE", access_token: "at-0", refresh_token: "rt-0", token_expires_at: 1.hour.from_now)
   end
 
-  def with_app_credentials
-    ENV["XERO_CLIENT_ID"], ENV["XERO_CLIENT_SECRET"] = "cid", "csecret"
-    yield
-  ensure
-    ENV.delete("XERO_CLIENT_ID"); ENV.delete("XERO_CLIENT_SECRET")
+  # Pin the app keys regardless of what the real credentials hold.
+  def with_app_credentials(&block)
+    stub_method(Xero::Client, :client_id, -> { "cid" }) { stub_method(Xero::Client, :client_secret, -> { "csecret" }, &block) }
   end
 
   test "builds the consent url and swaps a code for tokens with basic auth" do

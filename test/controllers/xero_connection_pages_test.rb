@@ -7,14 +7,15 @@ class XeroConnectionPagesTest < ActionDispatch::IntegrationTest
   end
 
   test "explains the setup when no app credentials are configured" do
-    get xero_connection_path
-    assert_response :success
-    assert_select "code", text: /xero.client_id/
-    assert_select "button[disabled]", text: "Connect to Xero"
+    stub_method(Xero::Client, :configured?, -> { false }) do
+      get xero_connection_path
+      assert_response :success
+      assert_select "code", text: /xero.client_id/
+      assert_select "button[disabled]", text: "Connect to Xero"
+    end
   end
 
   test "connects via oauth, starts an import in the background, and disconnects" do
-    ENV["XERO_CLIENT_ID"], ENV["XERO_CLIENT_SECRET"] = "cid", "csecret"
     fake = FakeXero.new
     stub_method(Xero::Client, :exchange_code, ->(code, redirect_uri:, transport: nil) { Xero::Client.send(:token_request, { grant_type: "authorization_code", code: code, redirect_uri: redirect_uri }, fake) }) do
       stub_method(Xero::Client, :connections, ->(token, transport: nil) { fake.call(Net::HTTP::Get.new(URI(Xero::Client::CONNECTIONS)), URI(Xero::Client::CONNECTIONS)).then { |r| JSON.parse(r.body) } }) do
@@ -54,7 +55,5 @@ class XeroConnectionPagesTest < ActionDispatch::IntegrationTest
 
     delete xero_connection_path
     assert_nil @org.reload.xero_connection
-  ensure
-    ENV.delete("XERO_CLIENT_ID"); ENV.delete("XERO_CLIENT_SECRET")
   end
 end
