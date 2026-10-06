@@ -562,6 +562,23 @@ textarea { resize: vertical; min-height: 60px; }
 
 .btn-danger:hover { border-color: var(--debit, #f87171); color: var(--debit, #f87171); }
 
+/* ── Searchable select (combobox) ───────────────────────────────────────── */
+.combobox { position: relative; width: 100%; }
+.combobox-input { width: 100%; }
+.combobox-list {
+  position: fixed; z-index: 300;
+  margin: 0; padding: 4px 0; list-style: none;
+  max-height: 260px; overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--rule-lit); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md); font-size: 12.5px;
+}
+.combobox-list li { padding: 6px 10px; cursor: pointer; white-space: nowrap; color: var(--ink); }
+.combobox-list li.is-active, .combobox-list li:hover { background: rgba(34, 211, 238, 0.1); color: var(--cyan); }
+.combobox-list li mark { background: transparent; color: var(--cyan); font-weight: 700; }
+.combobox-list li.combobox-empty { color: var(--dimmer); cursor: default; font-size: 11.5px; }
+.combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
+.filter-bar .combobox { min-width: 260px; }
+
 /* ── Theme picker ───────────────────────────────────────────────────────── */
 .theme-choice { display: flex; gap: 10px; flex-wrap: wrap; }
 .theme-option {
@@ -622,7 +639,8 @@ textarea { resize: vertical; min-height: 60px; }
 .data-table.sheet td { padding: 0; }
 .data-table.sheet td.num { padding: 0; }
 .data-table.sheet td > input,
-.data-table.sheet td > select {
+.data-table.sheet td > select,
+.data-table.sheet td > .combobox > input {
   width: 100%;
   padding: 8px 12px;
   border: 0;
@@ -633,7 +651,8 @@ textarea { resize: vertical; min-height: 60px; }
   font: inherit;
 }
 .data-table.sheet td > input:focus,
-.data-table.sheet td > select:focus {
+.data-table.sheet td > select:focus,
+.data-table.sheet td > .combobox > input:focus {
   outline: none;
   background: rgba(34, 211, 238, 0.08);
   box-shadow: inset 0 0 0 1px var(--cyan);
@@ -849,7 +868,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .data-table.sheet thead, .data-table.sheet tbody, .data-table.sheet tfoot { display: table-header-group; width: auto; }
   .data-table.sheet tbody { display: table-row-group; }
   .data-table.sheet tfoot { display: table-footer-group; }
-  .data-table.sheet td > input, .data-table.sheet td > select { font-size: 16px; padding: 10px 10px; }
+  .data-table.sheet td > input, .data-table.sheet td > select, .data-table.sheet td > .combobox > input { font-size: 16px; padding: 10px 10px; }
   .app-form-wide, .app-form { max-width: none; }
   .page-header { align-items: flex-start; }
 }
@@ -925,6 +944,6 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .recon-summary .kpi-source { line-height: 1.5; }
 
 /* Sheet cells: an empty field should still look like a field. */
-.data-table.sheet td > input { background: rgba(41, 74, 120, 0.1); box-shadow: inset 0 -1px 0 var(--rule); }
+.data-table.sheet td > input, .data-table.sheet td > .combobox > input { background: rgba(41, 74, 120, 0.1); box-shadow: inset 0 -1px 0 var(--rule); }
 .data-table.sheet td > input::placeholder { color: var(--dimmer); }
 .data-table.sheet td > select { background: rgba(41, 74, 120, 0.06); }
