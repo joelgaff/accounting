@@ -64,16 +64,17 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: app_host || "localhost", protocol: "https" }
 
-  # MailerSend over SMTP. The user_name/password pair comes from a MailerSend
-  # SMTP user; add them with bin/rails credentials:edit under smtp:.
+  # Any SMTP provider; the whole block comes from credentials under smtp:
+  # (address, port, user_name, password, from). Defaults suit MailerSend.
+  smtp = Rails.application.credentials.smtp || {}
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              "smtp.mailersend.net",
-    port:                 587,
+    address:              smtp[:address].presence || "smtp.mailersend.net",
+    port:                 (smtp[:port].presence || 587).to_i,
     authentication:       :plain,
     enable_starttls_auto: true,
-    user_name:            Rails.application.credentials.dig(:smtp, :user_name),
-    password:             Rails.application.credentials.dig(:smtp, :password)
+    user_name:            smtp[:user_name],
+    password:             smtp[:password]
   }
   config.action_mailer.raise_delivery_errors = true
 
