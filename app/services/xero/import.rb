@@ -30,7 +30,7 @@ module Xero
       step("contacts (both)")      { ContactsImportService.new(both,      organization: @org, default_kind: "both").call }
       step("tracking categories")  { seed_tracking! }
       step("sales invoices")   { Imports::XeroInvoicesService.new(@pull.invoices_csv("ACCREC", from: @from), organization: @org).call }
-      step("bills")            { Imports::XeroBillsService.new(@pull.invoices_csv("ACCPAY", from: @from), organization: @org).call }
+      step("bills")            { retire_number_keyed_bills!; Imports::XeroBillsService.new(@pull.invoices_csv("ACCPAY", from: @from), organization: @org).call }
       step("spend and receive money") { Imports::XeroBankTransactionsService.new(@pull.bank_transactions_csv(from: @from), organization: @org).call }
       step("transfers")        { Imports::XeroBankTransfersService.new(@pull.bank_transfers_csv(from: @from), organization: @org).call }
       step("manual journals")  { Imports::XeroJournalsService.new(@pull.manual_journals_csv(from: @from), organization: @org, documents: :include).call }
@@ -51,6 +51,22 @@ module Xero
       result = yield
       @connection.record_step!(name, result)
       result
+    end
+
+    # Bills from the API key on Xero's InvoiceID. Bills keyed by their number
+    # (a CSV bundle, or this importer before it learned better) merge years
+    # of lines when a vendor reuses numbers, so they make way for the API's
+    # copies, unless a person has matched a bank line or recorded a payment.
+    UUID = /\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/
+
+    def retire_number_keyed_bills!
+      @org.documents.bills.includes(:payments, :bank_transactions, :documentable).each do |bill|
+        next if bill.bill.xero_invoice_number.blank? || bill.bill.xero_invoice_number.match?(UUID)
+        next if bill.bank_transactions.any? || bill.payments.any? { |p| p.reference != Imports::XeroTransactionsService::PAYMENT_REFERENCE }
+        bill.payments.each { |p| p.unwind!(record: false) }
+        bill.payments.reset
+        bill.destroy!
+      end
     end
 
     # Xero knows which bank accounts are cards; the chart importer only guesses.

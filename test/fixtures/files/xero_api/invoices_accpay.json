@@ -2,7 +2,7 @@
  "Invoices": [
   {
    "Type": "ACCPAY",
-   "InvoiceID": "b1",
+   "InvoiceID": "0b100000-0000-4000-8000-000000000001",
    "InvoiceNumber": "79738R",
    "Status": "PAID",
    "Contact": {
@@ -55,7 +55,7 @@
   },
   {
    "Type": "ACCPAY",
-   "InvoiceID": "b3",
+   "InvoiceID": "0b100000-0000-4000-8000-000000000003",
    "InvoiceNumber": "79738R",
    "Status": "PAID",
    "Contact": {
