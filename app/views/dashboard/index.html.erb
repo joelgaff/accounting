@@ -22,8 +22,8 @@
 <% end %>
 
 <section class="kpi-grid">
-  <% @kpis.each do |label, account, balance| %>
-    <article class="kpi-card">
+  <% @kpis.each do |label, account, balance, path| %>
+    <%= content_tag(path ? :a : :article, class: "kpi-card #{'kpi-link' if path}", href: path) do %>
       <div class="kpi-label"><%= label %></div>
       <div class="kpi-value">$<%= number_with_precision(balance, precision: 2, delimiter: ",") %></div>
       <div class="kpi-source">
@@ -33,7 +33,7 @@
           <span class="muted">No account linked</span>
         <% end %>
       </div>
-    </article>
+    <% end %>
   <% end %>
 </section>
 
@@ -56,8 +56,8 @@
       <tbody>
         <% @recent_entries.each do |entry| %>
           <tr>
-            <td class="muted"><%= entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
             <% target = entry_path_for(entry.commercial_document) %>
+            <td class="muted"><%= target ? link_to(entry.created_at.strftime("%Y-%m-%d %H:%M"), target, class: "muted") : entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
             <td><%= target ? link_to(entry.description, target) : entry.description %></td>
             <td>
               <% if entry.commercial_document %>
@@ -66,7 +66,8 @@
                 <span class="muted">—</span>
               <% end %>
             </td>
-            <td class="num">$<%= number_with_precision(entry.debit_amounts.sum(:amount), precision: 2, delimiter: ",") %></td>
+            <% total = "$#{number_with_precision(entry.debit_amounts.sum(:amount), precision: 2, delimiter: ',')}" %>
+            <td class="num"><%= target ? link_to(total, target) : total %></td>
           </tr>
         <% end %>
       </tbody>

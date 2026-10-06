@@ -139,8 +139,13 @@ class DashboardLinksTest < ActionDispatch::IntegrationTest
     inv = create_invoice(org, client_name: "Acme", amount: 300, receivable: ar, revenue: sales)
     inv.payments.create!(organization: org, amount: 300, paid_on: Date.current, bank_account: bank)
 
+    org.settings.update!(bank_account: bank, receivable_account: ar)
+
     get root_path
     assert_response :success
     assert_select "td a[href=?]", invoice_path(inv), minimum: 3, text: /Invoice|Payment/
+    assert_select "a.kpi-card[href=?]", bank_account_path(bank)
+    assert_select "a.kpi-card[href=?]", reports_accounts_receivable_aging_path
+    assert_select "article.kpi-card", text: /Accounts Payable/, count: 1
   end
 end

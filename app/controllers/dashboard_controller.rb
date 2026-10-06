@@ -1,16 +1,17 @@
 class DashboardController < ApplicationController
+  # label, the Settings slot it reads, and where the card takes you.
   KPI_SLOTS = [
-    [ "Operating Bank",       :bank_account ],
-    [ "Accounts Receivable",  :receivable_account ],
-    [ "Accounts Payable",     :payable_account ]
+    [ "Operating Bank",       :bank_account,       ->(h, account) { h.bank_account_path(account) } ],
+    [ "Accounts Receivable",  :receivable_account, ->(h, _) { h.reports_accounts_receivable_aging_path } ],
+    [ "Accounts Payable",     :payable_account,    ->(h, _) { h.reports_accounts_payable_aging_path } ]
   ].freeze
 
   def index
     settings = Current.organization.settings
 
-    @kpis = KPI_SLOTS.map do |label, attr|
+    @kpis = KPI_SLOTS.map do |label, attr, path|
       account = settings.public_send(attr)
-      [ label, account, account&.balance || BigDecimal("0") ]
+      [ label, account, account&.balance || BigDecimal("0"), (path.call(helpers, account) if account) ]
     end
 
     @missing_slots = KPI_SLOTS.select { |_, attr| settings.public_send(attr).nil? }.map(&:first)
