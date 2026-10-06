@@ -11,6 +11,9 @@ class TrackingPagesTest < ActionDispatch::IntegrationTest
   test "manage categories under settings and tag a line from the invoice form" do
     get tracking_categories_path
     assert_response :success
+    get new_tracking_category_path
+    assert_select "[data-controller=nested-rows] template", count: 1
+    assert_select "button[data-action='nested-rows#add']", text: "+ Add option"
     post tracking_categories_path, params: { tracking_category: { name: "Event Year", active: "1", options_attributes: { "0" => { name: "2026", active: "1" }, "1" => { name: "", active: "1" } } } }
     assert_redirected_to tracking_categories_path
     cat = @org.tracking_categories.sole
@@ -33,8 +36,14 @@ class TrackingPagesTest < ActionDispatch::IntegrationTest
     assert_select "th", text: "2026"
     assert_select "th", text: "Unassigned"
 
-    patch tracking_category_path(cat), params: { tracking_category: { name: "Event Year", active: "0" } }
+    get edit_tracking_category_path(cat)
+    assert_select "h1", text: /Edit tracking category/
+    assert_select "tbody tr", count: 1
+    patch tracking_category_path(cat), params: { tracking_category: { name: "Event Year", active: "0", options_attributes: { "0" => { id: cat.options.first.id, name: "2026", active: "1" }, "1" => { name: "2027", active: "1" } } } }
     assert_redirected_to tracking_categories_path
+    assert_equal %w[2026 2027], cat.options.order(:id).pluck(:name)
+    get tracking_categories_path
+    assert_select "span.badge", text: "inactive"
     delete tracking_category_path(cat)
     assert_redirected_to tracking_categories_path
     assert TrackingCategory.exists?(cat.id), "in use, so refused"

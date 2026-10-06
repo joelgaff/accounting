@@ -9,7 +9,7 @@ class TrackingCategoriesController < ApplicationController
 
   def new
     @category = Current.organization.tracking_categories.build(active: true)
-    3.times { @category.options.build }
+    @category.options.build(active: true)
   end
 
   def create
@@ -18,20 +18,16 @@ class TrackingCategoriesController < ApplicationController
     if @category.save
       redirect_to tracking_categories_path, notice: "Tracking category added."
     else
-      pad_options
       render :new, status: :unprocessable_entity
     end
   end
 
-  def edit
-    pad_options
-  end
+  def edit; end
 
   def update
     if @category.update(category_params)
       redirect_to tracking_categories_path, notice: "Tracking category updated."
     else
-      pad_options
       render :edit, status: :unprocessable_entity
     end
   end
@@ -49,10 +45,6 @@ class TrackingCategoriesController < ApplicationController
 
   def load_category
     @category = Current.organization.tracking_categories.find(params[:id])
-  end
-
-  def pad_options
-    2.times { @category.options.build } if @category.options.reject(&:marked_for_destruction?).size < 3
   end
 
   def category_params

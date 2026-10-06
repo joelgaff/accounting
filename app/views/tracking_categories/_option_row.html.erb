@@ -1,0 +1,8 @@
+<tr>
+  <td><%= of.text_field :name, placeholder: "e.g. 2026", style: "width:100%;" %></td>
+  <td class="check-cell"><%= of.check_box :active, {}, "1", "0" %></td>
+  <td class="check-cell">
+    <%= of.hidden_field :_destroy, value: "0" if of.object.persisted? %>
+    <button type="button" class="btn btn-secondary" data-action="nested-rows#remove" title="Remove option" style="padding:2px 8px;">×</button>
+  </td>
+</tr>

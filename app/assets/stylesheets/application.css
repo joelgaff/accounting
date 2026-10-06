@@ -581,6 +581,14 @@ textarea { resize: vertical; min-height: 60px; }
 .combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
 .filter-bar .combobox { min-width: 260px; }
 
+/* ── Checkbox rows and cells ─────────────────────────────────────────────── */
+.app-form .check-row, .check-row { display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }
+.check-row input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: var(--cyan); }
+.data-table.sheet td.check-cell { padding: 6px 12px; text-align: center; vertical-align: middle; }
+.data-table.sheet td.check-cell input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: var(--cyan); }
+.badge-active   { background: rgba(52, 211, 153, 0.1);  color: var(--credit); border-color: rgba(52, 211, 153, 0.45); }
+.badge-inactive { background: rgba(41, 74, 120, 0.2);   color: var(--dim);    border-color: var(--rule-lit); }
+
 /* ── Theme picker: two toggle boxes, no native radio ─────────────────────── */
 .theme-choice { display: inline-flex; gap: 0; border: 1px solid var(--rule-lit); border-radius: var(--radius-sm); overflow: hidden; }
 .app-form .theme-option, .theme-option {

@@ -7,24 +7,42 @@
 </header>
 
 <p class="muted" style="margin:0 0 16px;font-size:13px;">
-  Tag any line with one option from each category, such as <em>Event Year: 2026</em> and <em>Class: EE Timing</em>,
-  and read the Profit &amp; Loss by option. At most <%= TrackingCategory::MAX_ACTIVE %> categories are active at once, as in Xero.
+  Tag any line with one option from each category, such as <em>Event Year: 2026</em> or <em>Class: EE Timing</em>,
+  then read the Profit &amp; Loss by option. Up to <%= TrackingCategory::MAX_ACTIVE %> categories can be active at once.
 </p>
 
 <% if @categories.any? %>
   <table class="data-table">
-    <thead><tr><th>Category</th><th>Options</th><th>Active</th><th></th></tr></thead>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Options</th>
+        <th>Status</th>
+        <th style="width:160px"></th>
+      </tr>
+    </thead>
     <tbody>
       <% @categories.each do |category| %>
-        <tr id="<%= dom_id(category) %>" class="<%= 'muted' unless category.active? %>">
+        <tr id="<%= dom_id(category) %>">
           <td><%= link_to category.name, edit_tracking_category_path(category) %></td>
-          <td><%= category.options.map { |o| o.active? ? o.name : "#{o.name} (off)" }.join(", ") %></td>
-          <td><%= category.active? ? "yes" : "no" %></td>
-          <td class="num"><%= button_to "Remove", tracking_category_path(category), method: :delete, class: "btn btn-secondary", form: { data: { turbo_confirm: "Remove “#{category.name}”?" } }, style: "padding:2px 8px;font-size:12px;" %></td>
+          <td>
+            <% active, off = category.options.partition(&:active?) %>
+            <%= active.map(&:name).join(", ") %>
+            <% if off.any? %><span class="muted"> · <%= off.size %> off</span><% end %>
+            <% if category.options.empty? %><span class="muted">none yet</span><% end %>
+          </td>
+          <td><%= status_badge(category.active? ? "active" : "inactive") %></td>
+          <td class="num">
+            <%= link_to "Edit", edit_tracking_category_path(category) %>
+            <%= button_to "Remove", tracking_category_path(category), method: :delete, class: "btn btn-secondary",
+                  form: { data: { turbo_confirm: "Remove “#{category.name}” and its options?" }, style: "display:inline" } %>
+          </td>
         </tr>
       <% end %>
     </tbody>
   </table>
 <% else %>
-  <p class="empty-state">No tracking categories yet. Xero imports create them from the TrackingName columns, or add one here.</p>
+  <p class="empty-state">
+    No tracking categories yet. <%= link_to "Add one", new_tracking_category_path %>, or connect Xero under Settings and they come across with their options.
+  </p>
 <% end %>
