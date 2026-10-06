@@ -64,8 +64,20 @@
           <% end %>
           <tr>
             <td></td>
-            <td class="muted">Net income (period)</td>
-            <td class="num">$<%= number_with_precision(@report.net_income, precision: 2, delimiter: ",") %></td>
+            <td>Retained earnings</td>
+            <td class="num">$<%= number_with_precision(@report.retained_earnings, precision: 2, delimiter: ",") %></td>
+          </tr>
+          <% @report.prior_year_rows.each do |r| %>
+            <tr class="detail">
+              <td></td>
+              <td class="muted"><%= r.year %></td>
+              <td class="num muted">$<%= number_with_precision(r.amount, precision: 2, delimiter: ",") %></td>
+            </tr>
+          <% end %>
+          <tr>
+            <td></td>
+            <td>Current year earnings <span class="muted"><%= @report.current_year_start.strftime("%b %-d") %> – <%= @as_of.strftime("%b %-d, %Y") %></span></td>
+            <td class="num">$<%= number_with_precision(@report.current_year_earnings, precision: 2, delimiter: ",") %></td>
           </tr>
           <tr class="subtotal">
             <td></td><td>Total liab. + equity</td>

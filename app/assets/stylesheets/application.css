@@ -724,6 +724,10 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .data-table tbody tr:hover .subtotal td { background: var(--panel-head); }
 
+/* Breakdown rows under a line (retained earnings by year). */
+.data-table tr.detail td { padding-top: 2px; padding-bottom: 2px; border-top: 0; }
+.data-table tr.detail td:nth-child(2) { padding-left: 2.2em; }
+
 /* Native file pickers render as a light chip otherwise. */
 .app-form input[type="file"] { padding: 7px 10px; color: var(--dim); }
 input[type="file"]::-webkit-file-upload-button,
