@@ -14,6 +14,17 @@
         </div>
         <div class="settings-row-action"><%= f.submit "Save name", class: "btn btn-primary" %></div>
       <% end %>
+      <div class="settings-row">
+        <div class="settings-row-label">People</div>
+        <div class="settings-row-main">
+          <% if Auth.launchpad? %>
+            Who can sign in is managed in Launchpad.
+          <% else %>
+            <%= pluralize(Current.organization.users.local.count, "person") %> can sign in.
+          <% end %>
+        </div>
+        <div class="settings-row-action"><%= Auth.launchpad? ? link_to("Open Launchpad", Auth.launchpad_base_url, class: "btn btn-secondary") : link_to("Manage", people_path, class: "btn btn-secondary") %></div>
+      </div>
     </div>
   </section>
 

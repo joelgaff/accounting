@@ -98,3 +98,77 @@ class LocalSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 end
+
+class PeopleAndProfileTest < ActionDispatch::IntegrationTest
+  setup do
+    ENV["AUTH_MODE"] = "local"
+    @org  = organizations(:one)
+    Organization.where.not(id: @org.id).destroy_all   # set_organization resolves Organization.first
+    @joel = @org.users.create!(email_address: "joel@example.com", name: "Joel")
+    code  = @joel.issue_login_code!
+    post confirm_session_path, params: { token: Rails.application.message_verifier(:login).generate("joel@example.com", expires_in: 15.minutes), code: code }
+  end
+  teardown { ENV.delete("AUTH_MODE") }
+
+  test "people can be added with a welcome email and removed, but not yourself" do
+    get settings_path
+    assert_select ".settings-row-action a[href=?]", people_path
+    get people_path
+    assert_select "td", text: /Joel/
+
+    assert_enqueued_emails 1 do
+      post people_path, params: { user: { name: "Pat", email_address: "Pat@Example.com" } }
+    end
+    assert_redirected_to people_path
+    pat = @org.users.local.find_by!(email_address: "pat@example.com")
+
+    post people_path, params: { user: { name: "Again", email_address: "pat@example.com" } }
+    assert_response :unprocessable_entity
+
+    delete person_path(@joel)
+    assert_match(/can't remove yourself/, flash[:alert])
+    delete person_path(pat)
+    assert_nil User.find_by(id: pat.id)
+  end
+
+  test "you can rename yourself and change your email only by confirming a code sent to it" do
+    patch profile_settings_path, params: { user: { name: "Joel G" } }
+    assert_equal "Joel G", @joel.reload.name
+
+    perform_enqueued_jobs do
+      patch email_settings_path, params: { email: "new@example.com" }
+    end
+    assert_equal "new@example.com", @joel.reload.pending_email_address
+    assert_equal "joel@example.com", @joel.email_address, "nothing changes until the code comes back"
+    mail = ActionMailer::Base.deliveries.last
+    assert_equal [ "new@example.com" ], mail.to
+    code = mail.subject[/\d{6}/]
+
+    get settings_path
+    assert_select "input[name=code]"
+    patch confirm_email_settings_path, params: { code: "000000" }
+    assert_equal "joel@example.com", @joel.reload.email_address
+
+    perform_enqueued_jobs do
+      patch confirm_email_settings_path, params: { code: code }
+    end
+    assert_equal "new@example.com", @joel.reload.email_address
+    assert_nil @joel.pending_email_address
+    assert_equal [ "joel@example.com" ], ActionMailer::Base.deliveries.last.to, "the old address is told"
+
+    patch email_settings_path, params: { email: "one@example.com" }
+    assert_match(/already in use|already your/, flash[:alert].to_s + "x") if @org.users.local.where(email_address: "one@example.com").exists?
+  end
+
+  test "in launchpad mode the You panel is read-only and People points at the hub" do
+    ENV.delete("AUTH_MODE")
+    sign_in_as_launchpad_user(@org)
+    get settings_path
+    assert_select ".settings-row-main", text: /from Launchpad/
+    assert_select "a", text: "Open Launchpad"
+    get people_path
+    assert_redirected_to settings_path
+    patch profile_settings_path, params: { user: { name: "Nope" } }
+    assert_redirected_to settings_path
+  end
+end

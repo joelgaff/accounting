@@ -75,7 +75,12 @@ Rails.application.routes.draw do
   resource :settings, only: %i[show update] do
     patch :appearance
     patch :organization
+    patch :profile
+    patch :email
+    patch :confirm_email
+    patch :cancel_email
   end
+  resources :people, only: %i[index create destroy], path: "settings/people"
   resources :tracking_categories, except: :show, path: "settings/tracking_categories"
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
     post :sync

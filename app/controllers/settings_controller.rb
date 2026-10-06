@@ -23,6 +23,51 @@ class SettingsController < ApplicationController
     end
   end
 
+  # ── The "You" panel (local mode; Launchpad owns name and email otherwise) ──
+
+  def profile
+    return redirect_to settings_path, alert: "Your name comes from Launchpad." if Auth.launchpad?
+    if Current.user.update(params.require(:user).permit(:name))
+      redirect_to settings_path, notice: "Name saved."
+    else
+      redirect_to settings_path, alert: Current.user.errors.full_messages.to_sentence
+    end
+  end
+
+  # A new address only takes over once a code sent to it comes back.
+  def email
+    return redirect_to settings_path, alert: "Your email comes from Launchpad." if Auth.launchpad?
+    wanted = User.normalize_value_for(:email_address, params[:email])
+    return redirect_to settings_path, alert: "That's already your email." if wanted == Current.user.email_address
+    return redirect_to settings_path, alert: "That address is already in use." if User.local.where(email_address: wanted).where.not(id: Current.user.id).exists?
+    Current.user.update!(pending_email_address: wanted)
+    code = Current.user.issue_login_code!
+    LoginMailer.code(Current.user, code, to: wanted).deliver_later
+    redirect_to settings_path, notice: "A code is on its way to #{wanted}."
+  rescue User::TooManyRequests
+    redirect_to settings_path, alert: "Too many codes requested; try again in a few minutes."
+  end
+
+  def confirm_email
+    user = Current.user
+    return redirect_to settings_path if user.pending_email_address.blank?
+    if user.login_code_valid?(params[:code])
+      old = user.email_address
+      user.update!(email_address: user.pending_email_address, pending_email_address: nil)
+      user.clear_login_code!
+      LoginMailer.email_changed(user, old_address: old).deliver_later
+      redirect_to settings_path, notice: "Email changed to #{user.email_address}."
+    else
+      redirect_to settings_path, alert: "That code isn't right or has expired."
+    end
+  end
+
+  def cancel_email
+    Current.user.update!(pending_email_address: nil)
+    Current.user.clear_login_code!
+    redirect_to settings_path, notice: "Email change cancelled."
+  end
+
   # Per-person, not per-organisation: the theme is saved on the user record
   # and follows them to any device. The page paints it before this returns.
   def appearance

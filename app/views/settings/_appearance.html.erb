@@ -1,8 +1,45 @@
-<%# The theme picker. Replaced over turbo_stream after a change so the active
-    state follows; the theme itself is applied the instant you click. %>
+<%# The "You" panel: name, email and theme. In Launchpad mode name and email
+    come from the hub and are read-only here. Replaced over turbo_stream after
+    a theme change so the active state follows. %>
 <%= tag.section id: dom_id(Current.user, :appearance), class: "panel" do %>
-  <div class="panel-head"><h2 class="panel-title">Appearance</h2><span class="meta">just you</span></div>
+  <div class="panel-head"><h2 class="panel-title">You</h2><span class="meta">just you</span></div>
   <div class="panel-body">
+    <% if Auth.launchpad? %>
+      <div class="settings-row">
+        <div class="settings-row-label">Name</div>
+        <div class="settings-row-main"><%= Current.user.name %> <span class="settings-row-help" style="display:inline;margin:0;">· from Launchpad</span></div>
+        <div class="settings-row-action"><%= link_to "Edit in Launchpad", "#{Auth.launchpad_base_url}/profile", class: "btn btn-secondary" %></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-label">Email</div>
+        <div class="settings-row-main"><%= Current.user.email_address %></div>
+      </div>
+    <% else %>
+      <%= form_with model: Current.user, url: profile_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+        <div class="settings-row-label"><%= f.label :name %></div>
+        <div class="settings-row-main"><%= f.text_field :name, required: true %></div>
+        <div class="settings-row-action"><%= f.submit "Save name", class: "btn btn-secondary" %></div>
+      <% end %>
+      <% if Current.user.pending_email_address.present? %>
+        <%= form_with url: confirm_email_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+          <div class="settings-row-label">Email</div>
+          <div class="settings-row-main">
+            <%= f.text_field :code, inputmode: "numeric", maxlength: 6, required: true, placeholder: "6-digit code", style: "max-width:160px;" %>
+            <p class="settings-row-help">We sent a code to <strong><%= Current.user.pending_email_address %></strong>. Enter it to switch from <%= Current.user.email_address %>. <%= link_to "Cancel", cancel_email_settings_path, data: { turbo_method: :patch } %></p>
+          </div>
+          <div class="settings-row-action"><%= f.submit "Confirm", class: "btn btn-primary" %></div>
+        <% end %>
+      <% else %>
+        <%= form_with url: email_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+          <div class="settings-row-label"><%= f.label :email, "Email" %></div>
+          <div class="settings-row-main">
+            <%= f.email_field :email, value: Current.user.email_address, required: true %>
+            <p class="settings-row-help">This is how you sign in. A new address takes effect once you confirm a code sent to it.</p>
+          </div>
+          <div class="settings-row-action"><%= f.submit "Change email", class: "btn btn-secondary" %></div>
+        <% end %>
+      <% end %>
+    <% end %>
     <%= form_with model: Current.user, url: appearance_settings_path, method: :patch, class: "app-form settings-row", data: { controller: "theme" } do |f| %>
       <div class="settings-row-label">Theme</div>
       <div class="settings-row-main">

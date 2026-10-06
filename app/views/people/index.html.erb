@@ -1,0 +1,48 @@
+<header class="page-header">
+  <h1>People</h1>
+  <%= link_to "← Settings", settings_path, class: "btn btn-secondary" %>
+</header>
+
+<div class="settings-stack">
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Who can sign in</h2><span class="meta"><%= pluralize(@people.size, "person") %></span></div>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Added</th><th style="width:120px"></th></tr></thead>
+      <tbody>
+        <% @people.each do |person| %>
+          <tr id="<%= dom_id(person) %>">
+            <td><%= person.name %><% if person == Current.user %> <span class="muted">(you)</span><% end %></td>
+            <td class="muted"><%= person.email_address %></td>
+            <td class="muted"><%= person.created_at.to_date.iso8601 %></td>
+            <td class="num">
+              <% unless person == Current.user %>
+                <%= button_to "Remove", person_path(person), method: :delete, class: "btn btn-secondary",
+                      form: { data: { turbo_confirm: "Remove #{person.name}? They won't be able to sign in." }, style: "display:inline" } %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2 class="panel-title">Add someone</h2><span class="meta">they get a welcome email</span></div>
+    <div class="panel-body">
+      <%= form_with model: @person, url: people_path, class: "app-form" do |f| %>
+        <% if @person.errors.any? %>
+          <div class="form-errors"><ul><% @person.errors.full_messages.each { |m| %><li><%= m %></li><% } %></ul></div>
+        <% end %>
+        <div class="settings-row">
+          <div class="settings-row-label"><%= f.label :name %></div>
+          <div class="settings-row-main"><%= f.text_field :name, required: true %></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-label"><%= f.label :email_address, "Email" %></div>
+          <div class="settings-row-main"><%= f.email_field :email_address, required: true %></div>
+          <div class="settings-row-action"><%= f.submit "Add", class: "btn btn-primary" %></div>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>
