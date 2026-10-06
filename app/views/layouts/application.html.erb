@@ -2,10 +2,11 @@
 <% theme = Current.user&.theme.presence || "dark" %>
 <html data-theme="<%= theme %>">
   <head>
-    <title><%= content_for(:title) || "Ledger" %></title>
+    <title><%= content_for(:title) || app_name %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Ledger">
+    <meta name="application-name" content="<%= app_name %>">
+    <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="<%= theme == "light" ? "#eef2f7" : "#060a12" %>">
     <%= csrf_meta_tags %>
@@ -31,7 +32,7 @@
       <div class="app-shell">
         <header class="app-titlebar">
           <div class="tb-brand">
-            <span class="tb-mark"><%= render "shared/logo_mark", size: 18 %></span>LEDGER<span class="tb-version">v0.1</span>
+            <span class="tb-mark"><%= render "shared/logo_mark", size: 18 %></span><span class="tb-name"><%= app_name %></span><span class="tb-version">v0.1</span>
           </div>
           <div class="tb-tagline">Double-entry bookkeeping <em>//</em> Every line balanced.</div>
           <div class="tb-session">
@@ -65,7 +66,7 @@
             <div class="nav-footer">
               <span class="mark"><%= render "shared/logo_mark", size: 14 %></span>
               <span>
-                <strong>LEDGER</strong>
+                <strong><%= app_name %></strong>
                 Books for <%= Current.organization.name %>
               </span>
             </div>
@@ -82,7 +83,7 @@
 
         <footer class="app-statusbar">
           <span><span class="live">●</span> <%= Current.organization.name %> — books as at <%= Date.current.strftime("%b %-d, %Y") %></span>
-          <span>LEDGER v0.1</span>
+          <span><%= app_name %> v0.1</span>
         </footer>
       </div>
     <% else %>

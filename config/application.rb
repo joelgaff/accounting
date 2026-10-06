@@ -6,9 +6,13 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-module Accounting
+module Accounting   # the Rails module keeps its name; the product is Partita Doppia (config.x.app_name)
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
+    # The product name, always the two words together; everything that shows
+    # the brand reads it from here.
+    config.x.app_name = "Partita Doppia"
+
     config.load_defaults 8.1
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do

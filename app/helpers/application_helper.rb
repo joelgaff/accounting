@@ -74,6 +74,9 @@ module ApplicationHelper
     end)
   end
 
+  # "Partita Doppia", never split or shortened.
+  def app_name = Rails.application.config.x.app_name
+
   def money(amount)
     "$#{number_with_precision(amount, precision: 2, delimiter: ',')}"
   end

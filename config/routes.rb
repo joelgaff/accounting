@@ -91,5 +91,6 @@ Rails.application.routes.draw do
     resource :accounts_payable_aging,      only: :show
   end
 
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   get "up" => "rails/health#show", as: :rails_health_check
 end

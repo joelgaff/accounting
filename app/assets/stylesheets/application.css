@@ -1,5 +1,5 @@
 /*
- * Ledger — hand-rolled CSS. No framework.
+ * Partita Doppia — hand-rolled CSS. No framework.
  *
  * Console treatment: one monospace family, hairline panels on deep navy, and
  * colour reserved for meaning — cyan is interactive, green is credit, red is
@@ -185,6 +185,8 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   font-size: 13px;
 }
 .tb-mark { color: var(--cyan); letter-spacing: 0; display: inline-flex; align-self: center; }
+.tb-name { text-transform: uppercase; white-space: nowrap; }
+.guest-card .guest-name { text-transform: uppercase; color: var(--ink-bright); letter-spacing: 0.18em; }
 .logo-mark { display: block; }
 .tb-version { font-weight: 400; letter-spacing: 0.04em; color: var(--dimmer); font-size: 11px; }
 .tb-tagline {

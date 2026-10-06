@@ -149,3 +149,22 @@ class DashboardLinksTest < ActionDispatch::IntegrationTest
     assert_select "article.kpi-card", text: /Accounts Payable/, count: 1
   end
 end
+
+class BrandingTest < ActionDispatch::IntegrationTest
+  test "the product name comes from configuration and is never split" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    get root_path
+    assert_select "title", text: "Partita Doppia"
+    assert_select "meta[name=application-name][content=?]", "Partita Doppia"
+    assert_select ".tb-name", text: "Partita Doppia"
+    assert_select ".nav-footer strong", text: "Partita Doppia"
+    assert_select ".app-statusbar", text: /Partita Doppia v0\.1/
+    assert_no_match(/LEDGER|>Ledger</, response.body)
+
+    get pwa_manifest_path(format: :json)
+    assert_response :success
+    assert_equal "Partita Doppia", response.parsed_body["name"]
+    assert_equal "Partita Doppia", response.parsed_body["short_name"]
+  end
+end
