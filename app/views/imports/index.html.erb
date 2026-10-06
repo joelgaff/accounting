@@ -1,9 +1,10 @@
 <header class="page-header">
-  <h1>Import from Xero</h1>
+  <h1>Import Xero exports by file</h1>
+  <%= link_to "← Settings", settings_path, class: "btn btn-secondary" %>
 </header>
 
 <div class="notice notice-info">
-  <p>Migrate your Xero data one export at a time, in order (top to bottom). Every importer is idempotent — re-running updates existing records instead of duplicating.</p>
+  <p>The usual way in is <%= link_to "the Xero connection under Settings", xero_connection_path %>, which pulls everything over the API. These uploads are the fallback: Xero's CSV exports, one at a time, in order. Every importer is idempotent, so re-running updates rather than duplicates.</p>
 </div>
 
 <div class="kpi-grid">

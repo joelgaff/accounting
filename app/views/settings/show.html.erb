@@ -85,3 +85,15 @@
   </p>
   <%= link_to "Manage bank feed", bank_feed_path, class: "btn btn-secondary" %>
 </section>
+
+<section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Imports and data</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">
+    Fallbacks for when the Xero connection and the bank feed above don't cover something: a statement file for a
+    gap in the feed, or a Xero export by file.
+  </p>
+  <ul class="link-list">
+    <li><%= link_to "Upload a bank statement (CSV, OFX, QFX)", new_imports_bank_path %> <span class="muted">— for a window the feed missed or an account it can't see</span></li>
+    <li><%= link_to "Import Xero exports by file", imports_path %> <span class="muted">— chart of accounts, contacts, invoices, bills, journal report, tax rates</span></li>
+  </ul>
+</section>

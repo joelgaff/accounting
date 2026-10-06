@@ -55,12 +55,11 @@
               <%= nav_item "Banking",   bank_accounts_path,    icon: :banking,   sections: %w[bank_accounts transfers] %>
               <%= nav_item "Reports",   reports_path,          icon: :reports %>
               <%= nav_item "Reconcile", bank_transactions_path, icon: :reconcile, sections: %w[bank_transactions bank_rules] %>
-              <%= nav_item "Import",    imports_path,          icon: :imports %>
             </div>
 
             <div class="nav-links nav-secondary">
               <%= nav_item "Tax rates", tax_rates_path, icon: :tax,      sections: %w[tax_rates] %>
-              <%= nav_item "Settings",  settings_path,  icon: :settings, sections: %w[settings bank_feeds tracking_categories xero_connections] %>
+              <%= nav_item "Settings",  settings_path,  icon: :settings, sections: %w[settings bank_feeds tracking_categories xero_connections imports chart_of_accounts_imports contact_imports] %>
             </div>
 
             <div class="nav-footer">

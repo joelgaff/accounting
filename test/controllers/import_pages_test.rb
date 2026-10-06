@@ -37,3 +37,21 @@ class ImportPagesTest < ActionDispatch::IntegrationTest
     assert_equal 3, @org.tax_rates.count
   end
 end
+
+class ImportsLiveUnderSettingsTest < ActionDispatch::IntegrationTest
+  test "the sidebar has no Import item; Settings links the uploads and stays lit on them" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    get settings_path
+    assert_select ".nav-links a span", text: "Import", count: 0
+    assert_select "section h2", text: "Imports and data"
+    assert_select ".link-list a[href=?]", new_imports_bank_path
+    assert_select ".link-list a[href=?]", imports_path
+
+    get imports_path
+    assert_select "h1", text: "Import Xero exports by file"
+    assert_select ".nav-links a.active span", text: "Settings"
+    get new_imports_bank_path
+    assert_select ".nav-links a.active span", text: "Settings"
+  end
+end

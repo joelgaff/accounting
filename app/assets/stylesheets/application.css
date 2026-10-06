@@ -585,6 +585,11 @@ textarea { resize: vertical; min-height: 60px; }
 .combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
 .filter-bar .combobox { min-width: 260px; }
 
+/* ── Plain link lists (Settings) ─────────────────────────────────────────── */
+.link-list { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.link-list li { padding: 6px 0; border-top: 1px solid var(--rule); }
+.link-list li:first-child { border-top: 0; }
+
 /* ── Checkbox rows and cells ─────────────────────────────────────────────── */
 .app-form .check-row, .check-row { display: flex; align-items: center; gap: 10px; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink); }
 .check-row input[type="checkbox"] { width: 15px; height: 15px; margin: 0; accent-color: var(--cyan); }
@@ -984,7 +989,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .recon-summary .kpi-source { line-height: 1.5; }
 
 /* Sheet cells: an empty field should still look like a field. */
-.data-table.sheet td > input, .data-table.sheet td > .combobox > input { background: var(--sheet-wash); box-shadow: inset 0 -1px 0 var(--rule); }
+.data-table.sheet td > input, .data-table.sheet td > .combobox > input { background: var(--sheet-wash); box-shadow: none; }
 .data-table.sheet td > input::placeholder { color: var(--dimmer); }
 .data-table.sheet td > select { background: var(--sheet-select-wash); }
 
