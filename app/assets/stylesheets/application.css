@@ -585,6 +585,12 @@ textarea { resize: vertical; min-height: 60px; }
 .combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
 .filter-bar .combobox { min-width: 260px; }
 
+/* ── Guest forms (sign-in, setup) ───────────────────────────────────────── */
+.guest-form { max-width: none; padding: 0; border: 0; background: transparent; box-shadow: none; }
+.guest-form .field { margin-bottom: 14px; }
+.guest-form .form-actions { margin-top: 4px; }
+.guest-form .code-field { font-size: 22px; letter-spacing: 0.3em; text-align: center; }
+
 /* ── Settings: a stack of panels, each a list of label / detail / action rows ── */
 .settings-stack { display: flex; flex-direction: column; gap: 16px; max-width: 860px; }
 .settings-stack .app-form { max-width: none; padding: 0; border: 0; background: transparent; box-shadow: none; }

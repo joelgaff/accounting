@@ -6,11 +6,6 @@ module LaunchpadAuthentication
   # every token has been reissued.
   APP_KEYS = %w[partita_doppia accounting].freeze
 
-  included do
-    before_action :require_launchpad_authentication
-    helper_method :current_user, :logged_in?
-  end
-
   private
 
   def require_launchpad_authentication
@@ -44,7 +39,4 @@ module LaunchpadAuthentication
   end
 
   def launchpad_base_url = Auth.launchpad_base_url
-
-  def current_user = Current.user
-  def logged_in?   = Current.user.present?
 end

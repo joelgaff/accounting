@@ -1,0 +1,16 @@
+<div class="guest-card">
+  <div class="guest-brand"><span><%= render "shared/logo_mark", size: 20 %></span><span class="guest-name"><%= app_name %></span></div>
+  <h1>Enter your code</h1>
+  <p class="muted" style="margin:0 0 20px;font-size:12.5px;">We emailed a 6-digit code to <strong><%= @email %></strong>. It's good for 10 minutes.</p>
+  <%= form_with url: confirm_session_path, method: :post, class: "app-form guest-form" do |f| %>
+    <%= f.hidden_field :token, value: params[:token] %>
+    <div class="field">
+      <%= f.label :code %>
+      <%= f.text_field :code, value: @code, inputmode: "numeric", pattern: "[0-9]*", maxlength: 6, required: true, autofocus: true, autocomplete: "one-time-code", class: "code-field" %>
+    </div>
+    <div class="form-actions">
+      <%= f.submit "Sign in", class: "btn btn-primary", style: "width:100%;" %>
+    </div>
+  <% end %>
+  <p class="muted" style="margin:16px 0 0;font-size:12px;"><%= link_to "Use a different email", new_session_path %></p>
+</div>

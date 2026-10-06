@@ -37,7 +37,11 @@
           <div class="tb-tagline"></div>
           <div class="tb-session">
             <span><%= current_user.email %></span>
-            <%= button_to "Sign out", "#{Auth.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
+            <% if Auth.launchpad? %>
+              <%= button_to "Sign out", "#{Auth.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
+            <% else %>
+              <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
+            <% end %>
           </div>
         </header>
 

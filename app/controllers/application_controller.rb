@@ -1,10 +1,16 @@
 class ApplicationController < ActionController::Base
-  # Adds before_action :require_launchpad_authentication.
+  # Adds before_action :require_authentication, which picks the strategy.
   include LaunchpadAuthentication
+  include Authentication
 
   # Must resolve the tenant BEFORE the SSO user is synced (a first-time user is
   # attached to it), so prepend it ahead of the concern's auth filter.
   before_action :set_organization, prepend: true
+
+  # Pages a person reaches before they have signed in.
+  def self.allow_unauthenticated(**options)
+    skip_before_action :require_authentication, **options
+  end
 
   private
 

@@ -1,0 +1,22 @@
+<div class="guest-card">
+  <div class="guest-brand"><span><%= render "shared/logo_mark", size: 20 %></span><span class="guest-name"><%= app_name %></span></div>
+  <h1>Set up your books</h1>
+  <p class="muted" style="margin:0 0 20px;font-size:12.5px;">Nobody has signed in yet. Name the entity whose books these are and the first person who keeps them. You'll get a code by email to prove the address.</p>
+  <%= form_with url: setup_path, method: :post, class: "app-form guest-form" do |f| %>
+    <div class="field">
+      <%= f.label :organization_name, "Entity name" %>
+      <%= f.text_field :organization_name, value: @organization.name, required: true, autofocus: true, placeholder: "Acme Timing LLC" %>
+    </div>
+    <div class="field">
+      <%= f.label :name, "Your name" %>
+      <%= f.text_field :name, placeholder: "Joel" %>
+    </div>
+    <div class="field">
+      <%= f.label :email, "Your email" %>
+      <%= f.email_field :email, required: true, autocomplete: "email", placeholder: "you@example.com" %>
+    </div>
+    <div class="form-actions">
+      <%= f.submit "Send my first code", class: "btn btn-primary", style: "width:100%;" %>
+    </div>
+  <% end %>
+</div>

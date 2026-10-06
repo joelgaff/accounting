@@ -1,0 +1,3 @@
+<p>Hi <%= @user.name %>,</p>
+<p><%= @added_by.name %> added you to <%= Rails.application.config.x.app_name %>, the books for <%= @user.organization.name %>.</p>
+<p>There's no password: <a href="<%= @link %>">sign in with your email</a> and we'll send you a 6-digit code each time.</p>

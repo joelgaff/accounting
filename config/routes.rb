@@ -1,6 +1,13 @@
 Rails.application.routes.draw do
   root "dashboard#index"
 
+  # Built-in sign-in (local mode); in Launchpad mode these hand over to the hub.
+  resource :session, only: %i[new create destroy] do
+    get  :verify
+    post :confirm
+  end
+  resource :setup, only: %i[new create]
+
   # Auth lives entirely at the Launchpad hub (see LaunchpadAuthentication).
   resources :invoices, only: %i[index show new create edit update destroy] do
     member do

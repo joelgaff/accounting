@@ -1,0 +1,5 @@
+Hi <%= @user.name %>,
+
+<%= @added_by.name %> added you to <%= Rails.application.config.x.app_name %>, the books for <%= @user.organization.name %>.
+
+There's no password: sign in with your email at <%= @link %> and we'll send you a 6-digit code each time.
