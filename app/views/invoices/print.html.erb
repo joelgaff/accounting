@@ -3,7 +3,8 @@
     /* An invoice is a document, not a console window — print it on paper. */
     html, body { background: #fff; color: #14181f; }
     body::before { display: none; }
-    .app-shell { margin:0; border:0; border-radius:0; box-shadow:none; background:#fff; max-width:none; }
+    .app-shell { margin:0; border:0; border-radius:0; box-shadow:none; background:#fff; max-width:none; height:auto; display:block; }
+    .app-main { overflow:visible; }
     .app-shell::before, .app-titlebar, .app-nav, .app-statusbar, .flash { display: none !important; }
     .app-body { display: block; }
     .app-main { max-width: 780px; margin: 0 auto; padding: 40px; }

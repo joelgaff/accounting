@@ -106,17 +106,23 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 
 /* ── Window shell ───────────────────────────────────────────────────────── */
 
+/* The shell fills the viewport: title bar and status bar stay put, the
+   sidebar stays put, and only the main pane scrolls. */
 .app-shell {
   position: relative;
   z-index: 1;
   max-width: 1440px;
+  height: calc(100vh - 40px);
   margin: 20px auto;
+  display: flex;
+  flex-direction: column;
   background: var(--frame);
   border: 1px solid var(--rule-lit);
   border-radius: 5px;
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }
+.app-titlebar, .app-statusbar { flex: none; }
 /* The one bright edge in the interface. */
 .app-shell::before {
   content: "";
@@ -178,9 +184,10 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 .tb-session button:hover { color: var(--debit); border-color: rgba(251, 113, 133, 0.4); }
 
 .app-body {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 214px minmax(0, 1fr);
-  min-height: calc(100vh - 105px);
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────────── */
@@ -192,6 +199,8 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   padding: 16px 12px;
   border-right: 1px solid var(--rule);
   background: rgba(6, 10, 18, 0.4);
+  overflow-y: auto;
+  min-height: 0;
 }
 .nav-links { display: flex; flex-direction: column; gap: 2px; }
 .nav-links a {
@@ -248,7 +257,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 
 /* ── Main + status bar ──────────────────────────────────────────────────── */
 
-.app-main { padding: 22px 26px 40px; min-width: 0; }
+.app-main { padding: 22px 26px 40px; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 
 .app-statusbar {
   display: flex;
@@ -739,8 +748,10 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
-  .app-shell { margin: 0; border: 0; border-radius: 0; }
+  .app-shell { margin: 0; border: 0; border-radius: 0; height: auto; min-height: 100vh; display: block; }
   .app-body { grid-template-columns: 1fr; min-height: 0; }
+  .app-nav { overflow-y: visible; }
+  .app-main { overflow-y: visible; }
   .app-nav {
     flex-direction: row;
     align-items: center;
@@ -788,7 +799,10 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 @media print {
   body::before { display: none; }
   html, body { background: #fff; color: #111; }
+  .app-main { overflow: visible; }
   .app-shell {
+    height: auto;
+    display: block;
     margin: 0;
     border: 0;
     border-radius: 0;
