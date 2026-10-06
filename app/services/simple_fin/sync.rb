@@ -7,15 +7,19 @@ module SimpleFin
       def to_h = super.merge(unmapped: unmapped.to_a, errors: errors.to_a)
     end
 
-    def initialize(feed, client: feed.client)
+    # from/to pin an explicit window (a backfill); otherwise the window runs
+    # from the last sync, with overlap, to today.
+    def initialize(feed, client: feed.client, from: nil, to: nil)
       @feed   = feed
       @client = client
       @org    = feed.organization
+      @from, @to = from, to
     end
 
     def call
-      from    = [ (@feed.last_synced_at&.to_date || 90.days.ago.to_date) - OVERLAP_DAYS, (Client::MAX_RANGE_DAYS - 1).days.ago.to_date ].max
-      payload = @client.accounts(start_date: from)
+      from    = @from || [ (@feed.last_synced_at&.to_date || 90.days.ago.to_date) - OVERLAP_DAYS, (Client::MAX_RANGE_DAYS - 1).days.ago.to_date ].max
+      to      = @to || Date.current
+      payload = @client.accounts(start_date: from, end_date: to)
       summary = Summary.new(accounts: 0, imported: 0, duplicates: 0, rules_applied: 0, rules_suggested: 0, unmapped: [], errors: payload.errors.dup)
 
       @feed.update!(accounts: payload.accounts.map { |a| { "id" => a.id, "name" => a.name, "currency" => a.currency, "balance" => a.balance.to_s("F"), "balance_date" => a.balance_date&.iso8601 } })
@@ -32,7 +36,7 @@ module SimpleFin
             description: t.description.presence || t.memo.to_s, reference: t.memo }
         end
         result = Imports::BankStatementService.new(rows, bank_account: bank, organization: @org).call
-        bank.update!(statement_balance: account.balance, statement_balance_at: account.balance_date, feed_synced_at: Time.current)
+        bank.update!(statement_balance: account.balance, statement_balance_at: account.balance_date, feed_synced_at: Time.current) unless backfill?
         summary.accounts += 1
         summary.imported += result.imported
         summary.duplicates += result.duplicates
@@ -41,11 +45,17 @@ module SimpleFin
         summary.errors.concat(result.errors)
       end
 
-      @feed.update!(last_synced_at: Time.current, last_error: nil, last_summary: summary.to_h.to_json)
+      @feed.update!(last_synced_at: Time.current, last_error: nil, last_summary: summary.to_h.to_json) unless backfill?
       summary
     rescue Error, SocketError, Timeout::Error, Errno::ECONNREFUSED, OpenSSL::SSL::SSLError => e
       @feed.update!(last_error: "#{Time.current.utc.iso8601}: #{e.message}")
       raise
     end
+
+    private
+
+    # A pinned window that ends before today is history; it must not move
+    # the feed's "synced to" marker or overwrite the current balances.
+    def backfill? = @to.present? && @to < Date.current
   end
 end

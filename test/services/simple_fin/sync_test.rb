@@ -58,3 +58,27 @@ class SimpleFin::SyncTest < ActiveSupport::TestCase
     assert_equal "https://u:p@bridge.simplefin.org/simplefin", @feed.reload.access_url
   end
 end
+
+class SimpleFin::BackfillTest < ActiveSupport::TestCase
+  setup do
+    @org = organizations(:one)
+    Current.organization = @org
+    @feed     = @org.create_bank_feed!(access_url: "https://u:p@bridge.simplefin.org/simplefin")
+    @checking = create_bank_account(@org, name: "Checking")
+    @checking.update!(bank_feed: @feed, feed_account_id: "ACT-checking-4821", feed_name: "Business Checking 4821", statement_balance: 999, feed_synced_at: Time.current)
+    @feed.update!(last_synced_at: Time.current)
+    @client = Object.new
+    windows = @windows = []
+    payload = SimpleFin::Client.new("https://u:p@x.example/simplefin", transport: ->(*) { Struct.new(:code, :body) { def is_a?(k) = k == Net::HTTPSuccess }.new("200", file_fixture("simplefin/accounts.json").read) }).accounts(start_date: Date.current - 1)
+    @client.define_singleton_method(:accounts) { |start_date:, end_date:, **| windows << [ start_date, end_date ]; payload }
+  end
+
+  test "a pinned window imports history without touching the feed's sync marker or balances" do
+    before = @feed.last_synced_at
+    summary = SimpleFin::Sync.new(@feed, client: @client, from: Date.new(2025, 1, 1), to: Date.new(2025, 3, 31)).call
+    assert_equal [ [ Date.new(2025, 1, 1), Date.new(2025, 3, 31) ] ], @windows
+    assert_equal 2, summary.imported
+    assert_equal before, @feed.reload.last_synced_at
+    assert_equal BigDecimal("999"), @checking.reload.statement_balance
+  end
+end
