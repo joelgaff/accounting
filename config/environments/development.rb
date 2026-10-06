@@ -2,7 +2,8 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
   # --- Launchpad SSO (local, via lvh.me wildcard DNS) ---
-  config.x.launchpad_base_url = "http://launchpad.lvh.me:3000"
+  # bin/dev runs the hub on 3000; LAUNCHPAD_URL points elsewhere when 3000 is busy.
+  config.x.launchpad_base_url = ENV.fetch("LAUNCHPAD_URL", "http://launchpad.lvh.me:3000")
   config.x.jwt_cookie_domain  = ".lvh.me"
   config.hosts << /.*\.lvh\.me/
 
