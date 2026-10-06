@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_150000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -164,7 +164,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
     t.integer "bank_account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "xero_id"
     t.index ["bank_account_id"], name: "index_deposits_on_bank_account_id"
+    t.index ["xero_id"], name: "index_deposits_on_xero_id", unique: true, where: "xero_id IS NOT NULL"
   end
 
   create_table "document_events", force: :cascade do |t|
@@ -208,7 +210,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "vendor", null: false
+    t.string "xero_id"
     t.index ["bank_account_id"], name: "index_expenses_on_bank_account_id"
+    t.index ["xero_id"], name: "index_expenses_on_xero_id", unique: true, where: "xero_id IS NOT NULL"
   end
 
   create_table "invoices", force: :cascade do |t|
@@ -412,8 +416,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_140000) do
     t.integer "from_bank_account_id", null: false
     t.integer "to_bank_account_id", null: false
     t.datetime "updated_at", null: false
+    t.string "xero_id"
     t.index ["from_bank_account_id"], name: "index_transfers_on_from_bank_account_id"
     t.index ["to_bank_account_id"], name: "index_transfers_on_to_bank_account_id"
+    t.index ["xero_id"], name: "index_transfers_on_xero_id", unique: true, where: "xero_id IS NOT NULL"
   end
 
   create_table "users", force: :cascade do |t|

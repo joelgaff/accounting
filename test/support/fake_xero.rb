@@ -37,10 +37,11 @@ class FakeXero
         invoices = invoices.select { |i| Date.parse(i["DateString"]) >= floor }
       end
       Response.new("200", { "Invoices" => invoices }.to_json, {})
-    when %r{/Journals\?offset=(\d+)}
-      $1.to_i.zero? ? fixture("journals") : Response.new("200", { "Journals" => [] }.to_json, {})
-    when %r{/(\w+)\?page=(\d+)}
-      $2.to_i > 1 ? Response.new("200", { $1 => [] }.to_json, {}) : fixture($1.downcase)
+    when %r{/BankTransfers}
+      dated("BankTransfers", "banktransfers", uri, "Date")
+    when %r{/(\w+)\?(?:[^#]*&)?page=(\d+)}
+      key, page = $1, $2.to_i
+      page > 1 ? Response.new("200", { key => [] }.to_json, {}) : dated(key, key.downcase, uri, key == "BankTransactions" ? "DateString" : "Date")
     when %r{/(\w+)\z}
       fixture($1.downcase)
     else
@@ -49,6 +50,16 @@ class FakeXero
   end
 
   private
+
+  # Xero applies a Date>= where clause server-side; so does the fake.
+  def dated(key, name, uri, field)
+    items = JSON.parse(fixture(name).body)[key]
+    if (m = CGI.unescape(uri.query.to_s).match(/Date>=DateTime\((\d+),(\d+),(\d+)\)/))
+      floor = Date.new(m[1].to_i, m[2].to_i, m[3].to_i)
+      items = items.select { |i| i[field] && Xero::Client.parse_date(i[field]) >= floor }
+    end
+    Response.new("200", { key => items }.to_json, {})
+  end
 
   def fixture(name) = Response.new("200", Rails.root.join("test/fixtures/files/xero_api/#{name}.json").read, {})
 end

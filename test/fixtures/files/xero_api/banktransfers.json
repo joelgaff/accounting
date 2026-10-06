@@ -1,0 +1,3 @@
+{"BankTransfers":[
+ {"BankTransferID":"tr1","Date":"/Date(1784678400000+0000)/","Amount":500.0,"FromBankAccount":{"AccountID":"a1","Code":"1140","Name":"PNC Checking"},"ToBankAccount":{"AccountID":"a2","Code":"2069","Name":"Chase United"}}
+]}

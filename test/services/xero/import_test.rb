@@ -11,12 +11,12 @@ class Xero::ImportTest < ActiveSupport::TestCase
     Xero::Import.new(@conn, client: @client).call
     @conn.reload
     assert_equal "done", @conn.status
-    assert_equal %w[chart\ of\ accounts tax\ rates contacts\ (customers) contacts\ (vendors) contacts\ (both) tracking\ categories sales\ invoices bills journals], @conn.steps.map { |s| s["step"] }
+    assert_equal %w[chart\ of\ accounts tax\ rates contacts\ (customers) contacts\ (vendors) contacts\ (both) tracking\ categories sales\ invoices bills spend\ and\ receive\ money transfers manual\ journals], @conn.steps.map { |s| s["step"] }
     assert @conn.steps.all? { |s| s["done"] }, @conn.steps.inspect
     assert_empty @conn.steps.flat_map { |s| s["errors"] }
 
     # chart, with Xero's own idea of which bank is a card, and Settings pointed at the control accounts
-    assert_equal 8, @org.plutus_accounts.count, "archived account skipped"
+    assert_equal 9, @org.plutus_accounts.count, "archived account skipped"
     assert @org.bank_accounts.find_by_code_or_name("2069").credit_card?
     assert_equal "checking", @org.bank_accounts.find_by_code_or_name("1140").kind
     assert_equal "Accounts Receivable", @org.settings.receivable_account.name
@@ -53,11 +53,31 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert unnumbered.paid?
     assert_equal "Chase United", unnumbered.payments.sole.bank_account.name
 
-    journals = @org.documents.journal_entries.order(:date)
-    assert_equal [ "MANJOURNAL", "CASHPAID" ], journals.map { |d| d.journal_entry.xero_source_type }, "the ACCREC journal is left to the invoice importer"
-    cones = journals.last.journal_entry.lines.find_by!(account: @org.plutus_accounts.find_by!(code: "6817"))
-    assert_equal "IRONMAN", cones.tracking_option_for(klass).name
-    assert_equal BigDecimal("80"), cones.debit_amount
+    cones = Expense.find_by!(xero_id: "bt1").document
+    assert_equal "Expense", cones.documentable_type
+    assert_equal "Williams Pumping", cones.counterparty
+    assert_equal "PNC Checking", cones.expense.bank_account.name
+    assert_equal BigDecimal("80"), cones.total
+    assert_equal [ BigDecimal("4"), BigDecimal("20") ], [ cones.line_items.sole.quantity, cones.line_items.sole.unit_amount ]
+    assert_equal "IRONMAN", cones.line_items.sole.tracking_option_for(klass).name
+    assert_equal "xero_import", cones.source
+
+    hats = Deposit.find_by!(xero_id: "bt2").document
+    assert_equal BigDecimal("106"), hats.total, "tax-inclusive receive money lands on the gross"
+    assert_equal BigDecimal("100"), hats.subtotal
+    assert_equal "Sales Tax", hats.line_items.sole.tax_rate.name
+    assert_equal "Sales Tax", @org.tax_rates.find_by!(name: "Sales Tax").liability_account.name, "sales tax points at Xero's tax control account"
+    assert_equal BigDecimal("6"), @org.plutus_accounts.find_by!(code: "2200").balance
+    assert_equal 1, @org.documents.expenses.count, "transfer-type and deleted bank transactions are not expenses"
+    assert_equal 1, @org.documents.deposits.count
+
+    transfer = Transfer.find_by!(xero_id: "tr1").document
+    assert_equal BigDecimal("500"), transfer.total
+    assert_equal [ "PNC Checking", "Chase United" ], [ transfer.transfer.from_bank_account.name, transfer.transfer.to_bank_account.name ]
+
+    journal = @org.documents.journal_entries.sole
+    assert_equal "MJ-mj1", journal.journal_entry.xero_journal_number, "only the posted manual journal"
+    assert_equal "IRONMAN", journal.journal_entry.lines.find_by!(account: @org.plutus_accounts.find_by!(code: "3000")).tracking_option_for(klass).name
 
     debits  = Plutus::DebitAmount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).sum(:amount)
     credits = Plutus::CreditAmount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).sum(:amount)
@@ -67,7 +87,9 @@ class Xero::ImportTest < ActiveSupport::TestCase
     Xero::Import.new(@conn, client: @client).call
     @conn.reload
     assert_equal 2, @org.documents.invoices.count
-    assert_equal 2, @org.documents.journal_entries.count
+    assert_equal 1, @org.documents.journal_entries.count
+    assert_equal 1, @org.documents.expenses.count
+    assert_equal 1, @org.documents.transfers.count
     assert_equal 1, inv.reload.payments.count
     assert_equal 0, @conn.steps.find { |s| s["step"] == "sales invoices" }["created"]
     assert_equal 2, @conn.steps.find { |s| s["step"] == "sales invoices" }["updated"]
@@ -84,6 +106,6 @@ class Xero::ImportTest < ActiveSupport::TestCase
   test "a from date limits invoices and journals" do
     Xero::Import.new(@conn, client: @client, from: Date.new(2026, 7, 15)).call
     assert_equal 1, @org.documents.invoices.count, "only INV-4002 is on or after the date"
-    assert_equal 1, @org.documents.journal_entries.count, "only the CASHPAID journal is after the date"
+    assert_equal 0, @org.documents.journal_entries.count, "the manual journal is before the date (the fake honours Date>= on every collection)"
   end
 end

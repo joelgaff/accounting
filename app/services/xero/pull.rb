@@ -24,11 +24,15 @@ module Xero
       end
     end
 
+    # Sales tax collected goes to Xero's tax control account (SystemAccount
+    # GST, whatever it is called); purchase tax stays unrecoverable here.
     def tax_rates_csv
-      csv(%w[Name TaxType Rate]) do |out|
+      control = accounts.find { |a| a["SystemAccount"] == "GST" }
+      csv(%w[Name TaxType Rate LiabilityAccount]) do |out|
         @client.get("TaxRates", key: "TaxRates").each do |t|
           next if t["Status"] == "DELETED" || t["Status"] == "ARCHIVED"
-          out << [ t["Name"], t["TaxType"], t["EffectiveRate"] ]
+          liability = control && t["TaxType"].to_s.start_with?("OUTPUT") ? (control["Code"].presence || control["Name"]) : nil
+          out << [ t["Name"], t["TaxType"], t["EffectiveRate"], liability ]
         end
       end
     end
@@ -71,18 +75,54 @@ module Xero
       end
     end
 
-    JOURNAL_HEADERS = %w[JournalDate JournalNumber SourceType Reference Description AccountCode AccountName NetAmount TaxAmount TaxType
+    BANK_TXN_HEADERS = %w[Type BankTransactionID Date ContactName Reference BankAccount Description Quantity UnitAmount
+                          AccountCode TaxType TrackingName1 TrackingOption1 TrackingName2 TrackingOption2].freeze
+
+    # Spend and receive money, one row per line, unit amounts net of tax.
+    # Transfers, prepayments and overpayments are other things and are skipped here.
+    def bank_transactions_csv(from: nil)
+      params = from ? { where: %(Date>=DateTime(#{from.year},#{from.month},#{from.day})) } : {}
+      csv(BANK_TXN_HEADERS) do |out|
+        @client.each_page("BankTransactions", params, key: "BankTransactions").each do |t|
+          next unless t["Status"] == "AUTHORISED" && %w[SPEND RECEIVE].include?(t["Type"])
+          bank = t.dig("BankAccount", "Code").presence || t.dig("BankAccount", "Name")
+          Array(t["LineItems"]).each do |li|
+            next if li["AccountCode"].blank?
+            qty, unit = net_quantity_and_unit(li, t["LineAmountTypes"])
+            t1, t2 = Array(li["Tracking"]).first(2)
+            out << [ t["Type"], t["BankTransactionID"], date(t["DateString"] || t["Date"]), t.dig("Contact", "Name"), t["Reference"], bank,
+                     li["Description"].presence || t["Reference"].presence || "Line", qty, unit, li["AccountCode"], li["TaxType"],
+                     t1&.dig("Name"), t1&.dig("Option"), t2&.dig("Name"), t2&.dig("Option") ]
+          end
+        end
+      end
+    end
+
+    def bank_transfers_csv(from: nil)
+      params = from ? { where: %(Date>=DateTime(#{from.year},#{from.month},#{from.day})) } : {}
+      csv(%w[BankTransferID Date Amount FromBankAccount ToBankAccount]) do |out|
+        @client.get("BankTransfers", params, key: "BankTransfers").each do |t|
+          out << [ t["BankTransferID"], date(t["Date"]), t["Amount"],
+                   t.dig("FromBankAccount", "Code").presence || t.dig("FromBankAccount", "Name"),
+                   t.dig("ToBankAccount", "Code").presence   || t.dig("ToBankAccount", "Name") ]
+        end
+      end
+    end
+
+    JOURNAL_HEADERS = %w[JournalDate JournalNumber SourceType Reference Description AccountCode NetAmount TaxType
                          TrackingName1 TrackingOption1 TrackingName2 TrackingOption2].freeze
 
-    def journals_csv(from: nil)
+    # Posted manual journals in the journal importer's shape; a positive
+    # LineAmount is a debit.
+    def manual_journals_csv(from: nil)
+      params = from ? { where: %(Date>=DateTime(#{from.year},#{from.month},#{from.day})) } : {}
       csv(JOURNAL_HEADERS) do |out|
-        @client.each_journal.each do |j|
-          jdate = Client.parse_date(j["JournalDate"])
-          next if from && jdate && jdate < from
+        @client.each_page("ManualJournals", params, key: "ManualJournals").each do |j|
+          next unless j["Status"] == "POSTED"
           Array(j["JournalLines"]).each do |line|
-            t1, t2 = Array(line["TrackingCategories"]).first(2)
-            out << [ jdate&.iso8601, j["JournalNumber"], j["SourceType"], j["Reference"], line["Description"],
-                     line["AccountCode"], line["AccountName"], line["NetAmount"], line["TaxAmount"], line["TaxType"],
+            t1, t2 = Array(line["Tracking"]).first(2)
+            out << [ date(j["Date"]), "MJ-#{j['ManualJournalID']}", "MANJOURNAL", j["Narration"], line["Description"].presence || j["Narration"],
+                     line["AccountCode"], line["LineAmount"], line["TaxType"],
                      t1&.dig("Name"), t1&.dig("Option"), t2&.dig("Name"), t2&.dig("Option") ]
           end
         end
@@ -96,6 +136,18 @@ module Xero
     end
 
     def date(value) = Client.parse_date(value)&.iso8601
+
+    # Our lines are quantity × net unit price with tax on top. Keep Xero's
+    # quantity and unit when they multiply out to the net exactly; otherwise
+    # one line at the net amount, so totals land to the cent.
+    def net_quantity_and_unit(li, line_amount_types)
+      gross = BigDecimal(li["LineAmount"].to_s.presence || "0")
+      tax   = BigDecimal(li["TaxAmount"].to_s.presence || "0")
+      net   = line_amount_types == "Inclusive" ? gross - tax : gross
+      qty   = BigDecimal(li["Quantity"].to_s.presence || "1")
+      unit  = BigDecimal(li["UnitAmount"].to_s.presence || "0")
+      (qty * unit).round(2) == net ? [ qty.to_s("F"), unit.to_s("F") ] : [ "1", net.to_s("F") ]
+    end
 
     def contact_row(c)
       addr = Array(c["Addresses"]).find { |a| a["AddressType"] == "POBOX" } || Array(c["Addresses"]).first || {}

@@ -1,8 +1,12 @@
 module Xero
-  # The whole migration from the API, in the same order a bundle runs: the
-  # chart, tax rates, contacts, tracking categories, sales invoices, bills,
-  # then every other journal. Each step records its result on the connection
-  # so the Settings page can show progress while the job runs.
+  # The whole migration from the API: the chart, tax rates, contacts, tracking
+  # categories, sales invoices and bills with their payments, spend and
+  # receive money, transfers, and manual journals. Each step records its
+  # result on the connection so the Settings page can show progress.
+  #
+  # Not available to apps Xero registered after March 2026: the general
+  # ledger journals, so conversion balances and Xero's own system journals
+  # (depreciation, payroll) need a manual journal here.
   class Import
     def initialize(connection, client: connection.client, from: connection.import_from)
       @connection = connection
@@ -27,7 +31,9 @@ module Xero
       step("tracking categories")  { seed_tracking! }
       step("sales invoices")   { Imports::XeroInvoicesService.new(@pull.invoices_csv("ACCREC", from: @from), organization: @org).call }
       step("bills")            { Imports::XeroBillsService.new(@pull.invoices_csv("ACCPAY", from: @from), organization: @org).call }
-      step("journals")         { Imports::XeroJournalsService.new(@pull.journals_csv(from: @from), organization: @org, documents: :skip).call }
+      step("spend and receive money") { Imports::XeroBankTransactionsService.new(@pull.bank_transactions_csv(from: @from), organization: @org).call }
+      step("transfers")        { Imports::XeroBankTransfersService.new(@pull.bank_transfers_csv(from: @from), organization: @org).call }
+      step("manual journals")  { Imports::XeroJournalsService.new(@pull.manual_journals_csv(from: @from), organization: @org, documents: :include).call }
 
       @connection.update!(status: "done", last_import_at: Time.current, last_summary: Imports::BooksSummary.new(@org).to_h.to_json)
       @connection

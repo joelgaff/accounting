@@ -72,8 +72,11 @@
   client id and secret live in credentials as `xero.client_id` / `xero.client_secret`. `Xero::Pull`
   turns each API collection into the CSV the file importers already read, so `Xero::Import` (run by
   `XeroImportJob`, progress on the connection) is the bundle import fed from the API: chart, tax rates,
-  contacts, tracking categories, sales invoices and bills with lines, tracking and payments, then
-  every other journal. Tests use `FakeXero` (test/support) with fixtures in `test/fixtures/files/xero_api`.
+  contacts, tracking categories, sales invoices and bills with lines, tracking and payments, spend and
+  receive money (`Imports::XeroBankTransactionsService` → Expense/Deposit), transfers
+  (`Imports::XeroBankTransfersService`), and manual journals. Scopes are the granular read set; apps
+  Xero registered after March 2026 can't read the ledger journals, so conversion balances are entered by
+  hand. Tests use `FakeXero` (test/support) with fixtures in `test/fixtures/files/xero_api`.
 
 ## Xero migration toolkit (rake)
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),

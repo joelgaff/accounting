@@ -6,7 +6,8 @@
 
 <% if @connection.nil? %>
   <div class="notice notice-info">
-    <p><strong>Connect this app to your Xero organisation</strong> and it pulls the whole history straight from Xero's API: chart of accounts, tax rates, contacts, tracking categories, every sales invoice and bill with its lines, tracking and payments, and every other journal (spend and receive money, transfers, manual journals, conversion balances).</p>
+    <p><strong>Connect this app to your Xero organisation</strong> and it pulls the history straight from Xero's API: chart of accounts, tax rates, contacts, tracking categories, every sales invoice and bill with its lines, tracking and payments, spend and receive money, transfers, and manual journals.</p>
+    <p>Xero doesn't let new apps read its general ledger, so conversion balances and journals Xero made on its own (depreciation, payroll) aren't included; enter those once as a manual journal here.</p>
     <% if @configured %>
       <p>Xero will ask you to sign in and approve read-only access.</p>
     <% else %>

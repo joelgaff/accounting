@@ -16,7 +16,8 @@ class Xero::ClientTest < ActiveSupport::TestCase
     with_app_credentials do
       url = Xero::Client.authorize_url(redirect_uri: "https://app.example/settings/xero/callback", state: "abc")
       assert_match(/client_id=cid/, url)
-      assert_match(/scope=openid%20offline_access%20accounting\.transactions\.read/, url)
+      assert_match(/scope=openid%20offline_access%20accounting\.settings\.read/, url)
+      assert_no_match(/accounting\.transactions|accounting\.journals/, url)
       assert_no_match(/\+/, url[/scope=[^&]*/])
       assert_match(/state=abc/, url)
 
@@ -36,7 +37,7 @@ class Xero::ClientTest < ActiveSupport::TestCase
       @conn.update!(token_expires_at: 1.minute.ago)
       client = Xero::Client.new(@conn, transport: @fake, pause: 0)
       accounts = client.get("Accounts", key: "Accounts")
-      assert_equal 9, accounts.size
+      assert_equal 10, accounts.size
       assert_equal "at-1", @conn.reload.access_token, "tokens persisted after refresh"
       _, _, auth, tenant = @fake.calls.last
       assert_equal "Bearer at-1", auth
@@ -44,10 +45,10 @@ class Xero::ClientTest < ActiveSupport::TestCase
     end
   end
 
-  test "pages until a short page, walks journals by offset, and retries after a 429" do
+  test "pages until a short page and retries after a 429" do
     client = Xero::Client.new(@conn, transport: FakeXero.new(rate_limit_once: true), pause: 0)
     assert_equal 4, client.each_page("Contacts", key: "Contacts").to_a.size
-    assert_equal [ 1, 2, 3 ], client.each_journal.map { |j| j["JournalNumber"] }
+    assert_equal 2, client.each_page("ManualJournals", key: "ManualJournals").to_a.size
   end
 
   test "parses both of Xero's date shapes" do

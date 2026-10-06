@@ -10,8 +10,10 @@ module Xero
     TOKEN_URL     = "https://identity.xero.com/connect/token".freeze
     CONNECTIONS   = "https://api.xero.com/connections".freeze
     API_BASE      = "https://api.xero.com/api.xro/2.0/".freeze
-    SCOPES        = %w[openid offline_access accounting.transactions.read accounting.contacts.read
-                       accounting.settings.read accounting.journals.read].freeze
+    # The granular read scopes; apps created after March 2026 can't ask for
+    # the old accounting.transactions, and journals need Xero's partner program.
+    SCOPES        = %w[openid offline_access accounting.settings.read accounting.contacts.read accounting.invoices.read
+                       accounting.payments.read accounting.banktransactions.read accounting.manualjournals.read].freeze
     PAGE_SIZE     = 100
 
     DEFAULT_TRANSPORT = lambda do |request, uri|
@@ -116,18 +118,6 @@ module Xero
         items.each { |item| yield item }
         break if items.size < PAGE_SIZE
         page += 1
-      end
-    end
-
-    # Journals page by offset: each call returns the 100 journals after that journal number.
-    def each_journal(from_number: 0)
-      return enum_for(:each_journal, from_number: from_number) unless block_given?
-      offset = from_number
-      loop do
-        items = get("Journals", { offset: offset }, key: "Journals")
-        items.each { |item| yield item }
-        break if items.size < PAGE_SIZE
-        offset = items.last["JournalNumber"]
       end
     end
 
