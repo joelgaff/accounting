@@ -16,7 +16,8 @@ class Xero::ClientTest < ActiveSupport::TestCase
     with_app_credentials do
       url = Xero::Client.authorize_url(redirect_uri: "https://app.example/settings/xero/callback", state: "abc")
       assert_match(/client_id=cid/, url)
-      assert_match(/accounting\.journals\.read/, url)
+      assert_match(/scope=openid%20offline_access%20accounting\.transactions\.read/, url)
+      assert_no_match(/\+/, url[/scope=[^&]*/])
       assert_match(/state=abc/, url)
 
       tokens = Xero::Client.exchange_code("the-code", redirect_uri: "https://app.example/cb", transport: @fake)

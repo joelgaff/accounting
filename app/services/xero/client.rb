@@ -23,9 +23,11 @@ module Xero
       def client_secret = Rails.application.credentials.dig(:xero, :client_secret).presence || ENV["XERO_CLIENT_SECRET"].presence
       def configured?   = client_id.present? && client_secret.present?
 
+      # Xero's identity server wants the scope list space-separated as %20, not
+      # the + that form encoding produces.
       def authorize_url(redirect_uri:, state:)
-        "#{AUTHORIZE_URL}?" + URI.encode_www_form(response_type: "code", client_id: client_id, redirect_uri: redirect_uri,
-                                                  scope: SCOPES.join(" "), state: state)
+        query = URI.encode_www_form(response_type: "code", client_id: client_id, redirect_uri: redirect_uri, state: state)
+        "#{AUTHORIZE_URL}?#{query}&scope=#{SCOPES.join('%20')}"
       end
 
       # Swap the code from the callback for tokens: { access_token, refresh_token, expires_at }.
