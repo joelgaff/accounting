@@ -165,3 +165,24 @@ class DocumentHistoryPagesTest < ActionDispatch::IntegrationTest
     assert response.body.start_with?("%PDF-")
   end
 end
+
+class InvoicePrintThemeTest < ActionDispatch::IntegrationTest
+  test "the print page scopes its paper styles to its own body so Turbo can't carry them to the next page" do
+    org = organizations(:one)
+    sign_in_as_launchpad_user(org)
+    ar    = Plutus::Asset.create!(tenant: org, name: "AR")
+    sales = Plutus::Revenue.create!(tenant: org, name: "Sales")
+    inv = create_invoice(org, client_name: "Acme", amount: 500, receivable: ar, revenue: sales)
+
+    get print_invoice_path(inv)
+    assert_response :success
+    assert_select "body.print-page"
+    styles = css_select("head style").map(&:text).join
+    rules  = styles.scan(/([^{};\n]+)\{/).flatten.map(&:strip).reject { |r| r.start_with?("@") }
+    unscoped = rules.reject { |r| r.split(",").all? { |sel| sel.strip.start_with?("body.print-page", ".print-page") } }
+    assert_empty unscoped, "print rules must all be scoped to the print page's body"
+
+    get invoice_path(inv)
+    assert_select "body:not(.print-page)"
+  end
+end
