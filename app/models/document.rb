@@ -32,6 +32,8 @@ class Document < ApplicationRecord
   validate  :total_matches_bank_line, on: :update
 
   after_create :post_to_ledger
+  before_destroy :refuse_unless_deletable, prepend: true
+  before_destroy { Ledger.reset_for(self) }
 
   scope :chronological, -> { order(date: :desc, id: :desc) }
   scope :live,   -> { where(voided_at: nil) }
@@ -95,6 +97,13 @@ class Document < ApplicationRecord
     end
   end
 
+  # Gone for good is fine when nothing else refers to it: no payments against
+  # it and no bank line matched to it. Voiding first detaches both, so
+  # anything can be deleted in two steps when that is really wanted.
+  def deletable?
+    payments.none? && bank_transactions.none?
+  end
+
   # What void! would touch, for the confirmation prompt.
   def void_consequences
     { payments: payments.size, paid: paid_amount,
@@ -102,6 +111,12 @@ class Document < ApplicationRecord
   end
 
   private
+
+  def refuse_unless_deletable
+    return if deletable?
+    errors.add(:base, "has payments or a matched bank line; void it first")
+    throw :abort
+  end
 
   def default_date
     self.date ||= Date.current

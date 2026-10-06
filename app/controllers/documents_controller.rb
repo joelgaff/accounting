@@ -41,6 +41,15 @@ class DocumentsController < ApplicationController
     render :edit, status: :unprocessable_entity
   end
 
+  # Remove the document, its lines, postings, history and attachments.
+  def destroy
+    if @document.destroy
+      redirect_to documents_path_for_type, notice: "#{@document.label} deleted."
+    else
+      redirect_to helpers.document_path_for(@document), alert: "#{@document.label} #{@document.errors.full_messages.to_sentence.sub(/\A[A-Z]/) { |c| c.downcase }}."
+    end
+  end
+
   def void
     @document.void!
     respond_to do |format|
@@ -57,6 +66,7 @@ class DocumentsController < ApplicationController
   def after_failed_create; end
   def after_failed_update; end
   def after_create_path      = helpers.document_path_for(@document)
+  def documents_path_for_type = helpers.documents_path_for(@document)
   def created_notice         = "#{type_name} created."
   def type_name              = documentable_class.model_name.human
   def universal_permitted    = %i[contact_id date reference memo]

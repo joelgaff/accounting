@@ -13,4 +13,8 @@
       <%= link_to "Record payment", new_document_payment_path(document), class: "btn btn-primary" %>
     <% end %>
   <% end %>
+  <% if document.deletable? %>
+    <%= button_to "Delete", delete_document_path_for(document), method: :delete, class: "btn btn-secondary btn-danger",
+          form: { style: "display:inline", data: { turbo_confirm: "Delete #{document.label} for good? Its lines, postings, history and attachments go with it. There is no undo." } } %>
+  <% end %>
 <% end %>

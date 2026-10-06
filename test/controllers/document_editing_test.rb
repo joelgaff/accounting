@@ -186,3 +186,65 @@ class InvoicePrintThemeTest < ActionDispatch::IntegrationTest
     assert_select "body:not(.print-page)"
   end
 end
+
+class DocumentDeleteTest < ActionDispatch::IntegrationTest
+  setup do
+    @org = organizations(:one)
+    sign_in_as_launchpad_user(@org)
+    @ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
+    @sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
+    @bank  = create_bank_account(@org, name: "Checking")
+  end
+
+  test "an untouched invoice can be deleted outright, postings and all" do
+    inv = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+    get invoice_path(inv)
+    assert_select "form[action=?] button", invoice_path(inv), text: "Delete"
+
+    assert_difference [ "Document.count", "Invoice.count" ], -1 do
+      assert_difference "Plutus::Entry.count", -1 do
+        delete invoice_path(inv)
+      end
+    end
+    assert_redirected_to invoices_path
+    assert_equal 0, LineItem.where(lineable_type: "Document", lineable_id: inv.id).count
+    assert_equal 0, DocumentEvent.where(document_id: inv.id).count
+  end
+
+  test "a paid invoice refuses deletion until it is voided, then goes" do
+    inv = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+    inv.payments.create!(organization: @org, amount: 500, paid_on: Date.current, bank_account: @bank)
+    get invoice_path(inv)
+    assert_select "button", text: "Delete", count: 0
+
+    assert_no_difference "Document.count" do
+      delete invoice_path(inv)
+    end
+    assert_redirected_to invoice_path(inv)
+    assert_match(/void it first/, flash[:alert])
+
+    inv.void!
+    get invoice_path(inv)
+    assert_select "button", text: "Delete", count: 1
+    assert_difference "Document.count", -1 do
+      delete invoice_path(inv)
+    end
+    assert_equal 0, Payment.where(document_id: inv.id).count
+  end
+
+  test "a document matched to a bank line keeps the line's link until unmatched" do
+    hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
+    exp = create_expense(@org, vendor: "DO", amount: 30, category: hosting, bank_account: @bank)
+    txn = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, payee: "DIGITALOCEAN", description: "x")
+    Reconciliation::MatchDocument.new(txn, exp).call
+    assert_not exp.reload.deletable?
+    assert_no_difference "Document.count" do
+      delete expense_path(exp)
+    end
+    Reconciliation::Unmatch.new(txn).call
+    assert exp.reload.deletable?
+    assert_difference "Document.count", -1 do
+      delete expense_path(exp)
+    end
+  end
+end

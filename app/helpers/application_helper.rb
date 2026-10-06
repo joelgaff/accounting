@@ -42,6 +42,7 @@ module ApplicationHelper
     end
   end
   def void_document_path_for(document) = public_send("void_#{document.documentable_name}_path", document)
+  def delete_document_path_for(document) = public_send("#{document.documentable_name}_path", document)
   def documents_path_for(document)     = public_send("#{document.documentable_name.pluralize}_path")
 
   # The form target for a new or existing document of its type.
