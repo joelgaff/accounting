@@ -59,7 +59,7 @@ module LaunchpadSession
   def sign_in_as_launchpad_user(org, email: "joel@example.com", name: "Joel")
     Organization.where.not(id: org.id).destroy_all   # set_organization resolves Organization.first
     payload = { sub: "u-#{org.id}", email: email, name: name, apps: [ "partita_doppia" ],
-                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
+                iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt.issuer }
     cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
   end
 end

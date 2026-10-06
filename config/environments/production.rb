@@ -1,9 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
-  # --- Launchpad SSO ---
-  config.x.launchpad_base_url = "https://launchpad.enduranceevolution.com"
-  config.x.jwt_cookie_domain  = ".enduranceevolution.com"
+  # Sign-in (Launchpad hub or built-in) and the app's host come from the
+  # credentials: `launchpad:` and `app:` blocks. See Auth and DEPLOY.md.
+  app_host = Rails.application.credentials.dig(:app, :host).presence || ENV["APP_HOST"].presence
 
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -62,7 +62,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "accounting.enduranceevolution.com", protocol: "https" }
+  config.action_mailer.default_url_options = { host: app_host || "localhost", protocol: "https" }
 
   # MailerSend over SMTP. The user_name/password pair comes from a MailerSend
   # SMTP user; add them with bin/rails credentials:edit under smtp:.
@@ -88,7 +88,7 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [ :id ]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  config.hosts = [ "accounting.enduranceevolution.com" ]
+  config.hosts = [ app_host ].compact   # empty when unset: no host check, for a proxy that handles it
 
   # Skip DNS rebinding protection for the default health check endpoint.
   config.host_authorization = { exclude: ->(request) { request.path == "/up" } }

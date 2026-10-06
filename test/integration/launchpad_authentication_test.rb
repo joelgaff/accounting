@@ -11,7 +11,7 @@ class LaunchpadAuthenticationTest < ActionDispatch::IntegrationTest
   def ee_jwt(sub: SecureRandom.uuid, email: "joel@example.com", name: "Joel", apps: [ "accounting" ])
     payload = { sub:, email:, name:, apps:,
                 iat: Time.current.to_i, exp: 24.hours.from_now.to_i,
-                iss: Ee::Jwt::ISSUER }
+                iss: Ee::Jwt.issuer }
     ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
   end
 
@@ -67,7 +67,7 @@ class LaunchpadAuthenticationTest < ActionDispatch::IntegrationTest
   end
 
   test "a tampered/foreign JWT is rejected and bounces to the hub" do
-    bad = ::JWT.encode({ sub: "x", apps: [ "accounting" ], iss: Ee::Jwt::ISSUER,
+    bad = ::JWT.encode({ sub: "x", apps: [ "accounting" ], iss: Ee::Jwt.issuer,
                          exp: 1.hour.from_now.to_i }, "wrong-secret", "HS256")
     set_jwt(bad)
     get "/"

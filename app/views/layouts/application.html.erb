@@ -37,7 +37,7 @@
           <div class="tb-tagline"></div>
           <div class="tb-session">
             <span><%= current_user.email %></span>
-            <%= button_to "Sign out", "#{Rails.application.config.x.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
+            <%= button_to "Sign out", "#{Auth.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
           </div>
         </header>
 

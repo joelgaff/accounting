@@ -1,7 +1,6 @@
 module Ee
   class Jwt
     ALGORITHM   = "HS256"
-    ISSUER      = "launchpad.enduranceevolution.com"
     COOKIE_NAME = :ee_jwt
     TTL         = 24.hours
 
@@ -15,7 +14,7 @@ module Ee
           apps:  app_keys,
           iat:   now.to_i,
           exp:   (now + TTL).to_i,
-          iss:   ISSUER
+          iss:   issuer
         }
         ::JWT.encode(payload, secret, ALGORITHM)
       end
@@ -23,13 +22,14 @@ module Ee
       def decode(token)
         return if token.blank?
         payload, _ = ::JWT.decode(token, secret, true,
-          algorithm: ALGORITHM, iss: ISSUER, verify_iss: true)
+          algorithm: ALGORITHM, iss: issuer, verify_iss: true)
         payload
       rescue ::JWT::DecodeError, ::JWT::ExpiredSignature
         nil
       end
 
-      def cookie_domain = Rails.application.config.x.jwt_cookie_domain
+      def issuer        = Auth.launchpad_issuer
+      def cookie_domain = Auth.launchpad_cookie_domain
       def secret        = Rails.application.credentials.ee_jwt_secret
     end
   end

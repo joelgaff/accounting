@@ -102,3 +102,21 @@ class DocumentTest < ActiveSupport::TestCase
     assert_empty @org.documents.bills
   end
 end
+
+class AuthModeTest < ActiveSupport::TestCase
+  test "the sign-in mode follows the credentials unless the environment forces it" do
+    assert_equal "launchpad", Auth.mode, "the test credentials carry a launchpad block"
+    assert Auth.launchpad?
+    assert_equal "launchpad.enduranceevolution.com", Auth.launchpad_issuer
+    assert_equal ".example.com", Auth.launchpad_cookie_domain, "the environment file still points the cookie at the test domain"
+    assert_equal "https://launchpad.example.com", Auth.launchpad_base_url
+    assert_equal "accounting.enduranceevolution.com", Auth.app_host
+
+    ENV["AUTH_MODE"] = "local"
+    assert Auth.local?
+    ENV["AUTH_MODE"] = "nonsense"
+    assert Auth.launchpad?, "an unknown value is ignored"
+  ensure
+    ENV.delete("AUTH_MODE")
+  end
+end

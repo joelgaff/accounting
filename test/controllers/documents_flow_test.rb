@@ -174,7 +174,7 @@ class LaunchpadAppKeyTest < ActionDispatch::IntegrationTest
     org = organizations(:one)
     Organization.where.not(id: org.id).destroy_all
     { "partita_doppia" => :success, "accounting" => :success, "vendors" => :forbidden }.each do |key, expected|
-      payload = { sub: "u-#{org.id}", email: "joel@example.com", name: "Joel", apps: [ key ], iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt::ISSUER }
+      payload = { sub: "u-#{org.id}", email: "joel@example.com", name: "Joel", apps: [ key ], iat: Time.current.to_i, exp: 1.hour.from_now.to_i, iss: Ee::Jwt.issuer }
       cookies[Ee::Jwt::COOKIE_NAME.to_s] = ::JWT.encode(payload, Rails.application.credentials.ee_jwt_secret, "HS256")
       get root_path
       assert_response expected, "apps: #{key}"

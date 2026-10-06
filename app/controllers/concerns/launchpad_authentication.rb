@@ -43,7 +43,7 @@ module LaunchpadAuthentication
     render "shared/no_access", status: :forbidden
   end
 
-  def launchpad_base_url = Rails.application.config.x.launchpad_base_url
+  def launchpad_base_url = Auth.launchpad_base_url
 
   def current_user = Current.user
   def logged_in?   = Current.user.present?
