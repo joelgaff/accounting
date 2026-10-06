@@ -427,6 +427,7 @@ DEPENDENCIES
   jwt (~> 3.2)
   kamal
   letter_opener (~> 1.10)
+  matrix (~> 0.4.3)
   plutus (~> 0.18)
   prawn (~> 2.4)
   prawn-table (~> 0.2.2)
