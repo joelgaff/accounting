@@ -579,18 +579,20 @@ textarea { resize: vertical; min-height: 60px; }
 .combobox-list li.combobox-empty:hover { background: transparent; color: var(--dimmer); }
 .filter-bar .combobox { min-width: 260px; }
 
-/* ── Theme picker ───────────────────────────────────────────────────────── */
-.theme-choice { display: flex; gap: 10px; flex-wrap: wrap; }
-.theme-option {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 14px; border: 1px solid var(--rule); border-radius: var(--radius-sm);
-  cursor: pointer; font-size: 13px; color: var(--ink);
+/* ── Theme picker: two toggle boxes, no native radio ─────────────────────── */
+.theme-choice { display: inline-flex; gap: 0; border: 1px solid var(--rule-lit); border-radius: var(--radius-sm); overflow: hidden; }
+.app-form .theme-option, .theme-option {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0;
+  padding: 7px 16px; cursor: pointer; font-size: 13px; color: var(--dim);
+  background: transparent; user-select: none;
 }
-.theme-option.is-active { border-color: var(--cyan); color: var(--cyan); }
-.theme-option input { margin: 0; }
-.theme-swatch { width: 28px; height: 16px; border-radius: 2px; border: 1px solid var(--rule-lit); }
-.theme-swatch-dark  { background: linear-gradient(90deg, #060a12 50%, #22d3ee 50%); }
-.theme-swatch-light { background: linear-gradient(90deg, #ffffff 50%, #0e7490 50%); }
+.theme-option + .theme-option { border-left: 1px solid var(--rule-lit); }
+.theme-option:hover { color: var(--ink); background: rgba(41, 74, 120, 0.22); }
+.theme-option.is-active { color: var(--cyan); background: rgba(34, 211, 238, 0.1); }
+.theme-mark { display: inline-block; width: 11px; height: 11px; border: 1px solid currentColor; border-radius: 2px; margin-right: 8px; flex: none; }
+.theme-option.is-active .theme-mark { background: currentColor; box-shadow: inset 0 0 0 2px var(--panel); }
+.theme-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.theme-option:has(.theme-radio:focus-visible) { outline: 1px solid var(--cyan); outline-offset: -1px; }
 
 /* ── TUI progress line ──────────────────────────────────────────────────── */
 .tui-progress {

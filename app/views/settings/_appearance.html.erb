@@ -7,9 +7,8 @@
     <div class="theme-choice">
       <% User::THEMES.each do |theme| %>
         <label class="theme-option <%= 'is-active' if Current.user.theme == theme %>">
-          <%= f.radio_button :theme, theme, data: { action: "change->theme#change" } %>
-          <span class="theme-swatch theme-swatch-<%= theme %>" aria-hidden="true"></span>
-          <%= theme.capitalize %>
+          <%= f.radio_button :theme, theme, class: "theme-radio", data: { action: "change->theme#change" } %>
+          <span class="theme-mark" aria-hidden="true"></span><%= theme.capitalize %>
         </label>
       <% end %>
     </div>
