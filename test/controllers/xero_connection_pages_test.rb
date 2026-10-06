@@ -12,6 +12,7 @@ class XeroConnectionPagesTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select "code", text: /xero.client_id/
       assert_select "button[disabled]", text: "Connect to Xero"
+      assert_select "form[data-turbo=false] button", text: "Connect to Xero", count: 1
     end
   end
 

@@ -13,7 +13,8 @@
       <p>Before this works, create an app at <a href="https://developer.xero.com/app/manage" target="_blank" rel="noopener">developer.xero.com</a> (Web app, redirect URI <code><%= callback_xero_connection_url %></code>) and add its client id and secret to the credentials as <code>xero.client_id</code> and <code>xero.client_secret</code>.</p>
     <% end %>
   </div>
-  <%= button_to "Connect to Xero", connect_xero_connection_path, class: "btn btn-primary", disabled: !@configured %>
+  <%# A plain form: Turbo can't follow the redirect to login.xero.com. %>
+  <%= button_to "Connect to Xero", connect_xero_connection_path, class: "btn btn-primary", disabled: !@configured, form: { data: { turbo: false } } %>
 <% else %>
   <%= render "xero_connections/status", connection: @connection %>
 
