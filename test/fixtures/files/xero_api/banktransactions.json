@@ -1,10 +1,142 @@
-{"BankTransactions":[
- {"BankTransactionID":"bt1","Type":"SPEND","Status":"AUTHORISED","DateString":"2026-07-18T00:00:00","Reference":"Cones","Contact":{"Name":"Williams Pumping"},
-  "BankAccount":{"AccountID":"a1","Code":"1140","Name":"PNC Checking"},"LineAmountTypes":"NoTax","IsReconciled":true,"SubTotal":80.0,"TotalTax":0,"Total":80.0,
-  "LineItems":[{"Description":"Traffic cones","Quantity":4.0,"UnitAmount":20.0,"LineAmount":80.0,"TaxAmount":0,"AccountCode":"6817","TaxType":"NONE","Tracking":[{"Name":"Class","Option":"IRONMAN"},{"Name":"Event Year","Option":"2026"}]}]},
- {"BankTransactionID":"bt2","Type":"RECEIVE","Status":"AUTHORISED","DateString":"2026-07-20T00:00:00","Reference":"Merch","Contact":{"Name":"IRONMAN"},
-  "BankAccount":{"AccountID":"a1","Code":"1140","Name":"PNC Checking"},"LineAmountTypes":"Inclusive","IsReconciled":false,"SubTotal":100.0,"TotalTax":6.0,"Total":106.0,
-  "LineItems":[{"Description":"Hats","Quantity":3.0,"UnitAmount":35.3333,"LineAmount":106.0,"TaxAmount":6.0,"AccountCode":"200","TaxType":"OUTPUT","Tracking":[{"Name":"Class","Option":"EE Timing"}]}]},
- {"BankTransactionID":"bt3","Type":"SPEND-TRANSFER","Status":"AUTHORISED","DateString":"2026-07-21T00:00:00","BankAccount":{"Code":"1140"},"LineItems":[{"AccountCode":"2069","LineAmount":500.0}]},
- {"BankTransactionID":"bt4","Type":"SPEND","Status":"DELETED","DateString":"2026-07-22T00:00:00","BankAccount":{"Code":"1140"},"LineItems":[{"AccountCode":"6817","LineAmount":5.0,"UnitAmount":5.0,"Quantity":1}]}
-]}
+{
+ "BankTransactions": [
+  {
+   "BankTransactionID": "bt1",
+   "Type": "SPEND",
+   "Status": "AUTHORISED",
+   "DateString": "2026-07-18T00:00:00",
+   "Reference": "Cones",
+   "Contact": {
+    "Name": "Williams Pumping"
+   },
+   "BankAccount": {
+    "AccountID": "a1",
+    "Code": "1140",
+    "Name": "PNC Checking"
+   },
+   "LineAmountTypes": "NoTax",
+   "IsReconciled": true,
+   "SubTotal": 80.0,
+   "TotalTax": 0,
+   "Total": 80.0,
+   "LineItems": [
+    {
+     "Description": "Traffic cones",
+     "Quantity": 4.0,
+     "UnitAmount": 20.0,
+     "LineAmount": 80.0,
+     "TaxAmount": 0,
+     "AccountCode": "6817",
+     "TaxType": "NONE",
+     "Tracking": [
+      {
+       "Name": "Class",
+       "Option": "IRONMAN"
+      },
+      {
+       "Name": "Event Year",
+       "Option": "2026"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "BankTransactionID": "bt2",
+   "Type": "RECEIVE",
+   "Status": "AUTHORISED",
+   "DateString": "2026-07-20T00:00:00",
+   "Reference": "Merch",
+   "Contact": {
+    "Name": "IRONMAN"
+   },
+   "BankAccount": {
+    "AccountID": "a1",
+    "Code": "1140",
+    "Name": "PNC Checking"
+   },
+   "LineAmountTypes": "Inclusive",
+   "IsReconciled": false,
+   "SubTotal": 100.0,
+   "TotalTax": 6.0,
+   "Total": 106.0,
+   "LineItems": [
+    {
+     "Description": "Hats",
+     "Quantity": 3.0,
+     "UnitAmount": 35.3333,
+     "LineAmount": 106.0,
+     "TaxAmount": 6.0,
+     "AccountCode": "200",
+     "TaxType": "OUTPUT",
+     "Tracking": [
+      {
+       "Name": "Class",
+       "Option": "EE Timing"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "BankTransactionID": "bt3",
+   "Type": "SPEND-TRANSFER",
+   "Status": "AUTHORISED",
+   "DateString": "2026-07-21T00:00:00",
+   "BankAccount": {
+    "Code": "1140"
+   },
+   "LineItems": [
+    {
+     "AccountCode": "2069",
+     "LineAmount": 500.0
+    }
+   ]
+  },
+  {
+   "BankTransactionID": "bt4",
+   "Type": "SPEND",
+   "Status": "DELETED",
+   "DateString": "2026-07-22T00:00:00",
+   "BankAccount": {
+    "Code": "1140"
+   },
+   "LineItems": [
+    {
+     "AccountCode": "6817",
+     "LineAmount": 5.0,
+     "UnitAmount": 5.0,
+     "Quantity": 1
+    }
+   ]
+  },
+  {
+   "BankTransactionID": "bt5",
+   "Type": "RECEIVE",
+   "Status": "AUTHORISED",
+   "DateString": "2026-07-25T00:00:00",
+   "Reference": "Refund out",
+   "Contact": {
+    "Name": "IRONMAN"
+   },
+   "BankAccount": {
+    "Code": "1140"
+   },
+   "LineAmountTypes": "NoTax",
+   "SubTotal": -45.0,
+   "TotalTax": 0,
+   "Total": -45.0,
+   "LineItems": [
+    {
+     "Description": "Refunded entry",
+     "Quantity": 1.0,
+     "UnitAmount": -45.0,
+     "LineAmount": -45.0,
+     "TaxAmount": 0,
+     "AccountCode": "200",
+     "TaxType": "NONE"
+    }
+   ]
+  }
+ ]
+}

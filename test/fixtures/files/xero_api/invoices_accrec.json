@@ -106,6 +106,41 @@
     }
    ],
    "LineAmountTypes": "Exclusive"
+  },
+  {
+   "Type": "ACCREC",
+   "InvoiceID": "i4",
+   "InvoiceNumber": "INV-4003",
+   "Status": "PAID",
+   "Contact": {
+    "Name": "IRONMAN"
+   },
+   "DateString": "2026-08-20T00:00:00",
+   "DueDateString": "2026-09-20T00:00:00",
+   "LineAmountTypes": "NoTax",
+   "SubTotal": 126.84,
+   "TotalTax": 0,
+   "Total": 126.84,
+   "AmountPaid": 126.84,
+   "FullyPaidOnDate": "/Date(1788220800000+0000)/",
+   "LineItems": [
+    {
+     "Description": "Per diem",
+     "Quantity": 1.0,
+     "UnitAmount": 25.05,
+     "LineAmount": 25.05,
+     "AccountCode": "200",
+     "TaxType": "NONE"
+    },
+    {
+     "Description": "Mileage",
+     "Quantity": 174.0,
+     "UnitAmount": 0.59,
+     "LineAmount": 102.66,
+     "AccountCode": "200",
+     "TaxType": "NONE"
+    }
+   ]
   }
  ]
 }

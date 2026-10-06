@@ -27,7 +27,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "Accounts Payable",    @org.settings.payable_account.name
 
     assert_equal [ "Sales Tax", "Tax Exempt" ], @org.tax_rates.pluck(:name).sort
-    assert_equal %w[customer vendor both], [ @org.contacts.find_by!(name: "IRONMAN").kind, @org.contacts.find_by!(name: "Williams Pumping").kind, @org.contacts.find_by!(name: "Both Ways LLC").kind ]
+    assert_equal %w[both vendor both], [ @org.contacts.find_by!(name: "IRONMAN").kind, @org.contacts.find_by!(name: "Williams Pumping").kind, @org.contacts.find_by!(name: "Both Ways LLC").kind ], "IRONMAN was refunded, so it is a vendor too"
     assert_nil @org.contacts.find_by(name: "Archived Co")
     assert_equal "Tampa", @org.contacts.find_by!(name: "IRONMAN").city
 
@@ -47,7 +47,10 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "PNC Checking", inv.payments.sole.bank_account.name
     assert_equal Date.new(2026, 7, 29), inv.payments.sole.paid_on
     assert_nil Invoice.find_by(xero_invoice_number: "INV-0001"), "voided invoice not imported"
-    assert_equal 2, @org.documents.invoices.count
+    mileage = Invoice.find_by!(xero_invoice_number: "INV-4003").document
+    assert_equal BigDecimal("126.84"), mileage.total, "lands on Xero's subtotal although its rounded lines sum to 127.71"
+    assert mileage.paid?
+    assert_equal 3, @org.documents.invoices.count
 
     bill = Bill.find_by!(xero_invoice_number: "0b100000-0000-4000-8000-000000000001").document
     assert_equal "Bill 79738R", bill.label
@@ -76,7 +79,10 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "Sales Tax", hats.line_items.sole.tax_rate.name
     assert_equal "Sales Tax", @org.tax_rates.find_by!(name: "Sales Tax").liability_account.name, "sales tax points at Xero's tax control account"
     assert_equal BigDecimal("6"), @org.plutus_accounts.find_by!(code: "2200").balance
-    assert_equal 1, @org.documents.expenses.count, "transfer-type and deleted bank transactions are not expenses"
+    refund = Expense.find_by!(xero_id: "bt5").document
+    assert_equal BigDecimal("45"), refund.total, "a negative receive is money out"
+    assert_equal "IRONMAN", refund.counterparty
+    assert_equal 2, @org.documents.expenses.count, "transfer-type and deleted bank transactions are not expenses"
     assert_equal 1, @org.documents.deposits.count
 
     transfer = Transfer.find_by!(xero_id: "tr1").document
@@ -94,13 +100,13 @@ class Xero::ImportTest < ActiveSupport::TestCase
 
     Xero::Import.new(@conn, client: @client).call
     @conn.reload
-    assert_equal 2, @org.documents.invoices.count
+    assert_equal 3, @org.documents.invoices.count
     assert_equal 1, @org.documents.journal_entries.count
-    assert_equal 1, @org.documents.expenses.count
+    assert_equal 2, @org.documents.expenses.count
     assert_equal 1, @org.documents.transfers.count
     assert_equal 1, inv.reload.payments.count
     assert_equal 0, @conn.steps.find { |s| s["step"] == "sales invoices" }["created"]
-    assert_equal 2, @conn.steps.find { |s| s["step"] == "sales invoices" }["updated"]
+    assert_equal 3, @conn.steps.find { |s| s["step"] == "sales invoices" }["updated"]
   end
 
   test "an api failure marks the connection failed and keeps the message" do
@@ -113,7 +119,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
 
   test "a from date limits invoices and journals" do
     Xero::Import.new(@conn, client: @client, from: Date.new(2026, 7, 15)).call
-    assert_equal 1, @org.documents.invoices.count, "only INV-4002 is on or after the date"
+    assert_equal 2, @org.documents.invoices.count, "INV-4002 and INV-4003 are on or after the date"
     assert_equal 0, @org.documents.bills.count, "every bill is before the date"
     assert_equal 0, @org.documents.journal_entries.count, "the manual journal is before the date (the fake honours Date>= on every collection)"
   end

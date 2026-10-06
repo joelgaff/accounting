@@ -64,6 +64,18 @@
    "Invoice": {
     "InvoiceID": "0b100000-0000-4000-8000-000000000003"
    }
+  },
+  {
+   "PaymentID": "p6",
+   "Date": "/Date(1788220800000+0000)/",
+   "Amount": 126.84,
+   "Status": "AUTHORISED",
+   "Account": {
+    "Code": "1140"
+   },
+   "Invoice": {
+    "InvoiceID": "i4"
+   }
   }
  ]
 }
