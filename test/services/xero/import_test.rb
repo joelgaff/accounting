@@ -27,24 +27,24 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "Accounts Payable",    @org.settings.payable_account.name
 
     assert_equal [ "Sales Tax", "Tax Exempt" ], @org.tax_rates.pluck(:name).sort
-    assert_equal %w[both vendor both], [ @org.contacts.find_by!(name: "IRONMAN").kind, @org.contacts.find_by!(name: "Williams Pumping").kind, @org.contacts.find_by!(name: "Both Ways LLC").kind ], "IRONMAN was refunded, so it is a vendor too"
+    assert_equal %w[both vendor both], [ @org.contacts.find_by!(name: "Summit Races").kind, @org.contacts.find_by!(name: "Peak Sanitation").kind, @org.contacts.find_by!(name: "Both Ways LLC").kind ], "Summit Races was refunded, so it is a vendor too"
     assert_nil @org.contacts.find_by(name: "Archived Co")
-    assert_equal "Tampa", @org.contacts.find_by!(name: "IRONMAN").city
+    assert_equal "Tampa", @org.contacts.find_by!(name: "Summit Races").city
 
     klass = @org.tracking_categories.find_by!(name: "Class")
     year  = @org.tracking_categories.find_by!(name: "Event Year")
     assert klass.active? && year.active?
-    assert_equal [ "EE Timing", "IRONMAN", "z Old" ], klass.options.pluck(:name).sort
+    assert_equal [ "EE Timing", "Summit Races", "z Old" ], klass.options.pluck(:name).sort
     assert_not klass.options.find_by!(name: "z Old").active?
 
     inv = Invoice.find_by!(xero_invoice_number: "INV-4001").document
     assert_equal "Invoice INV-4001", inv.label
     assert_equal BigDecimal("5500"), inv.total
-    assert_equal "IRONMAN", inv.counterparty
-    assert_equal [ "IRONMAN", "EE Timing" ], inv.line_items.order(:id).map { |l| l.tracking_option_for(klass).name }
+    assert_equal "Summit Races", inv.counterparty
+    assert_equal [ "Summit Races", "EE Timing" ], inv.line_items.order(:id).map { |l| l.tracking_option_for(klass).name }
     assert_equal "2026", inv.line_items.first.tracking_option_for(year).name
     assert inv.paid?
-    assert_equal "PNC Checking", inv.payments.sole.bank_account.name
+    assert_equal "Main Checking", inv.payments.sole.bank_account.name
     assert_equal Date.new(2026, 7, 29), inv.payments.sole.paid_on
     assert_nil Invoice.find_by(xero_invoice_number: "INV-0001"), "voided invoice not imported"
     mileage = Invoice.find_by!(xero_invoice_number: "INV-4003").document
@@ -56,21 +56,21 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal "Bill 79738R", bill.label
     assert_equal BigDecimal("917.64"), bill.total
     assert bill.paid?, "a total a few cents above the lines still settles"
-    assert_equal "IRONMAN", bill.line_items.sole.tracking_option_for(klass).name
+    assert_equal "Summit Races", bill.line_items.sole.tracking_option_for(klass).name
     assert_equal 2, Bill.where(number: "79738R").count, "the same vendor number in two years stays two bills"
     assert_match(/recorded 917\.64/, @conn.steps.find { |s| s["step"] == "bills" }["errors"].join)
     unnumbered = Bill.find_by!(xero_invoice_number: "b2c3d4e5-0000-0000-0000-000000000000").document
     assert_equal "Bill ##{unnumbered.id}", unnumbered.label, "a made-up Xero key is not shown as a number"
     assert unnumbered.paid?
-    assert_equal "Chase United", unnumbered.payments.sole.bank_account.name
+    assert_equal "Rewards Card", unnumbered.payments.sole.bank_account.name
 
     cones = Expense.find_by!(xero_id: "bt1").document
     assert_equal "Expense", cones.documentable_type
-    assert_equal "Williams Pumping", cones.counterparty
-    assert_equal "PNC Checking", cones.expense.bank_account.name
+    assert_equal "Peak Sanitation", cones.counterparty
+    assert_equal "Main Checking", cones.expense.bank_account.name
     assert_equal BigDecimal("80"), cones.total
     assert_equal [ BigDecimal("4"), BigDecimal("20") ], [ cones.line_items.sole.quantity, cones.line_items.sole.unit_amount ]
-    assert_equal "IRONMAN", cones.line_items.sole.tracking_option_for(klass).name
+    assert_equal "Summit Races", cones.line_items.sole.tracking_option_for(klass).name
     assert_equal "xero_import", cones.source
 
     hats = Deposit.find_by!(xero_id: "bt2").document
@@ -81,17 +81,17 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal BigDecimal("6"), @org.plutus_accounts.find_by!(code: "2200").balance
     refund = Expense.find_by!(xero_id: "bt5").document
     assert_equal BigDecimal("45"), refund.total, "a negative receive is money out"
-    assert_equal "IRONMAN", refund.counterparty
+    assert_equal "Summit Races", refund.counterparty
     assert_equal 2, @org.documents.expenses.count, "transfer-type and deleted bank transactions are not expenses"
     assert_equal 1, @org.documents.deposits.count
 
     transfer = Transfer.find_by!(xero_id: "tr1").document
     assert_equal BigDecimal("500"), transfer.total
-    assert_equal [ "PNC Checking", "Chase United" ], [ transfer.transfer.from_bank_account.name, transfer.transfer.to_bank_account.name ]
+    assert_equal [ "Main Checking", "Rewards Card" ], [ transfer.transfer.from_bank_account.name, transfer.transfer.to_bank_account.name ]
 
     journal = @org.documents.journal_entries.sole
     assert_equal "MJ-mj1", journal.journal_entry.xero_journal_number, "only the posted manual journal"
-    assert_equal "IRONMAN", journal.journal_entry.lines.find_by!(account: @org.plutus_accounts.find_by!(code: "3000")).tracking_option_for(klass).name
+    assert_equal "Summit Races", journal.journal_entry.lines.find_by!(account: @org.plutus_accounts.find_by!(code: "3000")).tracking_option_for(klass).name
 
     debits  = Plutus::DebitAmount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).sum(:amount)
     credits = Plutus::CreditAmount.joins(:account).where(plutus_accounts: { tenant_id: @org.id }).sum(:amount)
@@ -137,7 +137,7 @@ class Xero::ImportRekeyTest < ActiveSupport::TestCase
     ap   = @org.settings.payable_account
     cost = @org.plutus_accounts.find_by!(code: "6817")
     bank = @org.bank_accounts.find_by_code_or_name("1140")
-    merged = @org.documents.create!(date: Date.new(2025, 6, 26), source: "xero_import", documentable: Bill.new(vendor: "Williams Pumping", payable_account: ap, xero_invoice_number: "79738R", number: "79738R"),
+    merged = @org.documents.create!(date: Date.new(2025, 6, 26), source: "xero_import", documentable: Bill.new(vendor: "Peak Sanitation", payable_account: ap, xero_invoice_number: "79738R", number: "79738R"),
       line_items_attributes: [ { description: "2025", quantity: 1, unit_amount: 500, account_id: cost.id }, { description: "2026", quantity: 12, unit_amount: 76.47, account_id: cost.id } ])
     merged.payments.create!(organization: @org, amount: 500, paid_on: Date.new(2025, 7, 3), bank_account: bank, reference: Imports::XeroTransactionsService::PAYMENT_REFERENCE)
     hand = @org.documents.create!(date: Date.new(2024, 1, 1), source: "xero_import", documentable: Bill.new(vendor: "Someone", payable_account: ap, xero_invoice_number: "KEEP-1", number: "KEEP-1"),

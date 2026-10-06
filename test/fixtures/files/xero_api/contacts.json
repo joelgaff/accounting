@@ -1,6 +1,6 @@
 {"Contacts":[
- {"ContactID":"c1","Name":"IRONMAN","EmailAddress":"ops@ironman.example","IsCustomer":true,"IsSupplier":false,"ContactStatus":"ACTIVE","Addresses":[{"AddressType":"POBOX","AddressLine1":"1 Race Way","City":"Tampa","Region":"FL","PostalCode":"33602","Country":"USA"}]},
- {"ContactID":"c2","Name":"Williams Pumping","IsCustomer":false,"IsSupplier":true,"ContactStatus":"ACTIVE"},
+ {"ContactID":"c1","Name":"Summit Races","EmailAddress":"ops@summit.example","IsCustomer":true,"IsSupplier":false,"ContactStatus":"ACTIVE","Addresses":[{"AddressType":"POBOX","AddressLine1":"1 Race Way","City":"Tampa","Region":"FL","PostalCode":"33602","Country":"USA"}]},
+ {"ContactID":"c2","Name":"Peak Sanitation","IsCustomer":false,"IsSupplier":true,"ContactStatus":"ACTIVE"},
  {"ContactID":"c3","Name":"Both Ways LLC","IsCustomer":false,"IsSupplier":false,"ContactStatus":"ACTIVE"},
  {"ContactID":"c4","Name":"Archived Co","IsCustomer":true,"ContactStatus":"ARCHIVED"}
 ]}

@@ -7,12 +7,12 @@
    "DateString": "2026-07-18T00:00:00",
    "Reference": "Cones",
    "Contact": {
-    "Name": "Williams Pumping"
+    "Name": "Peak Sanitation"
    },
    "BankAccount": {
     "AccountID": "a1",
     "Code": "1140",
-    "Name": "PNC Checking"
+    "Name": "Main Checking"
    },
    "LineAmountTypes": "NoTax",
    "IsReconciled": true,
@@ -31,7 +31,7 @@
      "Tracking": [
       {
        "Name": "Class",
-       "Option": "IRONMAN"
+       "Option": "Summit Races"
       },
       {
        "Name": "Event Year",
@@ -48,12 +48,12 @@
    "DateString": "2026-07-20T00:00:00",
    "Reference": "Merch",
    "Contact": {
-    "Name": "IRONMAN"
+    "Name": "Summit Races"
    },
    "BankAccount": {
     "AccountID": "a1",
     "Code": "1140",
-    "Name": "PNC Checking"
+    "Name": "Main Checking"
    },
    "LineAmountTypes": "Inclusive",
    "IsReconciled": false,
@@ -117,7 +117,7 @@
    "DateString": "2026-07-25T00:00:00",
    "Reference": "Refund out",
    "Contact": {
-    "Name": "IRONMAN"
+    "Name": "Summit Races"
    },
    "BankAccount": {
     "Code": "1140"

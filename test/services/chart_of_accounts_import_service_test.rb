@@ -119,8 +119,8 @@ class ChartOfAccountsImportServiceTest < ActiveSupport::TestCase
     by_name = @org.plutus_accounts.index_by(&:name)
     {
       "Accounts Receivable"       => Plutus::Asset,
-      "PNC Checking"              => Plutus::Asset,
-      "Chase Business Checking"   => Plutus::Asset,
+      "Main Checking"              => Plutus::Asset,
+      "Business Checking"   => Plutus::Asset,
       "RDE Contract Receivable"   => Plutus::Asset,
       "Accumulated Depreciation"  => Plutus::Asset,
       "Accounts Payable"          => Plutus::Liability,
@@ -145,11 +145,11 @@ class ChartOfAccountsImportServiceTest < ActiveSupport::TestCase
   test "imports an account that has no code" do
     csv = file_fixture("xero/chart_of_accounts_labels.csv").read
     ChartOfAccountsImportService.new(csv, organization: @org).call
-    assert_nil @org.plutus_accounts.find_by!(name: "Chase Business Checking").code
+    assert_nil @org.plutus_accounts.find_by!(name: "Business Checking").code
   end
 
   test "Bank rows become bank accounts, and a reclassified credit card stays a liability" do
-    csv = "*Code,*Name,*Type\n1140,PNC Checking,Bank\n2068,Rewards Card,Bank\n1150,Chase Business Savings,Bank\n1200,AR,Accounts Receivable\n"
+    csv = "*Code,*Name,*Type\n1140,Main Checking,Bank\n2068,Rewards Card,Bank\n1150,Chase Business Savings,Bank\n1200,AR,Accounts Receivable\n"
     ChartOfAccountsImportService.new(csv, organization: @org).call
 
     checking = @org.bank_accounts.find_by_code_or_name("1140")

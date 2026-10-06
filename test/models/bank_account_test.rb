@@ -53,9 +53,9 @@ class BankAccountTest < ActiveSupport::TestCase
 
   test "finds by ledger code or name" do
     a = @org.bank_accounts.create!(name: "Main", code: "090")
-    b = @org.bank_accounts.create!(name: "Chase Business Checking")
+    b = @org.bank_accounts.create!(name: "Business Checking")
     assert_equal a, @org.bank_accounts.find_by_code_or_name("090")
-    assert_equal b, @org.bank_accounts.find_by_code_or_name("Chase Business Checking")
+    assert_equal b, @org.bank_accounts.find_by_code_or_name("Business Checking")
     assert_nil @org.bank_accounts.find_by_code_or_name("nope")
   end
 

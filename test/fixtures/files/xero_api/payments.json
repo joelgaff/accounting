@@ -8,7 +8,7 @@
    "Account": {
     "AccountID": "a1",
     "Code": "1140",
-    "Name": "PNC Checking"
+    "Name": "Main Checking"
    },
    "Invoice": {
     "InvoiceID": "i1",
@@ -23,7 +23,7 @@
    "Account": {
     "AccountID": "a2",
     "Code": "2069",
-    "Name": "Chase United"
+    "Name": "Rewards Card"
    },
    "Invoice": {
     "InvoiceID": "b2c3d4e5-0000-0000-0000-000000000000"

@@ -1,4 +1,4 @@
 {"TrackingCategories":[
- {"TrackingCategoryID":"t1","Name":"Class","Status":"ACTIVE","Options":[{"Name":"IRONMAN","Status":"ACTIVE"},{"Name":"EE Timing","Status":"ACTIVE"},{"Name":"z Old","Status":"ARCHIVED"}]},
+ {"TrackingCategoryID":"t1","Name":"Class","Status":"ACTIVE","Options":[{"Name":"Summit Races","Status":"ACTIVE"},{"Name":"EE Timing","Status":"ACTIVE"},{"Name":"z Old","Status":"ARCHIVED"}]},
  {"TrackingCategoryID":"t2","Name":"Event Year","Status":"ACTIVE","Options":[{"Name":"2025","Status":"ACTIVE"},{"Name":"2026","Status":"ACTIVE"}]}
 ]}

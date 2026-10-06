@@ -7,19 +7,19 @@ class BankAccountsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "lists bank accounts" do
-    create_bank_account(@org, name: "PNC Checking", code: "1140")
+    create_bank_account(@org, name: "Main Checking", code: "1140")
     get bank_accounts_path
     assert_response :success
-    assert_select "td", text: /PNC Checking/
+    assert_select "td", text: /Main Checking/
   end
 
   test "creates a bank account together with its ledger account" do
     assert_difference [ "BankAccount.count", "Plutus::Liability.count" ], 1 do
-      post bank_accounts_path, params: { bank_account: { name: "Chase United", kind: "credit_card", code: "2069", institution: "Chase", last_four: "0042" } }
+      post bank_accounts_path, params: { bank_account: { name: "Rewards Card", kind: "credit_card", code: "2069", institution: "Chase", last_four: "0042" } }
     end
     assert_redirected_to bank_accounts_path
     card = @org.bank_accounts.last
-    assert_equal "Chase United", card.name
+    assert_equal "Rewards Card", card.name
     assert_equal "2069", card.code
     assert card.credit_card?
   end

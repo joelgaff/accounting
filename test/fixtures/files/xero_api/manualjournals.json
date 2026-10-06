@@ -1,6 +1,6 @@
 {"ManualJournals":[
  {"ManualJournalID":"mj1","Date":"/Date(1767225600000+0000)/","Status":"POSTED","Narration":"Owner contribution","LineAmountTypes":"NoTax","JournalLines":[
    {"LineAmount":1000.0,"AccountCode":"1140","Description":"Capital in","TaxType":"NONE"},
-   {"LineAmount":-1000.0,"AccountCode":"3000","Description":"Capital in","TaxType":"NONE","Tracking":[{"Name":"Class","Option":"IRONMAN"}]}]},
+   {"LineAmount":-1000.0,"AccountCode":"3000","Description":"Capital in","TaxType":"NONE","Tracking":[{"Name":"Class","Option":"Summit Races"}]}]},
  {"ManualJournalID":"mj2","Date":"/Date(1767225600000+0000)/","Status":"DRAFT","Narration":"Not yet","JournalLines":[{"LineAmount":1.0,"AccountCode":"1140"},{"LineAmount":-1.0,"AccountCode":"3000"}]}
 ]}

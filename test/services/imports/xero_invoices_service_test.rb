@@ -160,7 +160,7 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
 
   test "a row's BankAccount column picks the bank by code or name, Settings is the fallback" do
     @org.settings.update!(bank_account: @bank)
-    chase = create_bank_account(@org, name: "Chase Business Checking")   # no code, like Xero
+    chase = create_bank_account(@org, name: "Business Checking")   # no code, like Xero
     csv = file_fixture("xero/invoices_with_bank.csv").read
     result = Imports::XeroInvoicesService.new(csv, organization: @org).call
 

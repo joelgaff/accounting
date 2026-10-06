@@ -5,7 +5,7 @@ class TrackingTest < ActiveSupport::TestCase
     @org = organizations(:one)
     Current.organization = @org
     @year  = @org.tracking_categories.create!(name: "Event Year", options_attributes: [ { name: "2025" }, { name: "2026" } ])
-    @klass = @org.tracking_categories.create!(name: "Class", options_attributes: [ { name: "EE Timing" }, { name: "IRONMAN" } ])
+    @klass = @org.tracking_categories.create!(name: "Class", options_attributes: [ { name: "EE Timing" }, { name: "Summit Races" } ])
     @ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
     @sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
     @bank  = create_bank_account(@org, name: "Bank")
@@ -24,10 +24,10 @@ class TrackingTest < ActiveSupport::TestCase
   test "a line takes one option per category and the last one per category wins" do
     inv  = create_invoice(@org, client_name: "A", amount: 10, receivable: @ar, revenue: @sales)
     line = inv.line_items.sole
-    line.update!(tracking_option_ids: [ opt(@year, "2025").id, opt(@year, "2026").id, opt(@klass, "IRONMAN").id ])
+    line.update!(tracking_option_ids: [ opt(@year, "2025").id, opt(@year, "2026").id, opt(@klass, "Summit Races").id ])
     line.reload
     assert_equal "2026",    line.tracking_option_for(@year).name
-    assert_equal "IRONMAN", line.tracking_option_for(@klass).name
+    assert_equal "Summit Races", line.tracking_option_for(@klass).name
     assert_equal 2, line.tracking_selections.count
 
     line.update!(tracking_option_ids: [ opt(@klass, "EE Timing").id ])
@@ -52,8 +52,8 @@ class TrackingTest < ActiveSupport::TestCase
   test "reconcile categorize and bank rules pin tracking on the new line" do
     hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
     txn  = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
-    Reconciliation::Categorize.new(txn, account: hosting, tracking_option_ids: [ opt(@klass, "IRONMAN").id ]).call
-    assert_equal "IRONMAN", txn.reload.document.line_items.sole.tracking_option_for(@klass).name
+    Reconciliation::Categorize.new(txn, account: hosting, tracking_option_ids: [ opt(@klass, "Summit Races").id ]).call
+    assert_equal "Summit Races", txn.reload.document.line_items.sole.tracking_option_for(@klass).name
 
     rule = @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: hosting, tracking_option_ids: [ opt(@year, "2026").id ])
     txn2 = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -8, payee: "CLOUDFLARE", description: "x")
@@ -71,7 +71,7 @@ class TrackingTest < ActiveSupport::TestCase
     year  = @org.tracking_categories.find_by!(name: "Event Year")
     klass = @org.tracking_categories.find_by!(name: "Class")
     assert_equal %w[2026], year.options.pluck(:name)
-    assert_equal [ "EE Timing", "IRONMAN" ], klass.options.pluck(:name).sort
+    assert_equal [ "EE Timing", "Summit Races" ], klass.options.pluck(:name).sort
     timing = LineItem.find_by!(description: "Timing", unit_amount: 1500)
     assert_equal "EE Timing", timing.tracking_option_for(klass).name
   end
@@ -79,15 +79,15 @@ class TrackingTest < ActiveSupport::TestCase
   test "P&L by tracking splits lines by option and matches the ledger total" do
     hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
     @org.documents.create!(date: Date.current, documentable: Invoice.new(client_name: "A", due_date: Date.current + 30, receivable_account: @ar),
-      line_items_attributes: [ { description: "a", quantity: 1, unit_amount: 1000, account_id: @sales.id, tracking_option_ids: [ opt(@klass, "IRONMAN").id ] },
+      line_items_attributes: [ { description: "a", quantity: 1, unit_amount: 1000, account_id: @sales.id, tracking_option_ids: [ opt(@klass, "Summit Races").id ] },
                                { description: "b", quantity: 1, unit_amount: 500,  account_id: @sales.id, tracking_option_ids: [ opt(@klass, "EE Timing").id ] },
                                { description: "c", quantity: 1, unit_amount: 25,   account_id: @sales.id } ])
     create_expense(@org, vendor: "DO", amount: 200, category: hosting, bank_account: @bank)
     @org.documents.create!(date: Date.current, documentable: JournalEntry.new(narrative: "Adj",
-      lines_attributes: [ { account_id: hosting.id, debit_amount: 40, tracking_option_ids: [ opt(@klass, "IRONMAN").id ] }, { account_id: @bank.account.id, credit_amount: 40 } ]))
+      lines_attributes: [ { account_id: hosting.id, debit_amount: 40, tracking_option_ids: [ opt(@klass, "Summit Races").id ] }, { account_id: @bank.account.id, credit_amount: 40 } ]))
 
     r = Reports::ProfitAndLossByTracking.new(organization: @org, category: @klass)
-    ironman  = opt(@klass, "IRONMAN"); timing = opt(@klass, "EE Timing"); none = Reports::ProfitAndLossByTracking::UNASSIGNED
+    ironman  = opt(@klass, "Summit Races"); timing = opt(@klass, "EE Timing"); none = Reports::ProfitAndLossByTracking::UNASSIGNED
     assert_equal BigDecimal("1000"), r.column_total(r.revenue_rows, ironman)
     assert_equal BigDecimal("500"),  r.column_total(r.revenue_rows, timing)
     assert_equal BigDecimal("25"),   r.column_total(r.revenue_rows, none)
@@ -98,7 +98,7 @@ class TrackingTest < ActiveSupport::TestCase
 
     # A refund received against an expense account reduces that expense, as in the ledger.
     @org.documents.create!(date: Date.current, documentable: Deposit.new(bank_account: @bank),
-      line_items_attributes: [ { description: "refund", quantity: 1, unit_amount: 50, account_id: hosting.id, tracking_option_ids: [ opt(@klass, "IRONMAN").id ] } ])
+      line_items_attributes: [ { description: "refund", quantity: 1, unit_amount: 50, account_id: hosting.id, tracking_option_ids: [ opt(@klass, "Summit Races").id ] } ])
     r = Reports::ProfitAndLossByTracking.new(organization: @org, category: @klass)
     assert_equal BigDecimal("-10"), r.column_total(r.expense_rows, ironman)
     assert_equal r.ledger_net_income, r.total_revenue - r.total_expenses

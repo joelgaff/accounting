@@ -1,7 +1,7 @@
 *Code,*Name,*Type,*Tax Code,Description,Dashboard,Expense Claims,Enable Payments,Balance
 1200,Accounts Receivable,Accounts Receivable,Tax Exempt (0%),Outstanding invoices,No,No,No,
-1140,PNC Checking,Bank,Tax Exempt (0%),,No,No,No,
-,Chase Business Checking,Bank,Tax Exempt (0%),,No,No,No,
+1140,Main Checking,Bank,Tax Exempt (0%),,No,No,No,
+,Business Checking,Bank,Tax Exempt (0%),,No,No,No,
 1001,RDE Contract Receivable,Current Asset,Tax Exempt (0%),,No,No,No,
 1256,Accumulated Depreciation,Fixed Asset,Tax Exempt (0%),,No,No,No,
 2000,Accounts Payable,Accounts Payable,Tax Exempt (0%),,No,No,No,

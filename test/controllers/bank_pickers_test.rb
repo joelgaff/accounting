@@ -5,7 +5,7 @@ class BankPickersTest < ActionDispatch::IntegrationTest
   setup do
     @org = organizations(:one)
     sign_in_as_launchpad_user(@org)
-    @bank = create_bank_account(@org, name: "PNC Checking", code: "1140")
+    @bank = create_bank_account(@org, name: "Main Checking", code: "1140")
     @card = create_bank_account(@org, name: "Rewards Card", code: "2068", kind: "credit_card")
     create_bank_account(@org, name: "Closed", code: "0900").archive!
     Plutus::Asset.create!(tenant: @org, name: "Accounts Receivable", code: "1200")
@@ -22,7 +22,7 @@ class BankPickersTest < ActionDispatch::IntegrationTest
   test "bank statement import offers only active bank accounts" do
     get new_imports_bank_path
     assert_response :success
-    assert_select "select[name=bank_account_id] option", text: "1140 — PNC Checking"
+    assert_select "select[name=bank_account_id] option", text: "1140 — Main Checking"
     assert_select "select[name=bank_account_id] option", text: "2068 — Rewards Card"
     assert_select "select[name=bank_account_id] option", text: /Closed/, count: 0
     assert_select "select[name=bank_account_id] option", text: /Accounts Receivable/, count: 0
@@ -31,7 +31,7 @@ class BankPickersTest < ActionDispatch::IntegrationTest
   test "settings and payments pick from bank accounts" do
     get settings_path
     assert_response :success
-    assert_select "select[name='organization_settings[bank_account_id]'] option", text: "1140 — PNC Checking"
+    assert_select "select[name='organization_settings[bank_account_id]'] option", text: "1140 — Main Checking"
 
     ar    = Plutus::Asset.find_by!(code: "1200")
     sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")

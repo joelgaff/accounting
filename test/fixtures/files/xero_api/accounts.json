@@ -3,7 +3,7 @@
   {
    "AccountID": "a1",
    "Code": "1140",
-   "Name": "PNC Checking",
+   "Name": "Main Checking",
    "Type": "BANK",
    "BankAccountType": "BANK",
    "TaxType": "NONE",
@@ -13,7 +13,7 @@
   {
    "AccountID": "a2",
    "Code": "2069",
-   "Name": "Chase United",
+   "Name": "Rewards Card",
    "Type": "BANK",
    "BankAccountType": "CREDITCARD",
    "TaxType": "NONE",

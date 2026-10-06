@@ -7,8 +7,8 @@
    "Reference": "70.3 Oregon",
    "Status": "PAID",
    "Contact": {
-    "Name": "IRONMAN",
-    "EmailAddress": "ops@ironman.example"
+    "Name": "Summit Races",
+    "EmailAddress": "ops@summit.example"
    },
    "DateString": "2026-07-10T00:00:00",
    "DueDateString": "2026-08-10T00:00:00",
@@ -29,7 +29,7 @@
       },
       {
        "Name": "Class",
-       "Option": "IRONMAN"
+       "Option": "Summit Races"
       }
      ],
      "LineAmount": 4000.0
@@ -61,7 +61,7 @@
    "InvoiceNumber": "INV-4002",
    "Status": "AUTHORISED",
    "Contact": {
-    "Name": "IRONMAN"
+    "Name": "Summit Races"
    },
    "DateString": "2026-08-01T00:00:00",
    "DueDateString": "2026-09-01T00:00:00",
@@ -91,7 +91,7 @@
    "InvoiceNumber": "INV-0001",
    "Status": "VOIDED",
    "Contact": {
-    "Name": "IRONMAN"
+    "Name": "Summit Races"
    },
    "DateString": "2026-01-01T00:00:00",
    "DueDateString": "2026-01-31T00:00:00",
@@ -113,7 +113,7 @@
    "InvoiceNumber": "INV-4003",
    "Status": "PAID",
    "Contact": {
-    "Name": "IRONMAN"
+    "Name": "Summit Races"
    },
    "DateString": "2026-08-20T00:00:00",
    "DueDateString": "2026-09-20T00:00:00",
