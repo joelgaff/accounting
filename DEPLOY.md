@@ -60,6 +60,10 @@ Everything Slice A–M is shipped. This file tracks the remaining work to get th
 
 - [ ] **Active Record encryption keys** are in `config/credentials.yml.enc` (`active_record_encryption:` block); the bank feed's access URL is encrypted with them. Nothing to set on Hatchbox beyond `RAILS_MASTER_KEY`.
 - [x] **Solid Queue runs in production** (a `solid-queue-fork-supervisor` with dispatcher, worker and scheduler is up on the Hatchbox host; checked 2026-09-14). The nightly `simplefin_sync` task in `config/recurring.yml` registers itself on the next deploy. Verify with `bin/rails runner 'puts SolidQueue::RecurringTask.pluck(:key)'` on the server and check `SolidQueue::RecurringExecution` after 4am UTC.
+- [ ] **Xero API import.** Create an app at developer.xero.com (Web app; redirect URI
+  `https://accounting.enduranceevolution.com/settings/xero/callback`; scopes are requested by the app).
+  Put its client id and secret in the credentials under `xero:` (`client_id`, `client_secret`), deploy,
+  then Settings → Xero → Connect, and Run import. Re-running is safe; it updates in place.
 - [ ] Connect SimpleFIN under Settings → Bank feed (setup token from bridge.simplefin.org), map accounts, Sync now.
 
 ## Nice-to-have (post-launch, non-blocking)

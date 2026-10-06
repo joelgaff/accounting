@@ -49,6 +49,18 @@
 </section>
 
 <section style="margin-top:32px;">
+  <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Xero</h2>
+  <p class="muted" style="font-size:13px;margin:0 0 12px;">
+    <% if (xc = Current.organization.xero_connection) %>
+      Connected to <%= xc.tenant_name %><%= xc.last_import_at ? ", last imported #{time_ago_in_words(xc.last_import_at)} ago" : "" %>.
+    <% else %>
+      Pull the whole history, tracking included, straight from Xero's API.
+    <% end %>
+  </p>
+  <%= link_to "Manage Xero connection", xero_connection_path, class: "btn btn-secondary" %>
+</section>
+
+<section style="margin-top:32px;">
   <h2 style="font-size:15px;font-weight:600;margin:0 0 8px;">Bank feed</h2>
   <p class="muted" style="font-size:13px;margin:0 0 12px;">
     <% if Current.organization.bank_feed %>

@@ -66,6 +66,14 @@
   creates categories and options on first sight. `Reports::ProfitAndLossByTracking` is line-based
   (tracking lives on lines) and shows the ledger net income beside its own as a check figure.
 
+## Xero API connection
+- Settings → Xero connects over OAuth 2.0 (`Xero::Client`, tokens encrypted on `XeroConnection`); app
+  client id and secret live in credentials as `xero.client_id` / `xero.client_secret`. `Xero::Pull`
+  turns each API collection into the CSV the file importers already read, so `Xero::Import` (run by
+  `XeroImportJob`, progress on the connection) is the bundle import fed from the API: chart, tax rates,
+  contacts, tracking categories, sales invoices and bills with lines, tracking and payments, then
+  every other journal. Tests use `FakeXero` (test/support) with fixtures in `test/fixtures/files/xero_api`.
+
 ## Xero migration toolkit (rake)
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
   `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs

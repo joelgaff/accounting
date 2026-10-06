@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_06_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -420,6 +420,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_120000) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  create_table "xero_connections", force: :cascade do |t|
+    t.text "access_token", null: false
+    t.datetime "created_at", null: false
+    t.date "import_from"
+    t.text "last_error"
+    t.datetime "last_import_at"
+    t.text "last_summary"
+    t.integer "organization_id", null: false
+    t.text "progress"
+    t.text "refresh_token", null: false
+    t.datetime "started_at"
+    t.string "status", default: "idle", null: false
+    t.string "tenant_id", null: false
+    t.string "tenant_name"
+    t.datetime "token_expires_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_xero_connections_on_organization_id", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bank_accounts", "bank_feeds"
@@ -461,4 +480,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_120000) do
   add_foreign_key "transfers", "bank_accounts", column: "from_bank_account_id"
   add_foreign_key "transfers", "bank_accounts", column: "to_bank_account_id"
   add_foreign_key "users", "organizations"
+  add_foreign_key "xero_connections", "organizations"
 end

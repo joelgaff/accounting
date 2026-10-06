@@ -1,0 +1,1 @@
+{"TaxRates":[{"Name":"Tax Exempt","TaxType":"NONE","EffectiveRate":0,"Status":"ACTIVE"},{"Name":"Sales Tax","TaxType":"OUTPUT","EffectiveRate":6,"Status":"ACTIVE"},{"Name":"Gone","TaxType":"X","EffectiveRate":1,"Status":"DELETED"}]}

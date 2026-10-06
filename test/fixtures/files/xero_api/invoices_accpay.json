@@ -1,0 +1,8 @@
+{"Invoices":[
+ {"Type":"ACCPAY","InvoiceID":"b1","InvoiceNumber":"79738R","Status":"AUTHORISED","Contact":{"Name":"Williams Pumping"},
+  "DateString":"2026-06-26T00:00:00","DueDateString":"2026-07-10T00:00:00","AmountPaid":0,"Total":917.64,
+  "LineItems":[{"Description":"12 portable toilets","Quantity":12.0,"UnitAmount":76.47,"AccountCode":"6817","TaxType":"NONE","Tracking":[{"Name":"Class","Option":"IRONMAN"}]}]},
+ {"Type":"ACCPAY","InvoiceID":"b2c3d4e5-0000-0000-0000-000000000000","InvoiceNumber":"","Status":"PAID","Contact":{"Name":"Both Ways LLC"},
+  "DateString":"2026-05-01T00:00:00","DueDateString":"2026-05-01T00:00:00","AmountPaid":40.0,"FullyPaidOnDate":"/Date(1777593600000+0000)/","Total":40.0,
+  "LineItems":[{"Description":"Ice","Quantity":1.0,"UnitAmount":40.0,"AccountCode":"6817","TaxType":"NONE"}]}
+]}

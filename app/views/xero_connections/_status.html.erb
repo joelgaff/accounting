@@ -1,0 +1,14 @@
+<div class="notice <%= connection.status == 'failed' ? '' : 'notice-info' %>">
+  <p>
+    Connected to <strong><%= connection.tenant_name %></strong>.
+    <% if connection.running? %>
+      Import running since <%= time_ago_in_words(connection.started_at) %> ago…
+    <% elsif connection.status == "done" %>
+      Last import finished <%= time_ago_in_words(connection.last_import_at) %> ago.
+    <% elsif connection.status == "failed" %>
+      <span class="neg">Last import failed: <%= connection.last_error %></span>
+    <% else %>
+      No import run yet.
+    <% end %>
+  </p>
+</div>

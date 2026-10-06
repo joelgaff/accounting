@@ -70,6 +70,10 @@ Rails.application.routes.draw do
   resource  :bank_feed, only: %i[show create update destroy], path: "settings/bank_feed" do
     post :sync
   end
+  resource :xero_connection, only: %i[show update destroy], path: "settings/xero" do
+    post :connect
+    get  :callback
+  end
   resources :tax_rates
 
   get "reports" => "reports#index", as: :reports

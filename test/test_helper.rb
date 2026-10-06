@@ -1,6 +1,7 @@
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+require_relative "support/fake_xero"
 
 module DocumentBuilders
   # One-line documents for tests: a single line item per document, tax on top.

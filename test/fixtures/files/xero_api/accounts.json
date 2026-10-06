@@ -1,0 +1,11 @@
+{"Accounts":[
+ {"AccountID":"a1","Code":"1140","Name":"PNC Checking","Type":"BANK","BankAccountType":"BANK","TaxType":"NONE","Status":"ACTIVE","Description":"Operating account"},
+ {"AccountID":"a2","Code":"2069","Name":"Chase United","Type":"BANK","BankAccountType":"CREDITCARD","TaxType":"NONE","Status":"ACTIVE"},
+ {"AccountID":"a3","Code":"1200","Name":"Accounts Receivable","Type":"CURRENT","SystemAccount":"DEBTORS","Status":"ACTIVE"},
+ {"AccountID":"a4","Code":"2000","Name":"Accounts Payable","Type":"CURRLIAB","SystemAccount":"CREDITORS","Status":"ACTIVE"},
+ {"AccountID":"a5","Code":"200","Name":"Event Revenue","Type":"REVENUE","TaxType":"NONE","Status":"ACTIVE"},
+ {"AccountID":"a6","Code":"210","Name":"Timing Revenue","Type":"REVENUE","TaxType":"NONE","Status":"ACTIVE"},
+ {"AccountID":"a7","Code":"6817","Name":"Customer Supplies","Type":"EXPENSE","TaxType":"NONE","Status":"ACTIVE"},
+ {"AccountID":"a8","Code":"3000","Name":"Owner Equity","Type":"EQUITY","Status":"ACTIVE"},
+ {"AccountID":"a9","Code":"9999","Name":"Old Account","Type":"EXPENSE","Status":"ARCHIVED"}
+]}
