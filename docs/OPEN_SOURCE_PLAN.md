@@ -5,12 +5,10 @@ step below can ship on its own.
 
 ## Order of work
 
-1. **Settings reorganisation.** Import leaves the sidebar. The Xero CSV uploaders,
-   chart and contacts uploads, and the bank statement upload move to one
-   "Imports and data" section under Settings, labelled as fallbacks to the Xero
-   API connection and the SimpleFIN feed. The status dots go. The bank account
-   page keeps its Import button. Importer services, tests and the rake bundle
-   task are untouched (the API import runs on them).
+1. **Settings reorganisation.** Done 2026-10-06: Import and Tax rates left the
+   sidebar; Settings is a stack of panels (Organisation, Dashboard accounts,
+   Connections, Books, Imports and data, Appearance). Importer services, tests
+   and the rake bundle task untouched.
 2. **Sign-in: magic codes by default, Launchpad as an option** (plan below), with
    the domain and hub settings moved into credentials in the same pass.
 3. **Example credentials and fixture pass.** `config/credentials.yml.example`
@@ -73,6 +71,22 @@ one is active.
   Users can be removed, except yourself.
 - **Sign out.** Deletes the session row and the cookie.
 
+### 3a. The "You" panel (profile)
+
+Decided 2026-10-06. No separate profile menu; the Appearance panel under
+Settings becomes a "You" panel with three rows: name, email, theme.
+
+- **Name** is one field, not first and last. It is what document history shows
+  as who created, edited, voided or emailed something, and what the title bar
+  shows. First-run setup asks for it.
+- **Email** is the login identifier in local mode, so changing it is a security
+  action: a code goes to the new address and the change applies only when that
+  code is confirmed. The old address is told.
+- **Theme** stays as it is.
+- **Launchpad mode:** name and email rows are read-only with a note that they
+  come from Launchpad, which syncs them on every request; only the theme is
+  editable here.
+
 ### 4. Launchpad mode
 
 Exactly today's behaviour. Setup and People pages are not available, since the
@@ -123,7 +137,9 @@ hub.
 5. Strategy switch in the base controller, sign-out and title bar reading from
    the active mode.
 6. People page.
-7. Docs.
+7. The "You" panel: name and theme editable, email change by confirmation
+   code; read-only name and email in Launchpad mode.
+8. Docs.
 
 ### Conventions carried over from rails-now
 
