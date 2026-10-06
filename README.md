@@ -80,5 +80,7 @@ environment overrides for development.
 - Mail opens in the browser in development via letter_opener; mailer previews
   live at `/rails/mailers`.
 
-`CLAUDE.md` holds the working notes on the domain model and conventions.
+Operators keep deployment notes and scripts for their own installation outside
+this repository; the maintainer's live in a private companion repo cloned beside
+it. `CLAUDE.md` holds the working notes on the domain model and conventions.
 `docs/OPEN_SOURCE_PLAN.md` is the plan that got the app here.

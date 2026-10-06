@@ -89,10 +89,9 @@
 ## Xero migration toolkit (rake)
 - `bin/rails 'xero:import[/path/to/bundle]'`, `xero:status`, `xero:reset` (keeps the chart),
   `'xero:reset[everything]'`. `DRY_RUN=1` previews any of them; production reset needs
-  `CONFIRM=<org name>`. `bin/xero-prod <status|import DIR|reset [scope]>` rsyncs a bundle
-  to the Hatchbox server and runs the same tasks there; the server address comes from
-  `hatchbox.host` in the encrypted credentials (`HATCHBOX_HOST` overrides it); this repo is
-  public, so it is never written into a plain file.
+  `CONFIRM=<org name>`. Joel's deployment notes and the script that runs these tasks on his
+  server live in the private companion repo `partita_doppia-ops`, cloned beside this one; this
+  repo is public, so nothing about any one installation is written into it.
 
 ## Run locally
 - `bin/dev` boots the Launchpad SSO hub (`../launchpad`, port 3000) and this app (port 3001)
