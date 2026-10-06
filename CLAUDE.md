@@ -1,4 +1,4 @@
-# Partita Doppia (repo: accounting) — working notes for Claude Code
+# Partita Doppia — working notes for Claude Code
 
 ## Stack (fixed)
 - Rails 8, **SQLite + Solid suite** (Queue/Cache/Cable). No Postgres/Redis/Sidekiq.

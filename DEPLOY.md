@@ -41,7 +41,7 @@ Everything Slice A–M is shipped. This file tracks the remaining work to get th
 
 ## First deploy
 
-- [ ] Add app in Hatchbox, connect `joelgaff/accounting` repo, `master` branch
+- [ ] Add app in Hatchbox (name `partita_doppia`), connect `joelgaff/partita_doppia` repo, `master` branch
 - [ ] Set env vars in Hatchbox: `RAILS_MASTER_KEY` (only one required beyond platform defaults)
 - [ ] Deploy
 - [ ] Watch initial migration + Solid Queue/Cache/Cable table creation

@@ -1,8 +1,10 @@
 module LaunchpadAuthentication
   extend ActiveSupport::Concern
 
-  # This app's key in the Launchpad app registry; the JWT must list it in `apps`.
-  APP_KEY = "accounting".freeze
+  # This app's key in the Launchpad app registry; the JWT must list one of
+  # these in `apps`. "accounting" is the key before the rename and can go once
+  # every token has been reissued.
+  APP_KEYS = %w[partita_doppia accounting].freeze
 
   included do
     before_action :require_launchpad_authentication
@@ -14,7 +16,7 @@ module LaunchpadAuthentication
   def require_launchpad_authentication
     claims = Ee::Jwt.decode(cookies[Ee::Jwt::COOKIE_NAME])
     return redirect_to_launchpad if claims.nil?
-    return render_no_access unless claims["apps"].to_a.include?(APP_KEY)
+    return render_no_access unless claims["apps"].to_a.intersect?(APP_KEYS)
 
     Current.user = sync_user(claims)
   end
