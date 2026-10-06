@@ -16,8 +16,8 @@ step below can ship on its own.
 3. **Fixture pass.** Done 2026-10-06: fixtures and tests use made-up
    counterparties and banks.
 4. **Docs and license.** README, CONTRIBUTING, DEPLOY.md and CLAUDE.md done
-   2026-10-06. **Open:** the license file (MIT or AGPL, Joel to pick).
-5. Publish: add the license, push, make the GitHub repo public.
+   2026-10-06. License: MIT, added 2026-10-06.
+5. Publish: pushed 2026-10-06; the GitHub repo is public.
 
 Left alone: Hatchbox deploy, the rake bundle importer, the design.
 

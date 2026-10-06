@@ -143,5 +143,4 @@ their own installation outside this repository.
 
 ## License
 
-Not chosen yet. Until a license file lands, the code is published to read, not
-to reuse.
+[MIT](LICENSE).
