@@ -44,6 +44,8 @@ class DocumentEvent < ApplicationRecord
       [ ("Total #{money d['total']}" if d["total"]), ("Reference #{d['reference']}" if d["reference"].present?) ].compact
     when "edited"
       d.fetch("changes", {}).map { |field, (from, to)| "#{field}: #{blank_or(from)} → #{blank_or(to)}" }
+    when "approved"   then [ "Posted to the ledger" ]
+    when "unapproved" then [ "Posting removed" ]
     when "voided"
       [ ("#{d['payments']} payment#{'s' unless d['payments'] == 1} removed (#{money d['paid']})" if d["payments"].to_i.positive?),
         ("#{d['bank_lines']} bank line#{'s' unless d['bank_lines'] == 1} returned to the queue" if d["bank_lines"].to_i.positive?) ].compact

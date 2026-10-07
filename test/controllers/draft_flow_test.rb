@@ -110,6 +110,8 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     doc = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
     get invoice_path(doc)
     assert_select "a[href=?]", email_invoice_path(doc), 0
+    get print_invoice_path(doc)
+    assert_select "a[href=?]", email_invoice_path(doc), 0
 
     get email_invoice_path(doc)
     assert_redirected_to invoice_path(doc)
@@ -120,6 +122,28 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to invoice_path(doc)
     assert_equal 0, doc.events.where(action: "emailed").count
+  end
+
+  test "a draft offers Delete but not Void; an approved document the reverse" do
+    draft = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
+    get invoice_path(draft)
+    assert_select "form[action=?]", void_invoice_path(draft), 0
+    assert_select "form[action=?] button", invoice_path(draft), text: "Delete"
+
+    real = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+    get invoice_path(real)
+    assert_select "form[action=?] button", void_invoice_path(real), text: "Void"
+  end
+
+  test "approve and unapprove each leave a line in the history" do
+    doc = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
+    doc.approve!
+    doc.unapprove!
+    approved, unapproved = doc.events.where(action: %w[approved unapproved]).order(:id).to_a
+    assert_equal "Approved",       approved.title
+    assert_equal [ "Posted to the ledger" ], approved.detail_lines
+    assert_equal "Back to draft",  unapproved.title
+    assert_equal [ "Posting removed" ], unapproved.detail_lines
   end
 
   test "other types are approved on create, as before" do

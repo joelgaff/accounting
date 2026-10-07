@@ -45,6 +45,16 @@ class DocumentsTasksTest < ActiveSupport::TestCase
     assert_equal 0, draft.entries.count
   end
 
+  test "documents:state reports a refusal instead of crashing" do
+    bank = create_bank_account(@org, name: "Bank")
+    paid = create_invoice(@org, client_name: "A", amount: 10, receivable: @ar, revenue: @sales)
+    paid.payments.create!(organization: @org, amount: 10, paid_on: Date.current, bank_account: bank)
+    out = run_task("documents:state", "draft", paid.id.to_s)
+    assert_includes out, "refused"
+    assert_includes out, paid.label
+    assert paid.reload.approved?
+  end
+
   private
 
   def run_task(name, *args)

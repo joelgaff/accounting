@@ -31,8 +31,14 @@ namespace :documents do
     org = documents_org
     ActiveRecord::Base.transaction do
       org.documents.where(id: ids).find_each do |doc|
-        state == "approved" ? doc.approve! : doc.unapprove!
-        puts "#{doc.label} (id #{doc.id}) → #{state}"
+        if doc.state == state
+          puts "#{doc.label} (id #{doc.id}) already #{state}"
+        elsif state == "draft" && !doc.deletable?
+          puts "#{doc.label} (id #{doc.id}) refused: has payments or a matched bank line; void or unmatch first"
+        else
+          state == "approved" ? doc.approve! : doc.unapprove!
+          puts "#{doc.label} (id #{doc.id}) → #{state}"
+        end
       end
       if ENV["DRY_RUN"].present?
         puts "DRY_RUN: rolled back"
