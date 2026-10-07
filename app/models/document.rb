@@ -124,7 +124,8 @@ class Document < ApplicationRecord
   # statement line pointing at it, remove its postings, and mark it. The
   # document itself stays for the record.
   def void!
-    raise ActiveRecord::RecordInvalid.new(self) if voided?
+    errors.add(:base, "is a draft; delete it instead") if draft?
+    raise ActiveRecord::RecordInvalid.new(self) if voided? || draft?
     transaction do
       consequences = void_consequences
       payments.each { |p| p.unwind!(record: false) }

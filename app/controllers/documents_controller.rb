@@ -58,6 +58,8 @@ class DocumentsController < ApplicationController
       format.turbo_stream { render "documents/status" }
       format.html { redirect_to helpers.document_path_for(@document), notice: "#{type_name} voided." }
     end
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to helpers.document_path_for(@document), alert: "#{@document.label} #{e.record.errors.full_messages.to_sentence.presence || "can't be voided"}."
   end
 
   # A draft becomes real: posts to the ledger, takes payments, counts.

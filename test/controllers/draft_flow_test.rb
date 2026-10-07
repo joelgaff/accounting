@@ -162,6 +162,14 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_equal 0, draft.entries.count
   end
 
+  test "voiding a draft by url is refused with a message" do
+    doc = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
+    post void_invoice_path(doc), as: :turbo_stream
+    assert_redirected_to invoice_path(doc)
+    assert_match(/draft/i, flash[:alert])
+    assert_not doc.reload.voided?
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }

@@ -82,6 +82,13 @@ class DocumentStateTest < ActiveSupport::TestCase
     assert draft_bill.deletable?
   end
 
+  test "a draft can't be voided, there is nothing to unwind" do
+    doc = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales, state: "draft")
+    assert_raises(ActiveRecord::RecordInvalid) { doc.void! }
+    assert_not doc.reload.voided?
+    assert doc.draft?
+  end
+
   test "an approved document with nothing against it can go back to draft" do
     doc = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales)
     doc.unapprove!
