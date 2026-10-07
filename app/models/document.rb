@@ -33,7 +33,7 @@ class Document < ApplicationRecord
   validate  :total_covers_payments,  on: :update
   validate  :total_matches_bank_line, on: :update
 
-  after_create :post_to_ledger
+  after_create :post_to_ledger, if: :approved?
   before_destroy :refuse_unless_deletable, prepend: true
   before_destroy { Ledger.reset_for(self) }
 
@@ -65,10 +65,31 @@ class Document < ApplicationRecord
 
   # Wipe this document's posting and post it again from what it holds now.
   # Used by the importers when a re-import changes a document in place.
+  # A draft has no posting, so there is nothing to redo.
   def repost_to_ledger!
     transaction do
       Ledger.reset_for(self)
+      post_to_ledger if approved?
+    end
+  end
+
+  # A draft becomes real: it posts to the ledger and shows up everywhere.
+  def approve!
+    raise ActiveRecord::RecordInvalid.new(self) unless draft?
+    transaction do
+      update!(state: "approved")
       post_to_ledger
+      record_event!(:approved)
+    end
+  end
+
+  # Back to the drawing board: only while nothing is settled against it.
+  def unapprove!
+    raise ActiveRecord::RecordInvalid.new(self) unless approved? && deletable?
+    transaction do
+      Ledger.reset_for(self)
+      update!(state: "draft")
+      record_event!(:unapproved)
     end
   end
 

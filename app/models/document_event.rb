@@ -2,7 +2,7 @@
 # reader needs (what changed, how much, to whom). Xero calls this "History &
 # Notes"; notes are events too.
 class DocumentEvent < ApplicationRecord
-  ACTIONS = %w[created edited voided payment_recorded payment_removed emailed matched unmatched imported note].freeze
+  ACTIONS = %w[created edited approved unapproved voided payment_recorded payment_removed emailed matched unmatched imported note].freeze
 
   belongs_to :document
   belongs_to :organization
@@ -23,6 +23,8 @@ class DocumentEvent < ApplicationRecord
     case action
     when "created"          then details["source"] == "reconcile" ? "Created from a bank line" : "Created"
     when "edited"           then "Edited"
+    when "approved"         then "Approved"
+    when "unapproved"       then "Back to draft"
     when "voided"           then "Voided"
     when "payment_recorded" then "Payment #{details['direction'] == 'made' ? 'made' : 'received'}"
     when "payment_removed"  then "Payment removed"
