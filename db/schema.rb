@@ -10,26 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.bigint "record_id", null: false
-    t.string "record_type", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
   create_table "active_storage_blobs", force: :cascade do |t|
-    t.bigint "byte_size", null: false
-    t.string "checksum"
-    t.string "content_type"
-    t.datetime "created_at", null: false
-    t.string "filename", null: false
     t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
     t.text "metadata"
     t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -40,20 +40,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "bank_accounts", force: :cascade do |t|
+    t.integer "organization_id", null: false
     t.integer "account_id", null: false
+    t.string "kind", default: "checking", null: false
+    t.string "institution"
+    t.string "last_four"
     t.datetime "archived_at"
-    t.integer "bank_feed_id"
     t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "statement_balance", precision: 20, scale: 2
+    t.datetime "statement_balance_at"
+    t.integer "bank_feed_id"
     t.string "feed_account_id"
     t.string "feed_name"
     t.datetime "feed_synced_at"
-    t.string "institution"
-    t.string "kind", default: "checking", null: false
-    t.string "last_four"
-    t.integer "organization_id", null: false
-    t.decimal "statement_balance", precision: 20, scale: 2
-    t.datetime "statement_balance_at"
-    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_bank_accounts_on_account_id", unique: true
     t.index ["bank_feed_id", "feed_account_id"], name: "index_bank_accounts_on_bank_feed_id_and_feed_account_id", unique: true, where: "feed_account_id IS NOT NULL"
     t.index ["bank_feed_id"], name: "index_bank_accounts_on_bank_feed_id"
@@ -61,39 +61,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "bank_feeds", force: :cascade do |t|
-    t.text "access_url", null: false
-    t.json "accounts", default: [], null: false
-    t.datetime "backfill_finished_at"
-    t.date "backfill_from"
-    t.datetime "backfill_started_at"
-    t.text "backfill_summary"
-    t.datetime "created_at", null: false
-    t.text "last_error"
-    t.text "last_summary"
-    t.datetime "last_synced_at"
     t.integer "organization_id", null: false
     t.string "provider", default: "simplefin", null: false
+    t.text "access_url", null: false
+    t.json "accounts", default: [], null: false
+    t.datetime "last_synced_at"
+    t.text "last_error"
+    t.text "last_summary"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "backfill_from"
+    t.datetime "backfill_started_at"
+    t.datetime "backfill_finished_at"
+    t.text "backfill_summary"
     t.index ["organization_id", "provider"], name: "index_bank_feeds_on_organization_id_and_provider", unique: true
     t.index ["organization_id"], name: "index_bank_feeds_on_organization_id"
   end
 
   create_table "bank_rules", force: :cascade do |t|
-    t.integer "account_id"
-    t.string "action_kind", null: false
-    t.boolean "active", default: true, null: false
-    t.string "amount_sign", default: "any", null: false
-    t.boolean "auto_apply", default: false, null: false
-    t.integer "bank_account_id"
-    t.integer "contact_id"
-    t.datetime "created_at", null: false
-    t.string "match_kind", default: "contains", null: false
-    t.string "name", null: false
     t.integer "organization_id", null: false
-    t.string "pattern", null: false
+    t.string "name", null: false
     t.integer "position", default: 0, null: false
+    t.string "match_kind", default: "contains", null: false
+    t.string "pattern", null: false
+    t.string "amount_sign", default: "any", null: false
+    t.integer "bank_account_id"
+    t.string "action_kind", null: false
+    t.integer "contact_id"
+    t.integer "account_id"
     t.integer "tax_rate_id"
     t.integer "transfer_bank_account_id"
+    t.boolean "auto_apply", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_bank_rules_on_account_id"
     t.index ["bank_account_id"], name: "index_bank_rules_on_bank_account_id"
@@ -105,19 +105,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "bank_transactions", force: :cascade do |t|
-    t.decimal "amount", precision: 20, scale: 2, null: false
-    t.integer "bank_account_id", null: false
-    t.integer "bank_rule_id"
-    t.datetime "created_at", null: false
-    t.text "description"
-    t.integer "document_id"
-    t.string "external_id"
     t.integer "organization_id", null: false
-    t.string "payee", default: "", null: false
+    t.integer "bank_account_id", null: false
     t.date "posted_on", null: false
+    t.text "description"
     t.string "reference"
+    t.decimal "amount", precision: 20, scale: 2, null: false
     t.string "status", default: "unmatched", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "payee", default: "", null: false
+    t.integer "document_id"
+    t.integer "bank_rule_id"
+    t.string "external_id"
     t.index ["bank_account_id", "external_id"], name: "index_bank_transactions_on_bank_account_id_and_external_id", unique: true, where: "external_id IS NOT NULL"
     t.index ["bank_account_id"], name: "index_bank_transactions_on_bank_account_id"
     t.index ["bank_rule_id"], name: "index_bank_transactions_on_bank_rule_id"
@@ -128,33 +128,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "bills", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.string "number"
-    t.integer "payable_account_id", null: false
-    t.datetime "updated_at", null: false
     t.string "vendor", null: false
+    t.integer "payable_account_id", null: false
     t.string "xero_invoice_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "number"
     t.index ["payable_account_id"], name: "index_bills_on_payable_account_id"
     t.index ["xero_invoice_number"], name: "index_bills_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
   end
 
   create_table "contacts", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name", null: false
+    t.string "kind", default: "both", null: false
+    t.string "email"
+    t.string "phone"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "company_number"
+    t.string "tax_number"
     t.text "address"
     t.string "city"
-    t.string "company_number"
-    t.string "country"
-    t.datetime "created_at", null: false
-    t.string "email"
-    t.string "first_name"
-    t.string "kind", default: "both", null: false
-    t.string "last_name"
-    t.string "name", null: false
-    t.text "notes"
-    t.integer "organization_id", null: false
-    t.string "phone"
-    t.string "postal_code"
     t.string "region"
-    t.string "tax_number"
+    t.string "postal_code"
+    t.string "country"
+    t.text "notes"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id", "name"], name: "index_contacts_on_organization_id_and_name"
     t.index ["organization_id"], name: "index_contacts_on_organization_id"
@@ -170,12 +170,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "document_events", force: :cascade do |t|
-    t.string "action", null: false
-    t.datetime "created_at", null: false
-    t.json "details", default: {}, null: false
     t.integer "document_id", null: false
     t.integer "organization_id", null: false
     t.integer "user_id"
+    t.string "action", null: false
+    t.json "details", default: {}, null: false
+    t.datetime "created_at", null: false
     t.index ["document_id", "created_at"], name: "index_document_events_on_document_id_and_created_at"
     t.index ["document_id"], name: "index_document_events_on_document_id"
     t.index ["organization_id"], name: "index_document_events_on_organization_id"
@@ -183,33 +183,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "documents", force: :cascade do |t|
-    t.integer "contact_id"
-    t.datetime "created_at", null: false
-    t.date "date", null: false
-    t.integer "documentable_id", null: false
-    t.string "documentable_type", null: false
-    t.text "memo"
     t.integer "organization_id", null: false
+    t.integer "contact_id"
+    t.string "documentable_type", null: false
+    t.integer "documentable_id", null: false
+    t.date "date", null: false
     t.string "reference"
-    t.string "source", default: "manual", null: false
+    t.text "memo"
     t.decimal "subtotal", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "tax_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.decimal "total", precision: 20, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source", default: "manual", null: false
     t.datetime "voided_at"
+    t.string "state", default: "approved", null: false
     t.index ["contact_id"], name: "index_documents_on_contact_id"
     t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable", unique: true
     t.index ["organization_id", "date"], name: "index_documents_on_organization_id_and_date"
     t.index ["organization_id", "documentable_type", "date"], name: "idx_on_organization_id_documentable_type_date_0e28425c30"
+    t.index ["organization_id", "state"], name: "index_documents_on_organization_id_and_state"
     t.index ["organization_id", "voided_at"], name: "index_documents_on_organization_id_and_voided_at"
     t.index ["organization_id"], name: "index_documents_on_organization_id"
   end
 
   create_table "expenses", force: :cascade do |t|
+    t.string "vendor", null: false
     t.integer "bank_account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "vendor", null: false
     t.string "xero_id"
     t.index ["bank_account_id"], name: "index_expenses_on_bank_account_id"
     t.index ["xero_id"], name: "index_expenses_on_xero_id", unique: true, where: "xero_id IS NOT NULL"
@@ -217,49 +219,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
 
   create_table "invoices", force: :cascade do |t|
     t.string "client_name", null: false
-    t.datetime "created_at", null: false
     t.date "due_date", null: false
-    t.string "number"
     t.integer "receivable_account_id", null: false
-    t.datetime "updated_at", null: false
     t.string "xero_invoice_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "number"
     t.index ["number"], name: "index_invoices_on_number", unique: true, where: "number IS NOT NULL"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["xero_invoice_number"], name: "index_invoices_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"
   end
 
   create_table "journal_entries", force: :cascade do |t|
-    t.datetime "created_at", null: false
     t.string "narrative", null: false
-    t.datetime "updated_at", null: false
     t.string "xero_journal_number"
     t.string "xero_source_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["xero_journal_number"], name: "idx_journal_entries_xero_number", unique: true, where: "xero_journal_number IS NOT NULL"
   end
 
   create_table "journal_lines", force: :cascade do |t|
-    t.integer "account_id", null: false
-    t.datetime "created_at", null: false
-    t.decimal "credit_amount", precision: 20, scale: 2, default: "0.0", null: false
-    t.decimal "debit_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.integer "journal_entry_id", null: false
+    t.integer "account_id", null: false
+    t.decimal "debit_amount", precision: 20, scale: 2, default: "0.0", null: false
+    t.decimal "credit_amount", precision: 20, scale: 2, default: "0.0", null: false
     t.string "memo"
     t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_journal_lines_on_account_id"
     t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
   end
 
   create_table "line_items", force: :cascade do |t|
-    t.integer "account_id", null: false
-    t.datetime "created_at", null: false
-    t.string "description", default: "", null: false
-    t.integer "lineable_id", null: false
     t.string "lineable_type", null: false
-    t.integer "position", default: 0, null: false
-    t.decimal "quantity", precision: 10, scale: 4, default: "1.0", null: false
+    t.integer "lineable_id", null: false
+    t.integer "account_id", null: false
     t.integer "tax_rate_id"
+    t.string "description", default: "", null: false
+    t.decimal "quantity", precision: 10, scale: 4, default: "1.0", null: false
     t.decimal "unit_amount", precision: 20, scale: 4, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_line_items_on_account_id"
     t.index ["lineable_type", "lineable_id", "position"], name: "index_line_items_on_lineable_type_and_lineable_id_and_position"
@@ -268,11 +270,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "organization_settings", force: :cascade do |t|
-    t.integer "bank_account_id"
-    t.datetime "created_at", null: false
     t.integer "organization_id", null: false
-    t.integer "payable_account_id"
+    t.integer "bank_account_id"
     t.integer "receivable_account_id"
+    t.integer "payable_account_id"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["bank_account_id"], name: "index_organization_settings_on_bank_account_id"
     t.index ["organization_id"], name: "index_organization_settings_on_organization_id", unique: true
@@ -281,22 +283,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "organizations", force: :cascade do |t|
-    t.datetime "created_at", null: false
     t.string "name"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "payments", force: :cascade do |t|
-    t.decimal "amount", precision: 20, scale: 2, null: false
-    t.integer "bank_account_id", null: false
-    t.integer "bank_transaction_id"
-    t.datetime "created_at", null: false
-    t.integer "document_id", null: false
-    t.text "memo"
     t.integer "organization_id", null: false
+    t.integer "document_id", null: false
+    t.integer "bank_account_id", null: false
+    t.decimal "amount", precision: 20, scale: 2, null: false
     t.date "paid_on", null: false
     t.string "reference"
+    t.text "memo"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "bank_transaction_id"
     t.index ["bank_account_id"], name: "index_payments_on_bank_account_id"
     t.index ["bank_transaction_id"], name: "index_payments_on_bank_transaction_id"
     t.index ["document_id"], name: "index_payments_on_document_id"
@@ -305,14 +307,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "plutus_accounts", force: :cascade do |t|
-    t.string "code"
+    t.string "name"
+    t.string "type"
     t.boolean "contra", default: false
     t.datetime "created_at", precision: nil
-    t.text "description"
-    t.string "name"
-    t.integer "tenant_id"
-    t.string "type"
     t.datetime "updated_at", precision: nil
+    t.integer "tenant_id"
+    t.string "code"
+    t.text "description"
     t.string "xero_type"
     t.index ["name", "type"], name: "index_plutus_accounts_on_name_and_type"
     t.index ["tenant_id", "code"], name: "index_plutus_accounts_on_tenant_id_and_code", unique: true, where: "code IS NOT NULL"
@@ -320,39 +322,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "plutus_amounts", force: :cascade do |t|
-    t.integer "account_id"
-    t.decimal "amount", precision: 20, scale: 10
-    t.integer "entry_id"
     t.string "type"
+    t.integer "account_id"
+    t.integer "entry_id"
+    t.decimal "amount", precision: 20, scale: 10
     t.index ["account_id", "entry_id"], name: "index_plutus_amounts_on_account_id_and_entry_id"
     t.index ["entry_id", "account_id"], name: "index_plutus_amounts_on_entry_id_and_account_id"
     t.index ["type"], name: "index_plutus_amounts_on_type"
   end
 
   create_table "plutus_entries", force: :cascade do |t|
+    t.string "description"
+    t.date "date"
     t.integer "commercial_document_id"
     t.string "commercial_document_type"
     t.datetime "created_at", precision: nil
-    t.date "date"
-    t.string "description"
     t.datetime "updated_at", precision: nil
     t.index ["commercial_document_id", "commercial_document_type"], name: "index_entries_on_commercial_doc"
     t.index ["date"], name: "index_plutus_entries_on_date"
   end
 
   create_table "recurring_invoices", force: :cascade do |t|
-    t.boolean "active", default: true, null: false
-    t.string "client_name", null: false
+    t.integer "organization_id", null: false
     t.integer "contact_id"
-    t.datetime "created_at", null: false
-    t.boolean "email_on_generate", default: false, null: false
-    t.date "end_on"
+    t.integer "receivable_account_id", null: false
+    t.string "client_name", null: false
+    t.integer "net_days", default: 30, null: false
     t.string "frequency", null: false
     t.integer "interval", default: 1, null: false
-    t.integer "net_days", default: 30, null: false
     t.date "next_run_on", null: false
-    t.integer "organization_id", null: false
-    t.integer "receivable_account_id", null: false
+    t.date "end_on"
+    t.boolean "active", default: true, null: false
+    t.boolean "email_on_generate", default: false, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["contact_id"], name: "index_recurring_invoices_on_contact_id"
     t.index ["organization_id", "active", "next_run_on"], name: "idx_on_organization_id_active_next_run_on_c143cc789f"
@@ -361,14 +363,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "tax_rates", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name", null: false
+    t.decimal "rate", precision: 6, scale: 4, null: false
+    t.string "xero_tax_type"
+    t.integer "liability_account_id"
     t.integer "asset_account_id"
     t.datetime "created_at", null: false
-    t.integer "liability_account_id"
-    t.string "name", null: false
-    t.integer "organization_id", null: false
-    t.decimal "rate", precision: 6, scale: 4, null: false
     t.datetime "updated_at", null: false
-    t.string "xero_tax_type"
     t.index ["asset_account_id"], name: "index_tax_rates_on_asset_account_id"
     t.index ["liability_account_id"], name: "index_tax_rates_on_liability_account_id"
     t.index ["organization_id", "name"], name: "index_tax_rates_on_organization_id_and_name", unique: true
@@ -376,33 +378,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "tracking_categories", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.integer "organization_id", null: false
-    t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id", "name"], name: "index_tracking_categories_on_organization_id_and_name", unique: true
     t.index ["organization_id"], name: "index_tracking_categories_on_organization_id"
   end
 
   create_table "tracking_options", force: :cascade do |t|
-    t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
+    t.integer "tracking_category_id", null: false
     t.string "name", null: false
     t.integer "position", default: 0, null: false
-    t.integer "tracking_category_id", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tracking_category_id", "name"], name: "index_tracking_options_on_tracking_category_id_and_name", unique: true
     t.index ["tracking_category_id"], name: "index_tracking_options_on_tracking_category_id"
   end
 
   create_table "tracking_selections", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.integer "trackable_id", null: false
     t.string "trackable_type", null: false
+    t.integer "trackable_id", null: false
     t.integer "tracking_category_id", null: false
     t.integer "tracking_option_id", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["trackable_type", "trackable_id", "tracking_category_id"], name: "idx_tracking_selections_one_per_category", unique: true
     t.index ["trackable_type", "trackable_id"], name: "index_tracking_selections_on_trackable"
@@ -412,9 +414,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "transfers", force: :cascade do |t|
-    t.datetime "created_at", null: false
     t.integer "from_bank_account_id", null: false
     t.integer "to_bank_account_id", null: false
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "xero_id"
     t.index ["from_bank_account_id"], name: "index_transfers_on_from_bank_account_id"
@@ -423,41 +425,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_06_220000) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name"
     t.datetime "created_at", null: false
-    t.string "email_address"
+    t.datetime "updated_at", null: false
     t.string "launchpad_public_id"
-    t.integer "login_code_attempts", default: 0, null: false
+    t.string "email_address"
+    t.string "theme", default: "dark", null: false
     t.string "login_code_digest"
     t.datetime "login_code_expires_at"
-    t.integer "login_code_sends", default: 0, null: false
+    t.integer "login_code_attempts", default: 0, null: false
     t.datetime "login_code_sent_at"
-    t.string "name"
-    t.integer "organization_id", null: false
+    t.integer "login_code_sends", default: 0, null: false
     t.string "pending_email_address"
     t.string "pending_email_code_digest"
     t.datetime "pending_email_expires_at"
-    t.string "theme", default: "dark", null: false
-    t.datetime "updated_at", null: false
     t.index "LOWER(email_address)", name: "index_users_on_lower_email_for_local_sign_in", unique: true, where: "launchpad_public_id IS NULL"
     t.index ["launchpad_public_id"], name: "index_users_on_launchpad_public_id", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
   create_table "xero_connections", force: :cascade do |t|
-    t.text "access_token", null: false
-    t.datetime "created_at", null: false
-    t.date "import_from"
-    t.text "last_error"
-    t.datetime "last_import_at"
-    t.text "last_summary"
     t.integer "organization_id", null: false
-    t.text "progress"
-    t.text "refresh_token", null: false
-    t.datetime "started_at"
-    t.string "status", default: "idle", null: false
     t.string "tenant_id", null: false
     t.string "tenant_name"
+    t.text "access_token", null: false
+    t.text "refresh_token", null: false
     t.datetime "token_expires_at", null: false
+    t.string "status", default: "idle", null: false
+    t.date "import_from"
+    t.datetime "started_at"
+    t.datetime "last_import_at"
+    t.text "progress"
+    t.text "last_summary"
+    t.text "last_error"
+    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_xero_connections_on_organization_id", unique: true
   end

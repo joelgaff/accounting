@@ -24,6 +24,7 @@ class Document < ApplicationRecord
   before_validation :link_documentable
   before_validation :sync_totals
   scoped_to_organization :contact, organization: ->(doc) { doc.organization }
+  enum :state, { draft: "draft", approved: "approved" }, validate: true
   validates :date, presence: true
   validates :source, inclusion: { in: SOURCES }
   validates :total, numericality: { greater_than: 0 }
