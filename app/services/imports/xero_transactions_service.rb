@@ -28,6 +28,10 @@ module Imports
     # figure and never touches a payment somebody entered by hand.
     PAYMENT_REFERENCE = "Xero import".freeze
 
+    # An optional Status column (the API sends it) keeps Xero's drafts as
+    # drafts here. Anything else, or no column at all, posts.
+    XERO_DRAFT_STATUSES = %w[DRAFT SUBMITTED].freeze
+
     def initialize(source, organization:)
       @source       = source
       @organization = organization
@@ -57,8 +61,10 @@ module Imports
           ActiveRecord::Base.transaction(requires_new: true) do
             resolved_lines = group.map.with_index { |row, i| resolve_line(row, group.first) }
             existed = find_existing(number).present?
+            @wanted_state = wanted_state(group.first)
 
             record = upsert_record!(number: number, header_row: group.first, lines: resolved_lines)
+            record.approve! if record.draft? && @wanted_state == "approved"   # approved in Xero since
             warning = sync_payment!(record, group.first)
             errors << "invoice #{number}: #{warning}" if warning
 
@@ -100,8 +106,14 @@ module Imports
       document.line_items.destroy_all unless was_new
       document.line_items.reload      unless was_new
       lines.each { |attrs| document.line_items.build(attrs) }
+      document.state = @wanted_state if was_new   # a document approved here is never demoted by an import
       document.save!
       document.repost_to_ledger! unless was_new
+    end
+
+    def wanted_state(header_row)
+      return "approved" unless header_row.headers.include?("status")
+      XERO_DRAFT_STATUSES.include?(header_row["status"].to_s.strip.upcase) ? "draft" : "approved"
     end
 
     # Mirrors Xero's settlement onto the record: one payment for the amount Xero

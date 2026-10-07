@@ -50,7 +50,11 @@ class Xero::ImportTest < ActiveSupport::TestCase
     mileage = Invoice.find_by!(xero_invoice_number: "INV-4003").document
     assert_equal BigDecimal("126.84"), mileage.total, "lands on Xero's subtotal although its rounded lines sum to 127.71"
     assert mileage.paid?
-    assert_equal 3, @org.documents.invoices.count
+    draft = Invoice.find_by!(xero_invoice_number: "INV-4004").document
+    assert draft.draft?, "Xero's DRAFT stays a draft here"
+    assert_equal 0, draft.entries.count
+    assert_equal BigDecimal("800"), draft.total
+    assert_equal 4, @org.documents.invoices.count
 
     bill = Bill.find_by!(xero_invoice_number: "0b100000-0000-4000-8000-000000000001").document
     assert_equal "Bill 79738R", bill.label
@@ -100,13 +104,17 @@ class Xero::ImportTest < ActiveSupport::TestCase
 
     Xero::Import.new(@conn, client: @client).call
     @conn.reload
-    assert_equal 3, @org.documents.invoices.count
+    draft = Invoice.find_by!(xero_invoice_number: "INV-4004").document
+    assert draft.draft?, "Xero's DRAFT stays a draft here"
+    assert_equal 0, draft.entries.count
+    assert_equal BigDecimal("800"), draft.total
+    assert_equal 4, @org.documents.invoices.count
     assert_equal 1, @org.documents.journal_entries.count
     assert_equal 2, @org.documents.expenses.count
     assert_equal 1, @org.documents.transfers.count
     assert_equal 1, inv.reload.payments.count
     assert_equal 0, @conn.steps.find { |s| s["step"] == "sales invoices" }["created"]
-    assert_equal 3, @conn.steps.find { |s| s["step"] == "sales invoices" }["updated"]
+    assert_equal 4, @conn.steps.find { |s| s["step"] == "sales invoices" }["updated"]
   end
 
   test "an api failure marks the connection failed and keeps the message" do
@@ -119,7 +127,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
 
   test "a from date limits invoices and journals" do
     Xero::Import.new(@conn, client: @client, from: Date.new(2026, 7, 15)).call
-    assert_equal 2, @org.documents.invoices.count, "INV-4002 and INV-4003 are on or after the date"
+    assert_equal 3, @org.documents.invoices.count, "INV-4002, INV-4003 and the draft INV-4004 are on or after the date"
     assert_equal 0, @org.documents.bills.count, "every bill is before the date"
     assert_equal 0, @org.documents.journal_entries.count, "the manual journal is before the date (the fake honours Date>= on every collection)"
   end

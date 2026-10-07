@@ -37,6 +37,28 @@ class Imports::XeroInvoicesServiceTest < ActiveSupport::TestCase
     assert_equal Plutus::DebitAmount.sum(:amount), Plutus::CreditAmount.sum(:amount)
   end
 
+  test "a Status column of DRAFT or SUBMITTED imports as a draft; approved ones post" do
+    header = "ContactName,InvoiceNumber,InvoiceDate,DueDate,Description,Quantity,UnitAmount,AccountCode,TaxType,Status\n"
+    csv = header +
+      "Acme,INV-D1,15 Jul 2026,15 Aug 2026,Draft work,1,100,200,OUTPUT,DRAFT\n" +
+      "Acme,INV-D2,15 Jul 2026,15 Aug 2026,Awaiting approval,1,100,200,OUTPUT,SUBMITTED\n" +
+      "Acme,INV-A1,15 Jul 2026,15 Aug 2026,Real work,1,100,200,OUTPUT,AUTHORISED\n"
+    result = Imports::XeroInvoicesService.new(csv, organization: @org).call
+    assert_empty result.errors
+    assert invoice_by_number("INV-D1").draft?
+    assert invoice_by_number("INV-D2").draft?
+    assert invoice_by_number("INV-A1").approved?
+    assert_equal BigDecimal("110"), @ar.balance
+
+    # Approved in Xero since: the re-import approves it here. Approved here already: left alone.
+    csv2 = header + "Acme,INV-D1,15 Jul 2026,15 Aug 2026,Draft work,1,100,200,OUTPUT,AUTHORISED\n" +
+                    "Acme,INV-A1,15 Jul 2026,15 Aug 2026,Real work,1,100,200,OUTPUT,DRAFT\n"
+    Imports::XeroInvoicesService.new(csv2, organization: @org).call
+    assert invoice_by_number("INV-D1").approved?
+    assert invoice_by_number("INV-A1").approved?
+    assert_equal BigDecimal("220"), @ar.balance
+  end
+
   test "re-import updates in place, no duplicates" do
     csv = file_fixture("xero/invoices.csv").read
     Imports::XeroInvoicesService.new(csv, organization: @org).call

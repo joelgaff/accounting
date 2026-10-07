@@ -141,6 +141,32 @@
      "TaxType": "NONE"
     }
    ]
+  },
+  {
+   "Type": "ACCREC",
+   "InvoiceID": "i5",
+   "InvoiceNumber": "INV-4004",
+   "Reference": "quote",
+   "Status": "DRAFT",
+   "Contact": {
+    "Name": "Summit Races",
+    "EmailAddress": "ops@summit.example"
+   },
+   "DateString": "2026-09-20T00:00:00",
+   "DueDateString": "2026-10-20T00:00:00",
+   "AmountPaid": 0,
+   "Total": 800.0,
+   "LineItems": [
+    {
+     "Description": "Next season deposit",
+     "Quantity": 1.0,
+     "UnitAmount": 800.0,
+     "AccountCode": "200",
+     "TaxType": "NONE",
+     "LineAmount": 800.0
+    }
+   ],
+   "LineAmountTypes": "Exclusive"
   }
  ]
 }

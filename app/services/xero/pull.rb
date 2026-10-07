@@ -6,7 +6,7 @@ module Xero
   # code path with the same idempotency. Tracking comes through on every
   # line, which the CSV exports can't always give.
   class Pull
-    LIVE_INVOICE_STATUSES = %w[AUTHORISED PAID].freeze
+    LIVE_INVOICE_STATUSES = %w[DRAFT SUBMITTED AUTHORISED PAID].freeze   # voided and deleted stay behind
 
     def initialize(client)
       @client = client
@@ -50,7 +50,7 @@ module Xero
 
     INVOICE_HEADERS = %w[ContactName EmailAddress InvoiceNumber Reference InvoiceDate DueDate Description Quantity UnitAmount
                          AccountCode TaxType TrackingName1 TrackingOption1 TrackingName2 TrackingOption2
-                         AmountPaid FullyPaidOnDate BankAccount].freeze
+                         AmountPaid FullyPaidOnDate BankAccount Status].freeze
     BILL_HEADERS    = (INVOICE_HEADERS + %w[InvoiceID]).freeze
 
     # type: "ACCREC" (sales invoices) or "ACCPAY" (bills), issued on or after from.
@@ -73,7 +73,7 @@ module Xero
                     date(inv["DateString"] || inv["Date"]), date(inv["DueDateString"] || inv["DueDate"]),
                     li["Description"].presence || "Line", qty, unit,
                     li["AccountCode"], li["TaxType"], t1&.dig("Name"), t1&.dig("Option"), t2&.dig("Name"), t2&.dig("Option"),
-                    inv["AmountPaid"], date(inv["FullyPaidOnDate"]), paid_from ]
+                    inv["AmountPaid"], date(inv["FullyPaidOnDate"]), paid_from, inv["Status"] ]
             row << inv["InvoiceID"] if bills
             rows << row
           end
