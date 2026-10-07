@@ -1,6 +1,8 @@
 require "test_helper"
 
 class RecurringInvoiceTest < ActiveSupport::TestCase
+  include ActionMailer::TestHelper
+
   setup do
     @org = organizations(:one)
     Current.organization = @org
@@ -33,6 +35,28 @@ class RecurringInvoiceTest < ActiveSupport::TestCase
     assert_equal 1, invoice.line_items.size
     ri.reload
     assert_equal Date.new(2026, 8, 15), ri.next_run_on
+  end
+
+  test "a template approves what it generates unless told to leave a draft" do
+    contact = @org.contacts.create!(name: "Acme", kind: "customer", email: "ap@acme.example")
+    approving = build_recurring(contact: contact, email_on_generate: true)
+    drafting  = build_recurring(contact: contact, email_on_generate: true, approve_on_generate: false, client_name: "Drafts")
+    assert approving.approve_on_generate?, "approving is the default, as before"
+
+    posted = nil
+    assert_enqueued_emails 1 do
+      posted = approving.generate!(as_of: Date.current)
+    end
+    assert posted.approved?
+    assert_equal 1, posted.entries.count
+
+    draft = nil
+    assert_no_enqueued_emails do
+      draft = drafting.generate!(as_of: Date.current)
+    end
+    assert draft.draft?
+    assert_equal 0, draft.entries.count
+    assert_equal BigDecimal("500"), draft.total
   end
 
   test "weekly interval advances by 7 * interval days" do

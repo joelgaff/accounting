@@ -55,8 +55,20 @@
   </div>
 
   <div class="field">
+    <%= f.label :approve_on_generate, "When generated" %>
+    <div class="theme-choice">
+      <% [ [ true, "Approve and post" ], [ false, "Save as draft" ] ].each do |value, text| %>
+        <label class="theme-option">
+          <%= f.radio_button :approve_on_generate, value, class: "theme-radio" %>
+          <span class="theme-mark" aria-hidden="true"></span><%= text %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="field">
     <%= f.check_box :email_on_generate %>
-    <%= f.label :email_on_generate, "Auto-email invoice to customer on generation (uses contact's email)", style: "display:inline;" %>
+    <%= f.label :email_on_generate, "Auto-email to the customer on generation (approved invoices only, uses the contact's email)", style: "display:inline;" %>
   </div>
 
   <%= render "shared/line_items_fields", form: f, accounts: revenue_accounts, tax_rates: tax_rates %>

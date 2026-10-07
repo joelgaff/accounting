@@ -26,6 +26,7 @@ class RecurringInvoice < ApplicationRecord
         contact:      contact,
         date:         as_of,
         reference:    "Recurring ##{id}",
+        state:        approve_on_generate? ? "approved" : "draft",
         documentable: Invoice.new(client_name: client_name, due_date: as_of + net_days.days,
                                   receivable_account: receivable_account)
       )
@@ -43,8 +44,8 @@ class RecurringInvoice < ApplicationRecord
       self.active      = false if end_on && next_run_on > end_on
       save!
 
-      # Optional auto-email
-      if email_on_generate && contact&.email.present?
+      # Optional auto-email; a draft is never sent, it waits for approval.
+      if email_on_generate && invoice.approved? && contact&.email.present?
         InvoiceMailer.send_invoice(invoice, to: contact.email).deliver_later
       end
 

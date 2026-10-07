@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_110000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -356,6 +356,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_100000) do
     t.boolean "email_on_generate", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "approve_on_generate", default: true, null: false
     t.index ["contact_id"], name: "index_recurring_invoices_on_contact_id"
     t.index ["organization_id", "active", "next_run_on"], name: "idx_on_organization_id_active_next_run_on_c143cc789f"
     t.index ["organization_id"], name: "index_recurring_invoices_on_organization_id"

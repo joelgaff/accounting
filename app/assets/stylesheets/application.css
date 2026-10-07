@@ -630,9 +630,9 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .theme-option + .theme-option { border-left: 1px solid var(--rule-lit); }
 .theme-option:hover { color: var(--ink); background: rgba(41, 74, 120, 0.22); }
-.theme-option.is-active { color: var(--cyan); background: rgba(34, 211, 238, 0.1); }
+.theme-option.is-active, .theme-option:has(.theme-radio:checked) { color: var(--cyan); background: rgba(34, 211, 238, 0.1); }
 .theme-mark { display: inline-block; width: 11px; height: 11px; border: 1px solid currentColor; border-radius: 2px; margin-right: 8px; flex: none; }
-.theme-option.is-active .theme-mark { background: currentColor; box-shadow: inset 0 0 0 2px var(--panel); }
+.theme-option.is-active .theme-mark, .theme-option:has(.theme-radio:checked) .theme-mark { background: currentColor; box-shadow: inset 0 0 0 2px var(--panel); }
 .theme-radio { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .theme-option:has(.theme-radio:focus-visible) { outline: 1px solid var(--cyan); outline-offset: -1px; }
 
