@@ -1,4 +1,6 @@
 class InvoicesController < DocumentsController
+  before_action :refuse_if_draft, only: %i[email send_email]
+
   def print
     respond_to do |format|
       format.html
@@ -18,6 +20,11 @@ class InvoicesController < DocumentsController
   end
 
   private
+
+  def refuse_if_draft
+    return unless @document.draft?
+    redirect_to invoice_path(@document), alert: "#{@document.label} is a draft; approve it before emailing."
+  end
 
   def documentable_class     = Invoice
   def documentable_permitted = %i[number client_name due_date receivable_account_id]

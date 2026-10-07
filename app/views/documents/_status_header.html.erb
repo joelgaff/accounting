@@ -3,7 +3,7 @@
   <%= status_badge(document.status) %>
   <% if document.invoice? %>
     <%= link_to "Print / PDF", print_invoice_path(document), class: "btn btn-secondary" %>
-    <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" %>
+    <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" unless document.draft? %>
   <% end %>
   <% if document.draft? %>
     <%= button_to "Approve", approve_document_path_for(document), class: "btn btn-primary",

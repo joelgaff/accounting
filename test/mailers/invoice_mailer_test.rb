@@ -21,6 +21,11 @@ class InvoiceMailerTest < ActionMailer::TestCase
     assert pdf.body.decoded.start_with?("%PDF-")
   end
 
+  test "refuses to build a mail for a draft" do
+    @invoice.unapprove!
+    assert_raises(InvoiceMailer::DraftError) { InvoiceMailer.send_invoice(@invoice, to: "billing@acme.example").message }
+  end
+
   test "custom subject and body are honored" do
     mail = InvoiceMailer.send_invoice(@invoice, to: "x@y.com", subject: "Please pay", body: "Cheers!")
     assert_equal "Please pay", mail.subject

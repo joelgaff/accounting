@@ -1,5 +1,8 @@
 class InvoiceMailer < ApplicationMailer
+  class DraftError < StandardError; end
+
   def send_invoice(invoice, to:, subject: nil, body: nil)
+    raise DraftError, "#{invoice.label} is a draft and can't be sent" if invoice.draft?
     @invoice = invoice
     @body    = body
     attachments[InvoicePdf.filename(invoice)] = { mime_type: "application/pdf", content: InvoicePdf.new(invoice).render }

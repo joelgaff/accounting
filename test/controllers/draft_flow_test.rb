@@ -106,6 +106,22 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_select "tr##{ActionView::RecordIdentifier.dom_id(doc)}", 0
   end
 
+  test "a draft cannot be emailed" do
+    doc = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
+    get invoice_path(doc)
+    assert_select "a[href=?]", email_invoice_path(doc), 0
+
+    get email_invoice_path(doc)
+    assert_redirected_to invoice_path(doc)
+    assert_match(/draft/i, flash[:alert])
+
+    assert_no_enqueued_emails do
+      post send_email_invoice_path(doc), params: { to: "billing@acme.example" }
+    end
+    assert_redirected_to invoice_path(doc)
+    assert_equal 0, doc.events.where(action: "emailed").count
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }
