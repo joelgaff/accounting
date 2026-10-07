@@ -27,8 +27,9 @@ class Document < ApplicationRecord
   enum :state, { draft: "draft", approved: "approved" }, validate: true
   validates :date, presence: true
   validates :source, inclusion: { in: SOURCES }
-  validates :total, numericality: { greater_than: 0 }
-  validate  :must_have_line_items, if: -> { documentable&.line_items? }
+  # A draft may be empty; lines and a total are what approval requires.
+  validates :total, numericality: { greater_than: 0 }, if: :approved?
+  validate  :must_have_line_items, if: -> { approved? && documentable&.line_items? }
   validate  :not_voided,             on: :update
   validate  :total_covers_payments,  on: :update
   validate  :total_matches_bank_line, on: :update

@@ -5,10 +5,16 @@ module HasLineItems
 
   included do
     has_many :line_items, -> { ordered }, as: :lineable, dependent: :destroy, inverse_of: :lineable
-    accepts_nested_attributes_for :line_items, allow_destroy: true, reject_if: :all_blank
+    # An untouched form row (no description, no amount) is dropped, so an
+    # empty draft saves without the user having to remove it first.
+    accepts_nested_attributes_for :line_items, allow_destroy: true, reject_if: :untouched_line?
   end
 
   def live_line_items    = line_items.reject(&:marked_for_destruction?)
+
+  def untouched_line?(attrs)
+    attrs["id"].blank? && attrs["description"].blank? && attrs["unit_amount"].to_s.strip.delete(",$").to_d.zero?
+  end
   def line_items_subtotal = live_line_items.sum(&:amount)
   def line_items_tax      = live_line_items.sum(&:tax_total)
   def line_items_total    = line_items_subtotal + line_items_tax

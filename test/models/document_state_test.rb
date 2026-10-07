@@ -89,6 +89,31 @@ class DocumentStateTest < ActiveSupport::TestCase
     assert doc.draft?
   end
 
+  test "a draft can be empty; approval is where lines and a total are required" do
+    ap  = Plutus::Liability.create!(tenant: @org, name: "AP")
+    inv = @org.documents.create!(date: Date.current, state: "draft",
+                                 documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar))
+    bill = @org.documents.create!(date: Date.current, state: "draft", documentable: Bill.new(vendor: "AWS", payable_account: ap))
+    assert_equal BigDecimal("0"), inv.total
+    assert_empty inv.line_items
+    assert_equal BigDecimal("0"), bill.total
+
+    error = assert_raises(ActiveRecord::RecordInvalid) { inv.approve! }
+    assert_match(/line item/i, error.message)
+    assert inv.reload.draft?
+    assert_equal 0, inv.entries.count
+
+    inv.update_and_repost!(line_items_attributes: [ { description: "Work", quantity: 1, unit_amount: 40, account_id: @sales.id } ])
+    inv.approve!
+    assert inv.reload.approved?
+    assert_equal BigDecimal("40"), @ar.balance
+
+    approved = @org.documents.build(date: Date.current, state: "approved",
+                                    documentable: Invoice.new(client_name: "Acme", due_date: Date.current + 30, receivable_account: @ar))
+    assert_not approved.valid?
+    assert_includes approved.errors[:base].join, "line item"
+  end
+
   test "an approved document with nothing against it can go back to draft" do
     doc = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales)
     doc.unapprove!

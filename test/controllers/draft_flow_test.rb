@@ -170,6 +170,37 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_not doc.reload.voided?
   end
 
+  test "an empty draft can be saved, viewed, printed, and told what it needs on approval" do
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id } } }
+    doc = @org.documents.invoices.sole
+    assert doc.draft?
+    assert_empty doc.line_items
+    assert_equal BigDecimal("0"), doc.total
+
+    get invoice_path(doc)
+    assert_response :success
+    get print_invoice_path(doc)
+    assert_response :success
+    get print_invoice_path(doc, format: :pdf)
+    assert_response :success
+    get edit_invoice_path(doc)
+    assert_response :success
+
+    post approve_invoice_path(doc)
+    assert_redirected_to invoice_path(doc)
+    assert_match(/line item/i, flash[:alert])
+    assert doc.reload.draft?
+
+    # The form's one untouched row (quantity and account prefilled, nothing typed) is not a line.
+    patch invoice_path(doc), params: { document: { line_items_attributes: { "0" => { description: "", quantity: 1, unit_amount: "", account_id: @sales.id } } } }
+    assert_redirected_to invoice_path(doc)
+    assert_empty doc.reload.line_items
+
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id } }, approve: "1" }
+    assert_response :unprocessable_entity
+    assert_match(/line item/i, response.body)
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }
