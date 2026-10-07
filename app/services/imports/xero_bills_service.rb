@@ -13,7 +13,7 @@ module Imports
       "Set an accounts-payable account under Settings before importing bills."
     end
 
-    def upsert_record!(number:, header_row:, lines:)
+    def upsert_record!(number:, header_row:, lines:, state:)
       contact  = resolve_contact(header_row["contactname"])
       document = find_existing(number) || @organization.documents.build(documentable: Bill.new(xero_invoice_number: number))
       was_new  = document.new_record?
@@ -28,7 +28,7 @@ module Imports
         vendor:          contact.name,
         payable_account: @organization.settings.payable_account   # bills accrue as AP
       )
-      replace_lines!(document, lines, was_new: was_new)
+      replace_lines!(document, lines, was_new: was_new, state: state)
       document
     end
   end

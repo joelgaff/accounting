@@ -13,7 +13,7 @@ module Imports
       "Set a receivable account under Settings before importing sales invoices."
     end
 
-    def upsert_record!(number:, header_row:, lines:)
+    def upsert_record!(number:, header_row:, lines:, state:)
       contact  = resolve_contact(header_row["contactname"])
       document = find_existing(number) || @organization.documents.build(documentable: Invoice.new(xero_invoice_number: number, number: number))
       was_new  = document.new_record?
@@ -28,7 +28,7 @@ module Imports
         due_date:           BaseService.parse_xero_date(header_row["duedate"]),
         receivable_account: @organization.settings.receivable_account
       )
-      replace_lines!(document, lines, was_new: was_new)
+      replace_lines!(document, lines, was_new: was_new, state: state)
       document
     end
   end

@@ -61,10 +61,10 @@ module Imports
           ActiveRecord::Base.transaction(requires_new: true) do
             resolved_lines = group.map.with_index { |row, i| resolve_line(row, group.first) }
             existed = find_existing(number).present?
-            @wanted_state = wanted_state(group.first)
+            state   = wanted_state(group.first)
 
-            record = upsert_record!(number: number, header_row: group.first, lines: resolved_lines)
-            record.approve! if record.draft? && @wanted_state == "approved"   # approved in Xero since
+            record = upsert_record!(number: number, header_row: group.first, lines: resolved_lines, state: state)
+            record.approve! if record.draft? && state == "approved"   # approved in Xero since
             warning = sync_payment!(record, group.first)
             errors << "invoice #{number}: #{warning}" if warning
 
@@ -89,9 +89,9 @@ module Imports
     def transaction_class = raise NotImplementedError
     def contact_kind      = raise NotImplementedError
 
-    # Subclass hook. Given the header row (any row from the group) and the resolved lines,
-    # build/find the document and replace its line items.
-    def upsert_record!(number:, header_row:, lines:) = raise NotImplementedError
+    # Subclass hook. Given the header row (any row from the group), the resolved
+    # lines and the state Xero wants, build/find the document and replace its lines.
+    def upsert_record!(number:, header_row:, lines:, state:) = raise NotImplementedError
 
     # The document already imported under this Xero number, if any.
     def find_existing(number)
@@ -101,12 +101,13 @@ module Imports
     end
 
     # Replace the document's lines and re-post it; a brand-new document posts
-    # itself on create.
-    def replace_lines!(document, lines, was_new:)
+    # itself on create when approved. Only a new document takes the state:
+    # one approved here is never demoted by an import.
+    def replace_lines!(document, lines, was_new:, state:)
       document.line_items.destroy_all unless was_new
       document.line_items.reload      unless was_new
       lines.each { |attrs| document.line_items.build(attrs) }
-      document.state = @wanted_state if was_new   # a document approved here is never demoted by an import
+      document.state = state if was_new
       document.save!
       document.repost_to_ledger! unless was_new
     end
