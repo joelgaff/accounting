@@ -110,6 +110,15 @@ class Document < ApplicationRecord
     end
   end
 
+  # Save the edit and approve in one transaction, so a bad edit never
+  # leaves a half-approved document behind.
+  def update_and_approve!(attrs)
+    transaction do
+      update_and_repost!(attrs)
+      approve! if draft?
+    end
+  end
+
   # "This never happened": unwind every payment against it, release every
   # statement line pointing at it, remove its postings, and mark it. The
   # document itself stays for the record.

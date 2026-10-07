@@ -35,9 +35,9 @@ class DocumentsController < ApplicationController
   def edit; end
 
   def update
-    @document.update_and_repost!(document_params)
-    @document.approve! if approve_requested? && @document.draft?
-    redirect_to helpers.document_path_for(@document), notice: "#{type_name} #{@document.approved? && approve_requested? ? 'approved' : 'updated'}."
+    was_draft = @document.draft?
+    approve_requested? ? @document.update_and_approve!(document_params) : @document.update_and_repost!(document_params)
+    redirect_to helpers.document_path_for(@document), notice: "#{type_name} #{was_draft && @document.approved? ? 'approved' : 'updated'}."
   rescue ActiveRecord::RecordInvalid
     after_failed_update
     render :edit, status: :unprocessable_entity
