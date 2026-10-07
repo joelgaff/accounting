@@ -52,7 +52,11 @@ class Document < ApplicationRecord
 
   delegate :settleable?, :party_name, to: :documentable
 
-  def status  = voided? ? "voided" : documentable.status
+  def status
+    return "voided" if voided?
+    return "draft"  if draft?
+    documentable.status
+  end
   def voided? = voided_at.present?
 
   # "Invoice INV-2378" when the type carries a number, else "Expense #12".

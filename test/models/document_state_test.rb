@@ -42,6 +42,17 @@ class DocumentStateTest < ActiveSupport::TestCase
     assert doc.draft?
   end
 
+  test "status says draft before anything the type would say" do
+    ap  = Plutus::Liability.create!(tenant: @org, name: "AP")
+    exp = Plutus::Expense.create!(tenant: @org, name: "Hosting")
+    inv  = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales, state: "draft", due_date: Date.current - 5)
+    bill = create_bill(@org, vendor: "AWS", amount: 10, category: exp, payable: ap, state: "draft")
+    assert_equal "draft", inv.status
+    assert_equal "draft", bill.status
+    inv.approve!
+    assert_equal "overdue", inv.status
+  end
+
   test "an approved document with nothing against it can go back to draft" do
     doc = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales)
     doc.unapprove!
