@@ -62,11 +62,14 @@ class DocumentsController < ApplicationController
 
   # A draft becomes real: posts to the ledger, takes payments, counts.
   def approve
+    return redirect_to helpers.document_path_for(@document), notice: "#{@document.label} is already approved." if @document.approved?
     @document.approve!
     respond_to do |format|
       format.turbo_stream { render "documents/status" }
       format.html { redirect_to helpers.document_path_for(@document), notice: "#{type_name} approved." }
     end
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to helpers.document_path_for(@document), alert: "#{@document.label} can't be approved: #{e.record.errors.full_messages.to_sentence}."
   end
 
   private

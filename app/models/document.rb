@@ -82,6 +82,7 @@ class Document < ApplicationRecord
   def approve!
     raise ActiveRecord::RecordInvalid.new(self) unless draft?
     transaction do
+      documentable.validate!          # the type record is checked again, it may have gone stale
       update!(state: "approved")
       post_to_ledger
       record_event!(:approved)

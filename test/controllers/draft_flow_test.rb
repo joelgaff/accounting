@@ -146,6 +146,22 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_equal [ "Posting removed" ], unapproved.detail_lines
   end
 
+  test "approving twice, or a draft that no longer validates, explains instead of failing" do
+    doc = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+    post approve_invoice_path(doc), as: :turbo_stream
+    assert_redirected_to invoice_path(doc)
+    assert_match(/already approved/, flash[:notice])
+    assert_equal 1, doc.entries.count
+
+    draft = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales, state: "draft")
+    draft.invoice.update_columns(client_name: "")          # went stale underneath
+    post approve_invoice_path(draft), as: :turbo_stream
+    assert_redirected_to invoice_path(draft)
+    assert_match(/client name/i, flash[:alert])
+    assert draft.reload.draft?
+    assert_equal 0, draft.entries.count
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }
