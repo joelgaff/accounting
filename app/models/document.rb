@@ -40,6 +40,7 @@ class Document < ApplicationRecord
   scope :chronological, -> { order(date: :desc, id: :desc) }
   scope :live,   -> { where(voided_at: nil) }
   scope :voided, -> { where.not(voided_at: nil) }
+  scope :posted, -> { live.approved }   # on the ledger: neither draft nor voided
   scope :outstanding_between, ->(low, high) {
     where("(documents.total - COALESCE((SELECT SUM(payments.amount) FROM payments WHERE payments.document_id = documents.id), 0)) BETWEEN ? AND ?", low, high)
   }

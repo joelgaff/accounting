@@ -45,7 +45,7 @@ module Reports
     end
 
     def documents_in_window
-      scope = organization.documents.live.where(documentable_type: %w[Invoice Bill Expense Deposit])
+      scope = organization.documents.posted.where(documentable_type: %w[Invoice Bill Expense Deposit])
       scope = scope.where(date: from..) if from
       scope = scope.where(date: ..to)   if to
       scope
@@ -70,7 +70,7 @@ module Reports
     end
 
     def journal_lines
-      docs = organization.documents.live.journal_entries
+      docs = organization.documents.posted.journal_entries
       docs = docs.where(date: from..) if from
       docs = docs.where(date: ..to)   if to
       JournalLine.where(journal_entry_id: docs.select(:documentable_id))

@@ -36,7 +36,9 @@ class Payment < ApplicationRecord
   private
 
   def document_takes_payments
-    return if document.nil? || document.settleable?
+    return if document.nil?
+    errors.add(:document, "is a draft; approve it first") if document.draft?
+    return if document.settleable?
     errors.add(:document, "cannot take payments")
   end
 

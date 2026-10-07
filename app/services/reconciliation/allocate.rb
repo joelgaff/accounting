@@ -17,7 +17,7 @@ module Reconciliation
 
       Document.transaction do
         @allocations.each do |a|
-          document = @txn.organization.documents.live.where(documentable_type: %w[Invoice Bill]).find(a[:document_id])
+          document = @txn.organization.documents.posted.where(documentable_type: %w[Invoice Bill]).find(a[:document_id])
           MatchDocument.new(@txn, document, amount: a[:amount]).call
           @txn.reload
         end

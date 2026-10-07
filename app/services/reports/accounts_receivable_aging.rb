@@ -28,7 +28,7 @@ module Reports
     private
 
     def outstanding_invoices
-      organization.documents.live.invoices.includes(:contact, :payments, :documentable)
+      organization.documents.posted.invoices.includes(:contact, :payments, :documentable)
                   .select { |inv| inv.balance_due.positive? }
     end
 
