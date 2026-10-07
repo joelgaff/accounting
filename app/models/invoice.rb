@@ -23,6 +23,7 @@ class Invoice < ApplicationRecord
 
   def party_name  = client_name
   def settleable? = true
+  def draftable?  = true
 
   def status
     return "paid"    if document.paid?

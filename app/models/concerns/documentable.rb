@@ -28,4 +28,5 @@ module Documentable
   def ledger_legs(_document)        = raise(NotImplementedError, "#{self.class} must define ledger_legs")
   def ledger_description(_document) = raise(NotImplementedError, "#{self.class} must define ledger_description")
   def status                        = "posted"
+  def draftable?                    = false   # invoices and bills start as drafts; the rest post on save
 end

@@ -6,7 +6,7 @@
   </div>
 </header>
 
-<%= render "documents/status_filter", statuses: %w[open partial overdue paid] %>
+<%= render "documents/status_filter", statuses: %w[draft open partial overdue paid] %>
 
 <% if @documents.any? %>
   <table class="data-table">

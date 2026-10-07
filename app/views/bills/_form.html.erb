@@ -48,7 +48,12 @@
   </div>
 
   <div class="form-actions">
-    <%= f.submit (document.new_record? ? "Record bill" : "Update bill"), class: "btn btn-primary" %>
+    <% if document.draft? %>
+      <%= f.submit "Save draft", class: "btn btn-secondary" %>
+      <%= f.submit "Approve", name: "approve", class: "btn btn-primary" %>
+    <% else %>
+      <%= f.submit "Update bill", class: "btn btn-primary" %>
+    <% end %>
     <%= link_to "Cancel", bills_path, class: "btn btn-secondary" %>
   </div>
 <% end %>

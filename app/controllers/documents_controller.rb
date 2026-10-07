@@ -5,13 +5,11 @@ class DocumentsController < ApplicationController
 
   before_action :load_form_collections, only: %i[new create edit update]
   before_action :load_document,         if: -> { params[:id].present? }   # every member action, subclasses included
-  before_action :refuse_if_voided,      only: %i[edit update void]
+  before_action :refuse_if_voided,      only: %i[edit update void approve]
 
   def index
     @status    = params[:status].presence
-    scope      = filtered.includes(:documentable, :contact, :payments)
-    scope      = scope.preload(*index_preloads) if index_preloads.any?
-    @documents = paginate(scope.chronological)
+    @documents = paginate(filtered)
   end
 
   def show; end
@@ -24,6 +22,7 @@ class DocumentsController < ApplicationController
   def create
     @document = build_document
     @document.assign_attributes(document_params)
+    @document.state = "approved" if approve_requested? || !@document.documentable.draftable?
     if @document.save
       redirect_to after_create_path, notice: created_notice
     else
@@ -37,7 +36,8 @@ class DocumentsController < ApplicationController
 
   def update
     @document.update_and_repost!(document_params)
-    redirect_to helpers.document_path_for(@document), notice: "#{type_name} updated."
+    @document.approve! if approve_requested? && @document.draft?
+    redirect_to helpers.document_path_for(@document), notice: "#{type_name} #{@document.approved? && approve_requested? ? 'approved' : 'updated'}."
   rescue ActiveRecord::RecordInvalid
     after_failed_update
     render :edit, status: :unprocessable_entity
@@ -55,8 +55,17 @@ class DocumentsController < ApplicationController
   def void
     @document.void!
     respond_to do |format|
-      format.turbo_stream { render "documents/void" }
+      format.turbo_stream { render "documents/status" }
       format.html { redirect_to helpers.document_path_for(@document), notice: "#{type_name} voided." }
+    end
+  end
+
+  # A draft becomes real: posts to the ledger, takes payments, counts.
+  def approve
+    @document.approve!
+    respond_to do |format|
+      format.turbo_stream { render "documents/status" }
+      format.html { redirect_to helpers.document_path_for(@document), notice: "#{type_name} approved." }
     end
   end
 
@@ -73,6 +82,7 @@ class DocumentsController < ApplicationController
   def created_notice         = "#{type_name} created."
   def type_name              = documentable_class.model_name.human
   def universal_permitted    = %i[contact_id date reference memo]
+  def approve_requested?     = params[:approve].present?
 
   def scope
     Current.organization.documents.public_send(documentable_class.model_name.plural)
@@ -80,11 +90,14 @@ class DocumentsController < ApplicationController
 
   # ?status= narrows the index: voided, all, or one of the type's own statuses.
   def filtered
+    base = scope.includes(:documentable, :contact, :payments)
+    base = base.preload(*index_preloads) if index_preloads.any?
+    base = base.chronological
     case @status
-    when "voided" then scope.voided
-    when "all"    then scope
-    when nil, ""  then scope.live
-    else               scope.live.includes(:payments, :documentable).select { |d| d.status == @status }
+    when "voided" then base.voided
+    when "all"    then base
+    when nil, ""  then base.live
+    else               base.live.select { |d| d.status == @status }
     end
   end
 
@@ -98,7 +111,9 @@ class DocumentsController < ApplicationController
   end
 
   def build_document
-    Current.organization.documents.build(date: Date.current, documentable: documentable_class.new)
+    doc = Current.organization.documents.build(date: Date.current, documentable: documentable_class.new)
+    doc.state = "draft" if doc.documentable.draftable?
+    doc
   end
 
   def document_params

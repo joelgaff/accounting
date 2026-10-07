@@ -14,6 +14,7 @@
     .print-page .invoice-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; }
     .print-page .invoice-header h1 { margin:0; font-size:30px; letter-spacing:0.06em; text-transform:uppercase; }
     .print-page .invoice-meta { text-align:right; font-size:12px; color:var(--paper-dim); }
+    .print-page .draft-mark { display:inline-block; vertical-align:middle; margin-left:10px; padding:2px 10px; border:2px dashed var(--paper-dim); color:var(--paper-dim); font-size:13px; letter-spacing:0.2em; }
     .print-page .invoice-meta strong { color:var(--paper-ink); font-size:13px; }
     .print-page .invoice-bill { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:32px; }
     .print-page .invoice-bill h3 { font-size:10px; text-transform:uppercase; letter-spacing:0.16em; margin:0 0 6px; color:var(--paper-dim); }
@@ -43,7 +44,7 @@
 <div class="doc">
 <div class="invoice-header">
   <div>
-    <h1>Invoice</h1>
+    <h1>Invoice<% if @document.draft? %> <span class="draft-mark">DRAFT</span><% end %></h1>
     <p style="margin:8px 0 0;color:var(--text-muted);"><%= invoice.number %></p>
   </div>
   <div class="invoice-meta">

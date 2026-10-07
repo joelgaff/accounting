@@ -14,9 +14,9 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
 
   def line(amount, account) = { "0" => { description: "Line", quantity: 1, unit_amount: amount, account_id: account.id } }
 
-  test "creates an invoice with a line item and posts it" do
+  test "creates an invoice with a line item and posts it when approved" do
     post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id },
-                                              line_items_attributes: line(500, @sales) } }
+                                              line_items_attributes: line(500, @sales) }, approve: "1" }
     assert_redirected_to invoices_path
     doc = @org.documents.invoices.sole
     assert_equal BigDecimal("500"), doc.total
@@ -29,7 +29,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
 
   test "creates a bill accrued to AP and a payment against it" do
     post bills_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "AWS", payable_account_id: @ap.id },
-                                           line_items_attributes: line(45, @hosting) } }
+                                           line_items_attributes: line(45, @hosting) }, approve: "1" }
     assert_redirected_to bills_path
     bill = @org.documents.bills.sole
     assert_equal BigDecimal("45"), @ap.balance

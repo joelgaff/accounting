@@ -28,11 +28,14 @@ class InvoicePdf
     end.render
   end
 
+  # The big word at the top. A draft says so, since the PDF may travel.
+  def title = @document.draft? ? "DRAFT INVOICE" : "INVOICE"
+
   private
 
   def header(pdf)
     top = pdf.cursor
-    pdf.font_size(26) { pdf.text "INVOICE", style: :bold, character_spacing: 1.5 }
+    pdf.font_size(26) { pdf.text title, style: :bold, character_spacing: 1.5 }
     pdf.fill_color DIM
     pdf.text @invoice.number.to_s, size: 11
     pdf.fill_color INK

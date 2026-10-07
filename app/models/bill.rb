@@ -8,6 +8,7 @@ class Bill < ApplicationRecord
   scoped_to_organization :payable_account, organization: ->(b) { b.document&.organization }
 
   def settleable? = true
+  def draftable?  = true
 
   def status
     return "paid"    if document.paid?

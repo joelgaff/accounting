@@ -15,9 +15,13 @@ Rails.application.routes.draw do
       get  :email
       post :send_email
       post :void
+      post :approve
     end
   end
-  %i[bills expenses deposits transfers].each do |kind|
+  resources :bills, only: %i[index show new create edit update destroy] do
+    member { post :void; post :approve }
+  end
+  %i[expenses deposits transfers].each do |kind|
     resources kind, only: %i[index show new create edit update destroy] do
       member { post :void }
     end

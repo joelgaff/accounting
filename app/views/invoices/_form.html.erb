@@ -49,7 +49,12 @@
   </div>
 
   <div class="form-actions">
-    <%= f.submit (document.new_record? ? "Create invoice" : "Update invoice"), class: "btn btn-primary" %>
+    <% if document.draft? %>
+      <%= f.submit "Save draft", class: "btn btn-secondary" %>
+      <%= f.submit "Approve", name: "approve", class: "btn btn-primary" %>
+    <% else %>
+      <%= f.submit "Update invoice", class: "btn btn-primary" %>
+    <% end %>
     <%= link_to "Cancel", invoices_path, class: "btn btn-secondary" %>
   </div>
 <% end %>
