@@ -37,7 +37,11 @@
   `JournalEntry`. A type implements the `Documentable` interface: `ledger_legs(document)`,
   `ledger_description(document)`, `status`, `party_name`, `totals_for(document)`, `line_items?`,
   and for settleable types `settlement_legs(bank_account)` / `settlement_direction`. Document
-  posts to the ledger; types never touch it. URLs use the document id (`/invoices/:id`),
+  posts to the ledger; types never touch it. A `Document` has a `state`, `draft` or `approved`;
+  only approved documents post, and `posted` (live and approved) is the scope for anything that
+  counts money. A type answers `draftable?` (Invoice and Bill today): drafts are the default on
+  create and `approve!` is the explicit step. `documents:audit` and `documents:state[...]` fix
+  state on a server. URLs use the document id (`/invoices/:id`),
   payments nest under `/documents/:id/payments`, and controllers subclass `DocumentsController`.
 - **Shared behavior via concerns** with a common interface; let each type define divergent pieces.
 - **Name entities, not values** (no `Year` table with a `year` column).
