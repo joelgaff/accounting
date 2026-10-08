@@ -32,18 +32,18 @@ module Reconciliation
     private
 
     def receivables
-      @receivables ||= @org.documents.posted.invoices.includes(:contact, :payments, :documentable, line_items: [ :account, { tracking_selections: :tracking_option } ]).select(&:outstanding?)
+      @receivables ||= @org.documents.posted.invoices.includes(:contact, :payments, :documentable, Coding::LINE_PRELOAD).select(&:outstanding?)
     end
 
     def payables
-      @payables ||= @org.documents.posted.bills.includes(:contact, :payments, :documentable, line_items: [ :account, { tracking_selections: :tracking_option } ]).select(&:outstanding?)
+      @payables ||= @org.documents.posted.bills.includes(:contact, :payments, :documentable, Coding::LINE_PRELOAD).select(&:outstanding?)
     end
 
     # Expenses and deposits nobody has reconciled yet.
     def direct
       @direct ||= @org.documents.posted.where(documentable_type: %w[Expense Deposit])
                       .where.missing(:bank_transactions)
-                      .includes(:contact, :documentable, line_items: [ :account, { tracking_selections: :tracking_option } ]).to_a
+                      .includes(:contact, :documentable, Coding::LINE_PRELOAD).to_a
     end
 
     def transfers

@@ -21,4 +21,8 @@ module Reconciliation
       [ account.code, account.name ].compact_blank.join(" ")
     end
   end
+
+  # What a document's lines must have loaded for Coding.of_document to add no queries.
+  # (Set outside the block: a constant inside Struct.new's block lands on the enclosing module.)
+  Coding::LINE_PRELOAD = { line_items: [ :account, { tracking_selections: :tracking_option } ] }.freeze
 end

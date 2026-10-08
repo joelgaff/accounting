@@ -5,8 +5,8 @@ class BankTransactionsController < ApplicationController
   before_action :load_collections
 
   def index
-    scope = Current.organization.bank_transactions.includes(:bank_account, :bank_rule, payments: { document: [ :documentable, { line_items: [ :account, { tracking_selections: :tracking_option } ] } ] },
-                                                             document: [ :documentable, { line_items: [ :account, { tracking_selections: :tracking_option } ] } ])
+    coded = [ :documentable, Reconciliation::Coding::LINE_PRELOAD ]
+    scope = Current.organization.bank_transactions.includes(:bank_account, :bank_rule, payments: { document: coded }, document: coded)
     scope = scope.where(status: params[:status]) if params[:status].in?(BankTransaction::STATUSES)
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
     @transactions    = paginate(scope.order(posted_on: :desc, id: :desc), per: 100)
