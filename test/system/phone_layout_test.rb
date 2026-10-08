@@ -143,6 +143,30 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     assert_not_equal "fixed", page.evaluate_script("getComputedStyle(document.querySelector('.form-actions')).position")
   end
 
+  test "reconcile on a phone: account chips with counts, a thumb-sized OK, and the panel opens under the card" do
+    visit "/bank_transactions"
+    assert_fits_viewport("reconcile")
+    assert_selector "nav.chips a", text: "Checking · 1"
+    assert_selector "nav.chips a", text: "Unmatched"
+    ok = find(".suggestion .btn", text: "OK")
+    assert_operator ok.native.size.height, :>=, 40
+    click_on "Expense"
+    assert_selector ".recon-panel", visible: true
+    assert_fits_viewport("reconcile with panel")
+    shoot("reconcile")
+  end
+
+  test "the dashboard on a phone: quick actions, stacked tiles, activity as cards" do
+    visit "/"
+    assert_selector ".quick-actions a", text: "Reconcile · 1"
+    assert_selector ".quick-actions a", text: "New invoice"
+    assert_no_selector ".panel table thead", visible: true
+    assert_selector ".panel td[data-cell=primary]", visible: true, minimum: 1
+    tiles = all(".kpi-card").map { |c| c.native.location.x }
+    assert_equal 1, tiles.uniq.size, "KPI tiles stack in one column"
+    shoot("dashboard")
+  end
+
   test "a document page keeps its actions in a bar above the tabs, with the rest in a sheet" do
     visit "/invoices/#{@invoice.id}"
     assert_fits_viewport("invoice")

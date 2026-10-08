@@ -3,11 +3,18 @@
     <h1>Dashboard</h1>
     <p class="lede"><%= Current.organization.name %> — position as at <%= Date.current.strftime("%b %-d, %Y") %></p>
   </div>
-  <div style="display:flex;gap:8px;">
+  <div class="page-actions" style="display:flex;gap:8px;">
     <%= link_to "New invoice", new_invoice_path, class: "btn btn-primary" %>
     <%= link_to "New expense", new_expense_path, class: "btn btn-secondary" %>
   </div>
 </header>
+
+<%# Phone only: the three things you do on the go. The header buttons cover wide screens. %>
+<nav class="chips quick-actions" aria-label="Quick actions">
+  <%= link_to "New invoice", new_invoice_path, class: "active" %>
+  <%= link_to "New expense", new_expense_path %>
+  <%= link_to "Reconcile · #{@unmatched_count}", bank_transactions_path(status: "unmatched") %>
+</nav>
 
 <% if @missing_slots.any? %>
   <div class="notice">
@@ -44,7 +51,7 @@
   </div>
 
   <% if @recent_entries.any? %>
-    <table class="data-table">
+    <table class="data-table cards">
       <thead>
         <tr>
           <th>When</th>
@@ -57,9 +64,9 @@
         <% @recent_entries.each do |entry| %>
           <tr>
             <% target = entry_path_for(entry.commercial_document) %>
-            <td class="muted"><%= target ? link_to(entry.created_at.strftime("%Y-%m-%d %H:%M"), target, class: "muted") : entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
-            <td><%= target ? link_to(entry.description, target) : entry.description %></td>
-            <td>
+            <td class="muted" data-cell="secondary"><%= target ? link_to(entry.created_at.strftime("%Y-%m-%d %H:%M"), target, class: "muted") : entry.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+            <td data-cell="primary"><%= target ? link_to(entry.description, target) : entry.description %></td>
+            <td data-cell="secondary">
               <% if entry.commercial_document %>
                 <%= target ? link_to(entry.commercial_document.label, target) : entry.commercial_document.label %>
               <% else %>
@@ -67,7 +74,7 @@
               <% end %>
             </td>
             <% total = "$#{number_with_precision(@entry_totals[entry.id] || 0, precision: 2, delimiter: ',')}" %>
-            <td class="num"><%= target ? link_to(total, target) : total %></td>
+            <td class="num" data-cell="amount"><%= target ? link_to(total, target) : total %></td>
           </tr>
         <% end %>
       </tbody>

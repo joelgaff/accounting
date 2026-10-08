@@ -360,6 +360,8 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 .fold-trigger { display: none; }
 .fold-body[hidden] { display: block; }
 
+.quick-actions { display: none; }    /* phones only; the page header carries the buttons elsewhere */
+
 /* ── Chips: a row of filter links, one marked current ───────────────────── */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
 .chips a {
@@ -1088,6 +1090,23 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   }
   .form-actions .btn, .form-actions input[type="submit"] { flex: 1 1 0; min-height: 42px; text-align: center; margin: 0; }
   body:has(.form-actions) .app-main { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Reconcile: a thumb-sized OK, a full-width segment bar, and the panel
+     opening under the card at full width. */
+  .recon-table .suggestion { padding: 8px; border: 1px dashed var(--rule-lit); border-radius: 6px; gap: 10px; }
+  .recon-table .suggestion .btn { min-height: 40px; padding: 6px 18px; font-size: 13px; font-weight: 600; }
+  .recon-table .segments { flex-wrap: wrap; gap: 6px; }
+  .recon-table .segments [role="tab"] { flex: 1 1 0; min-height: 38px; text-align: center; }
+  .recon-table .segments form.button_to { flex: 1 1 100%; margin: 0; }
+  .recon-table .segments .segments-aside { width: 100%; min-height: 34px; margin: 0; }
+  .recon-table .recon-item { padding: 10px 0; }
+  .recon-table .recon-panel td { padding: 8px 0 4px; }
+  .recon-form .btn { min-height: 40px; }
+
+  /* Dashboard: quick actions replace the header buttons, one tile per row. */
+  .quick-actions { display: flex; }
+  .page-header .page-actions { display: none !important; }
+  .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
 
   /* The searchable select opens as a sheet along the bottom. */
   .combobox-list.combobox-sheet {

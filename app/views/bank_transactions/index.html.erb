@@ -17,17 +17,23 @@
   </section>
 <% end %>
 
-<%= form_with url: bank_transactions_path, method: :get, class: "app-form filter-bar" do |f| %>
-  <div class="field">
-    <%= f.label :bank_account_id, "Bank account" %>
-    <%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, { include_blank: "All" }, selected: params[:bank_account_id] %>
-  </div>
-  <div class="field">
-    <%= f.label :status %>
-    <%= f.select :status, BankTransaction::STATUSES.map { |s| [ s.titleize, s ] }, { include_blank: "All" }, selected: params[:status] %>
-  </div>
-  <%= f.submit "Filter", class: "btn btn-secondary" %>
-<% end %>
+<%# Two rows of chips: which account, then which status. Each keeps the other's choice. %>
+<nav class="chips" aria-label="Bank account">
+  <% current_bank = params[:bank_account_id].to_s %>
+  <%= link_to "All accounts", bank_transactions_path(status: params[:status].presence), class: ("active" if current_bank.blank?), "aria-current": ("page" if current_bank.blank?) %>
+  <% @summary.each do |row| %>
+    <% on = current_bank == row.bank_account.id.to_s %>
+    <%= link_to "#{row.bank_account.name} · #{row.unmatched_count}", bank_transactions_path(bank_account_id: row.bank_account.id, status: params[:status].presence), class: ("active" if on), "aria-current": ("page" if on) %>
+  <% end %>
+</nav>
+<nav class="chips" aria-label="Status">
+  <% current_status = params[:status].to_s %>
+  <%= link_to "All", bank_transactions_path(bank_account_id: params[:bank_account_id].presence), class: ("active" if current_status.blank?), "aria-current": ("page" if current_status.blank?) %>
+  <% BankTransaction::STATUSES.each do |s| %>
+    <% on = current_status == s %>
+    <%= link_to s.titleize, bank_transactions_path(bank_account_id: params[:bank_account_id].presence, status: s), class: ("active" if on), "aria-current": ("page" if on) %>
+  <% end %>
+</nav>
 
 <datalist id="<%= dom_id(Current.organization, :contact_names) %>">
   <% @contact_names.each do |name| %><option value="<%= name %>"></option><% end %>

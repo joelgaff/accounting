@@ -15,6 +15,7 @@ class DashboardController < ApplicationController
     end
 
     @missing_slots = KPI_SLOTS.select { |_, attr| settings.public_send(attr).nil? }.map(&:first)
+    @unmatched_count = Current.organization.bank_transactions.unmatched.count
 
     @recent_entries = Plutus::Entry
                         .joins(debit_amounts: :account)
