@@ -33,7 +33,8 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     top = suggest.(fresh)
     assert_equal :memory, top.kind
     assert top.confident?
-    assert_match(/Expense · Blue Pixel Hosting · Hosting/, top.label)
+    assert_equal "Expense · Blue Pixel Hosting", top.label
+    assert_equal [ "Hosting" ], top.coding.accounts, "the account rides on the chips, not in the label"
 
     bill = create_bill(@org, vendor: "Blue Pixel Hosting", amount: 48, category: @hosting, payable: @ap)
     assert_equal :document, suggest.(fresh).kind, "an open bill for the amount beats memory"

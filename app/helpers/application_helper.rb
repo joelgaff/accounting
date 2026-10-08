@@ -77,6 +77,14 @@ module ApplicationHelper
     end)
   end
 
+  # Account and tracking chips on a reconcile card.
+  def coding_chips(coding)
+    return if coding.nil? || !coding.any?
+    tag.span(class: "coding") do
+      safe_join(coding.accounts.map { |a| tag.span(a, class: "coding-account") } + coding.tracking.map { |t| tag.span(t, class: "coding-tracking") })
+    end
+  end
+
   # "Acme's Books", "Williams' Books".
   def possessive(name)
     name.to_s.end_with?("s") ? "#{name}'" : "#{name}'s"

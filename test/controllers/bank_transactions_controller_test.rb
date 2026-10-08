@@ -33,7 +33,9 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     fresh = line(-48, description: "BLUEPIXEL HOSTING 10/02")
 
     get bank_transactions_path(status: "unmatched")
-    assert_select "##{row_id(fresh)} .suggestion-text", text: /Expense · Blue Pixel Hosting · Hosting/
+    assert_select "##{row_id(fresh)} .suggestion-text", text: /Expense · Blue Pixel Hosting/
+    assert_select "##{row_id(fresh)} .suggestion .coding-account", text: "Hosting"
+    assert_select "##{row_id(fresh)} .suggestion .coding-tracking", text: "Timing"
     assert_select "##{row_id(fresh)} .suggestion input[name=kind][value=memory]"
 
     post accept_suggestion_bank_transaction_path(fresh), params: { kind: "memory" }, as: :turbo_stream
@@ -63,6 +65,32 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
 
     get new_bank_rule_path(bank_transaction_id: fresh.id)
     assert_select "select[name='bank_rule[account_id]'] option[selected][value=?]", @hosting.id.to_s
+  end
+
+  test "a card shows the account and tracking behind a suggestion, and behind a matched line" do
+    klass  = @org.tracking_categories.create!(name: "Class")
+    timing = klass.options.create!(name: "Timing")
+
+    # a document match: the open invoice's own account and tracking
+    inv = create_invoice(@org, client_name: "Acme", amount: 100, receivable: @ar, revenue: @sales)
+    inv.line_items.sole.update!(tracking_option_ids: [ timing.id ])
+    paid = line(100, description: "ACME PAYMENT")
+    # a memory suggestion: the remembered account and tracking
+    3.times { |i| coded("ZOOM.US", account: @hosting, on: Date.new(2026, 7 + i, 1), contact: "Zoom", amount: -15, tracking: [ timing.id ]) }
+    zoom = line(-15, description: "ZOOM.US")
+
+    get bank_transactions_path(status: "unmatched")
+    assert_select "##{row_id(paid)} .suggestion .coding", text: /Sales/
+    assert_select "##{row_id(paid)} .suggestion .coding", text: /Timing/
+    assert_select "##{row_id(zoom)} .suggestion .coding", text: /Hosting/
+    assert_select "##{row_id(zoom)} .suggestion .coding", text: /Timing/
+
+    # once matched, the result line carries the same
+    post accept_suggestion_bank_transaction_path(zoom), params: { kind: "memory" }, as: :turbo_stream
+    assert_match(/coding-account">Hosting</, response.body)
+    get bank_transactions_path(status: "matched")
+    assert_select "##{row_id(zoom)} .recon-actions .coding", text: /Hosting/
+    assert_select "##{row_id(zoom)} .recon-actions .coding", text: /Timing/
   end
 
   test "memory OK is refused when the books no longer agree" do

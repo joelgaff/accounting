@@ -203,12 +203,14 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     visit "/bank_transactions?status=unmatched"
     row = find("##{ActionView::RecordIdentifier.dom_id(fresh)}")
     within(row) do
-      assert_selector ".suggestion-text", text: /Expense · Zoom · 6820 Web Hosting/
+      assert_selector ".suggestion-text", text: /Expense · Zoom/
+      assert_selector ".suggestion .coding", text: /Web Hosting/, visible: true
       ok = find(".suggestion .btn", text: "OK")
       assert_operator ok.native.size.height, :>=, 40
       ok.click
     end
     assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .badge-matched", wait: 5
+    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .recon-actions .coding", text: /Web Hosting/, visible: true
     assert_equal "Zoom", fresh.reload.document.counterparty
     assert_fits_viewport("reconcile after memory OK")
     shoot("reconcile memory ok")

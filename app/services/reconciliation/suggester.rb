@@ -4,7 +4,7 @@ module Reconciliation
   # document, and last what the books remember about the payee. Confident
   # suggestions earn a one-click OK; the rest just sort the Match select.
   class Suggester
-    Suggestion = Struct.new(:kind, :target, :score, :label, :data, keyword_init: true) do
+    Suggestion = Struct.new(:kind, :target, :score, :label, :data, :coding, keyword_init: true) do
       def confident? = score >= 100
     end
     MEMORY_CONFIDENT = 100
@@ -19,6 +19,7 @@ module Reconciliation
       @memory     = memory
       @rules      = @org.bank_rules.active.ordered.includes(:account, :contact, :transfer_bank_account).to_a
       @memo       = {}
+      @option_names = @org.tracking_categories.includes(:options).flat_map(&:options).to_h { |o| [ o.id, o.name ] }
     end
 
     def for(txn)
@@ -40,7 +41,8 @@ module Reconciliation
         out.insert(out.index { |s| s.score <= memory.score } || out.size, memory)   # after anything that scores higher
       end
       rule = txn.bank_rule || @rules.detect { |r| r.matches?(txn) }
-      out.unshift(Suggestion.new(kind: :rule, target: rule, score: 100, label: "Rule “#{rule.name}”: #{rule.summary}")) if rule
+      out.unshift(Suggestion.new(kind: :rule, target: rule, score: 100, label: "Rule “#{rule.name}”: #{rule.summary}",
+                                 coding: Coding.of(account: rule.account, tracking_option_ids: rule.try(:tracking_option_ids), option_names: @option_names))) if rule
       out
     end
 
@@ -53,13 +55,14 @@ module Reconciliation
       end
       score += date_score(txn.posted_on, doc.date)
       score += 10 * (tokens(txn.payee, txn.description, txn.reference) & tokens(doc.counterparty, doc.reference)).size.clamp(0, 3)
-      Suggestion.new(kind: :document, target: doc, score: score, label: "#{doc.label} · #{doc.display_name} · #{'%.2f' % due}")
+      Suggestion.new(kind: :document, target: doc, score: score, label: "#{doc.title} · #{'%.2f' % due}", coding: Coding.of_document(doc))
     end
 
     def memory_suggestion(txn, hit)
       account = [ hit.account.code, hit.account.name ].compact_blank.join(" ")
       Suggestion.new(kind: :memory, target: nil, data: hit, score: hit.confident? ? MEMORY_CONFIDENT : MEMORY_HINT,
-                     label: "#{txn.deposit? ? 'Deposit' : 'Expense'} · #{hit.contact_name.presence || 'no contact'} · #{account}")
+                     label: "#{txn.deposit? ? 'Deposit' : 'Expense'} · #{hit.contact_name.presence || 'no contact'}",
+                     coding: Coding.of(account: hit.account, tracking_option_ids: hit.tracking_option_ids, option_names: @option_names))
     end
 
     def date_score(a, b, window: DATE_WINDOW)

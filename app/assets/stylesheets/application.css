@@ -1100,6 +1100,9 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   /* Reconcile: a thumb-sized OK, a full-width segment bar, and the panel
      opening under the card at full width. */
   .recon-table .suggestion { padding: 8px; border: 1px dashed var(--rule-lit); border-radius: 6px; gap: 10px; }
+  .recon-table .suggestion-text { white-space: normal; }
+  .recon-table .coding { display: flex; margin: 4px 0 0; }
+  .recon-table .coding span { font-size: 11px; padding: 2px 8px; }
   .recon-table .suggestion .btn { min-height: 40px; padding: 6px 18px; font-size: 13px; font-weight: 600; }
   .recon-table .segments { flex-wrap: wrap; gap: 6px; }
   .recon-table .segments [role="tab"] { flex: 1 1 0; min-height: 38px; text-align: center; }
@@ -1198,6 +1201,10 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   border: 1px dashed rgba(34, 211, 238, 0.45); border-radius: var(--radius-sm); background: rgba(34, 211, 238, 0.05);
 }
 .suggestion-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+/* The account and tracking behind a suggestion or a matched line. */
+.coding { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: 8px; vertical-align: middle; }
+.coding span { font-size: 10px; line-height: 1.5; padding: 0 6px; border: 1px solid var(--rule-lit); border-radius: 3px; color: var(--dim); white-space: nowrap; }
+.coding .coding-tracking { color: var(--violet); border-color: rgba(167, 139, 250, 0.45); }
 .suggestion form { margin: 0; flex: none; }
 .suggestion .btn { padding: 2px 10px; font-size: 11px; }
 

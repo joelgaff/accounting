@@ -5,6 +5,8 @@
     <% parts = txn.payments.map { |p| link_to("#{p.document.label} #{money(p.amount)}", document_path_for(p.document)) } %>
     <% parts << link_to(txn.document.title, document_path_for(txn.document)) if txn.document %>
     → <%= safe_join(parts, ", ") %>
+    <% coded = txn.document || txn.payments.first&.document %>
+    <%= coding_chips(Reconciliation::Coding.of_document(coded)) if coded %>
   <% end %>
 </span>
 <%= button_to "Undo", unmatch_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>
