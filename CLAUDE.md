@@ -75,7 +75,9 @@
   `Suggester` ranks (rule, then document or transfer match, then `Memory`), `Summary` compares
   ledger to statement balance. `PayeeKey` normalises a line's payee; `Memory` looks up how lines
   with that key were coded before and is confident after three agreeing codings, which earns a
-  one-tap OK that re-reads the books before creating.
+  one-tap OK that re-reads the books before creating. The Create panel's "Why" becomes the line
+  description and the document memo; `Document#why` is the memo unless it is only the bank's own
+  words, and memory carries last time's why.
 
 ## Tracking categories (Xero-style)
 - `TrackingCategory` → `TrackingOption`; anything `Trackable` (`LineItem`, `JournalLine`,
