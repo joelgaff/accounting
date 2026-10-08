@@ -124,6 +124,11 @@ module ApplicationHelper
 
   def more_tab_active? = TAB_SECTIONS.values.flatten.none? { |s| nav_active?(s) }
 
+  # One link in a row of chips; the current one is marked for CSS and for screen readers.
+  def chip_link(label, path, active:)
+    link_to label, path, class: ("active" if active), "aria-current": ("page" if active)
+  end
+
   def nav_active?(sections)
     Array(sections).any? { |s| controller_path == s.to_s || controller_path.start_with?("#{s}/") }
   end
