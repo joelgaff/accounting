@@ -1,15 +1,15 @@
 <tr data-line-items-target="row" data-open="<%= li_form.object.new_record? || li_form.object.errors.any? %>">
   <td data-cell="description"><%= li_form.text_field :description, placeholder: "Description", style: "width:100%;" %></td>
-  <td class="num"><%= li_form.number_field :quantity, step: 0.0001, min: 0, inputmode: "decimal", value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
-  <td class="num"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
-  <td><%= li_form.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, {}, { style: "width:100%;" } %></td>
+  <td class="num" data-label="Qty"><%= li_form.number_field :quantity, step: 0.0001, min: 0, inputmode: "decimal", value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
+  <td class="num" data-label="Unit price"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
+  <td data-label="Account"><%= li_form.collection_select :account_id, accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, {}, { style: "width:100%;" } %></td>
   <% if tax_rates.any? %>
-    <td>
+    <td data-label="Tax">
       <%= li_form.collection_select :tax_rate_id, tax_rates, :id, ->(t) { "#{t.name} (#{number_to_percentage(t.rate * 100, precision: 2)})" }, { include_blank: "—" }, { style: "width:100%;", data: { action: "change->line-items#recalc", line_items_target: "tax_rate", "tax-rates": tax_rates.map { |t| [t.id.to_s, t.rate.to_f] }.to_h.to_json } } %>
     </td>
   <% end %>
   <% tracking_categories.each do |c| %>
-    <td><%= select_tag "#{li_form.object_name}[tracking_option_ids][]", options_for_select([ [ "—", "" ] ] + c.active_options.map { |o| [ o.name, o.id ] }, li_form.object.tracking_option_for(c)&.id), style: "width:100%;", "aria-label": c.name %></td>
+    <td data-label="<%= c.name %>"><%= select_tag "#{li_form.object_name}[tracking_option_ids][]", options_for_select([ [ "—", "" ] ] + c.active_options.map { |o| [ o.name, o.id ] }, li_form.object.tracking_option_for(c)&.id), style: "width:100%;", "aria-label": c.name %></td>
   <% end %>
   <td class="num" data-cell="amount"><%= number_field_tag nil, nil, id: nil, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", "aria-label": "Amount", data: { action: "input->line-items#amountChanged", line_items_target: "amount" } %></td>
   <td data-cell="tools">

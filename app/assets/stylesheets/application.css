@@ -1061,18 +1061,19 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .line-items .data-table.sheet thead { display: none; }
   .line-items .data-table.sheet tbody { display: flex; flex-direction: column; gap: 10px; }
   .line-items .data-table.sheet tbody tr {
-    display: grid; grid-template-columns: 1fr 112px; grid-template-areas: "description amount" "fields fields" "tools tools";
-    gap: 8px; padding: 10px; border: 1px solid var(--rule-lit); border-radius: 6px; background: var(--panel-head);
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 10px; border: 1px solid var(--rule-lit); border-radius: 6px; background: var(--panel-head);
   }
   .line-items .data-table.sheet tbody tr[hidden], .line-items .data-table.sheet tbody tr[style*="display: none"] { display: none; }
-  .line-items .data-table.sheet tbody td { display: block; padding: 0; min-width: 0; }
-  .line-items .data-table.sheet tbody td[data-cell="description"] { grid-area: description; }
-  .line-items .data-table.sheet tbody td[data-cell="amount"] { grid-area: amount; }
-  .line-items .data-table.sheet tbody td[data-cell="tools"] { grid-area: tools; display: flex; gap: 8px; justify-content: flex-end; }
-  .line-items .data-table.sheet tbody td:not([data-cell]) { grid-column: 1 / -1; }
+  .line-items .data-table.sheet tbody td { display: block; padding: 0; min-width: 0; flex: 1 1 100%; }
+  .line-items .data-table.sheet tbody td[data-cell="description"] { order: 1; flex: 1 1 55%; }
+  .line-items .data-table.sheet tbody td[data-cell="amount"] { order: 2; flex: 0 0 112px; }
+  .line-items .data-table.sheet tbody td:not([data-cell]) { order: 3; }
+  .line-items .data-table.sheet tbody td[data-cell="tools"] { order: 4; display: flex; gap: 8px; justify-content: flex-end; }
   .line-items .data-table.sheet tbody tr:not([data-open="true"]) td:not([data-cell]) { display: none; }
   .line-items .data-table.sheet tbody td > input, .line-items .data-table.sheet tbody td > select, .line-items .data-table.sheet tbody td > .combobox > input { width: 100%; min-width: 0; }
-  .line-items .data-table.sheet tbody td:not([data-cell]) > select, .line-items .data-table.sheet tbody td:not([data-cell]) > input { margin-top: 2px; }
+  .line-items .data-table.sheet tbody td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .line-items .data-table.sheet tbody td[data-label] > input { text-align: left; }
   .line-items .line-details { display: inline-flex; align-items: center; min-height: 36px; padding: 4px 12px; }
   .line-items .line-details[aria-expanded="true"] { color: var(--cyan); border-color: rgba(34, 211, 238, 0.45); }
   .line-items .data-table.sheet tfoot { display: block; }
