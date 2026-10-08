@@ -71,7 +71,10 @@
   the composite index. Bank rules (`BankRule`, `Reconciliation::ApplyRules`) run after every import.
 - **Reconcile** (`app/services/reconciliation/`): a `Payment` carries the `bank_transaction` it
   settled and a line carries at most one `document`; `Allocate` splits, `Unmatch` undoes,
-  `Suggester` ranks, `Summary` compares ledger to statement balance.
+  `Suggester` ranks (rule, then document or transfer match, then `Memory`), `Summary` compares
+  ledger to statement balance. `PayeeKey` normalises a line's payee; `Memory` looks up how lines
+  with that key were coded before and is confident after three agreeing codings, which earns a
+  one-tap OK that re-reads the books before creating.
 
 ## Tracking categories (Xero-style)
 - `TrackingCategory` → `TrackingOption`; anything `Trackable` (`LineItem`, `JournalLine`,
