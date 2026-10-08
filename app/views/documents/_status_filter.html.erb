@@ -1,8 +1,8 @@
-<%# ?status= filter for an index. `statuses` are the type's own; voided and all are always offered. %>
-<%= form_with url: url_for(only_path: true), method: :get, class: "app-form filter-bar" do |f| %>
-  <div class="field">
-    <%= f.label :status, "Show" %>
-    <%= f.select :status, [ [ "Active", "" ] ] + statuses.map { |s| [ s.titleize, s ] } + [ [ "Voided", "voided" ], [ "All", "all" ] ], { selected: @status.to_s } %>
-  </div>
-  <%= f.submit "Filter", class: "btn btn-secondary" %>
-<% end %>
+<%# ?status= filter for an index, as a row of chips. `statuses` are the type's own; voided and all are always offered. %>
+<% choices = [ [ "Active", "" ] ] + statuses.map { |s| [ s.titleize, s ] } + [ [ "Voided", "voided" ], [ "All", "all" ] ] %>
+<nav class="chips" aria-label="Show">
+  <% choices.each do |label, value| %>
+    <% current = @status.to_s == value %>
+    <%= link_to label, url_for(only_path: true, status: value.presence), class: ("active" if current), "aria-current": ("page" if current) %>
+  <% end %>
+</nav>

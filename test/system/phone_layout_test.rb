@@ -94,6 +94,21 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     assert_selector "td:not([data-cell])", visible: true
   end
 
+  test "status filters are chips and the New button floats on a phone" do
+    draft = create_invoice(@org, client_name: "Summit Races", amount: 180, receivable: @ar, revenue: @sales, state: "draft")
+    visit "/invoices"
+    assert_selector "nav.chips a[aria-current=page]", text: "Active", count: 1
+    within("nav.chips") { click_on "Draft" }
+    assert_selector "nav.chips a[aria-current=page]", text: "Draft", count: 1
+    assert_selector "tr##{ActionView::RecordIdentifier.dom_id(draft)}"
+    assert_no_selector "tr##{ActionView::RecordIdentifier.dom_id(@invoice)}"
+
+    fab = find("a.page-primary", text: "New invoice", visible: :all)
+    assert_equal "fixed", page.evaluate_script("getComputedStyle(arguments[0]).position", fab.native)
+    assert fab.visible?
+    shoot("invoices chips")
+  end
+
   test "an invoice page fits a phone and keeps its primary action on screen" do
     visit "/invoices/#{@invoice.id}"
     assert_fits_viewport("invoice")
