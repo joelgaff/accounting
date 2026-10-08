@@ -1,5 +1,6 @@
 class InvoicesController < DocumentsController
   before_action :refuse_if_draft, only: %i[email send_email]
+  before_action -> { require_control_account(:receivable_account, "Accounts Receivable") }, only: %i[new create]
 
   def print
     respond_to do |format|
@@ -27,18 +28,18 @@ class InvoicesController < DocumentsController
   end
 
   def documentable_class     = Invoice
-  def documentable_permitted = %i[number client_name due_date receivable_account_id]
+  def documentable_permitted = %i[number client_name due_date]
   def after_create_path      = invoices_path
 
   def build_document
     super.tap do |doc|
-      doc.invoice.due_date = Date.current + 30.days
-      doc.invoice.number   = Invoice.next_number(Current.organization)
+      doc.invoice.due_date           = Date.current + 30.days
+      doc.invoice.number             = Invoice.next_number(Current.organization)
+      doc.invoice.receivable_account = Current.organization.settings.receivable_account
     end
   end
 
   def load_form_collections
-    @receivable_accounts = Plutus::Asset.where(tenant: Current.organization).order(:name)
     @revenue_accounts    = Plutus::Revenue.where(tenant: Current.organization).order(:name)
     @customers           = Current.organization.contacts.customers.ordered
     @tax_rates           = Current.organization.tax_rates.ordered

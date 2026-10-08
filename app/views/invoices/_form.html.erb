@@ -28,11 +28,6 @@
       <%= inv.label :due_date, "Due date" %>
       <%= inv.date_field :due_date %>
     </div>
-
-    <div class="field">
-      <%= inv.label :receivable_account_id, "Receivable account (debit)" %>
-      <%= inv.collection_select :receivable_account_id, receivable_accounts, :id, :name, prompt: "Select an asset account" %>
-    </div>
   <% end %>
 
   <div class="field">

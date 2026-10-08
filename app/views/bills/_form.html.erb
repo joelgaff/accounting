@@ -23,11 +23,6 @@
       <%= f.label :date, "Bill date" %>
       <%= f.date_field :date %>
     </div>
-
-    <div class="field">
-      <%= bill.label :payable_account_id, "Accrue to (credit)" %>
-      <%= bill.collection_select :payable_account_id, liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, prompt: "Select a liability account" %>
-    </div>
   <% end %>
 
   <div class="field">

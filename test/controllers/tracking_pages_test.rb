@@ -5,6 +5,7 @@ class TrackingPagesTest < ActionDispatch::IntegrationTest
     @org = organizations(:one)
     sign_in_as_launchpad_user(@org)
     @ar    = Plutus::Asset.create!(tenant: @org, name: "AR")
+    @org.settings.update!(receivable_account: @ar)
     @sales = Plutus::Revenue.create!(tenant: @org, name: "Sales")
   end
 
@@ -24,7 +25,7 @@ class TrackingPagesTest < ActionDispatch::IntegrationTest
     assert_select "th", text: "Event Year"
     assert_select "select[name='document[line_items_attributes][0][tracking_option_ids][]']"
 
-    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id },
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01" },
       line_items_attributes: { "0" => { description: "x", quantity: 1, unit_amount: 100, account_id: @sales.id, tracking_option_ids: [ cat.options.first.id ] } } } }
     inv = @org.documents.invoices.sole
     assert_equal "2026", inv.line_items.sole.tracking_option_for(cat).name

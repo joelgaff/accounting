@@ -19,11 +19,6 @@
     <%= f.text_field :client_name %>
   </div>
 
-  <div class="field">
-    <%= f.label :receivable_account_id, "Receivable account (debit)" %>
-    <%= f.collection_select :receivable_account_id, receivable_accounts, :id, ->(a) { "#{a.code} #{a.name}" }, prompt: "Select AR account" %>
-  </div>
-
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
     <div class="field">
       <%= f.label :frequency %>

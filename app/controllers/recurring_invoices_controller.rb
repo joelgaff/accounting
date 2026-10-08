@@ -1,5 +1,6 @@
 class RecurringInvoicesController < ApplicationController
   before_action :load_form_collections, only: %i[new create edit update]
+  before_action :require_receivable_account, only: %i[new create]
   before_action :load_recurring, only: %i[show edit update destroy run_now]
 
   def index
@@ -17,6 +18,7 @@ class RecurringInvoicesController < ApplicationController
 
   def create
     @recurring_invoice = Current.organization.recurring_invoices.build(recurring_params)
+    @recurring_invoice.receivable_account = Current.organization.settings.receivable_account
     if @recurring_invoice.save
       redirect_to recurring_invoice_path(@recurring_invoice), notice: "Recurring invoice created."
     else
@@ -63,15 +65,19 @@ class RecurringInvoicesController < ApplicationController
   end
 
   def load_form_collections
-    @receivable_accounts = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
     @revenue_accounts    = Plutus::Revenue.where(tenant: Current.organization).order(:code, :name)
     @customers           = Current.organization.contacts.customers.ordered
     @tax_rates           = Current.organization.tax_rates.ordered
   end
 
+  def require_receivable_account
+    return if Current.organization.settings.receivable_account.present?
+    redirect_to settings_path, alert: "Pick your Accounts Receivable account under Dashboard accounts before creating recurring invoices."
+  end
+
   def recurring_params
     params.require(:recurring_invoice).permit(
-      :contact_id, :client_name, :receivable_account_id, :net_days,
+      :contact_id, :client_name, :net_days,
       :frequency, :interval, :next_run_on, :end_on, :active, :email_on_generate, :approve_on_generate,
       line_items_attributes: [ :id, :description, :quantity, :unit_amount, :account_id, :tax_rate_id, :_destroy, { tracking_option_ids: [] } ]
     )

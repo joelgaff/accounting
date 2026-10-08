@@ -2,11 +2,10 @@
   <h1>Edit <%= @document.label.downcase %></h1>
 </header>
 
-<% if @receivable_accounts.empty? || @revenue_accounts.empty? %>
+<% if @revenue_accounts.empty? %>
   <div class="notice">
-    <p>You need to set up your Chart of Accounts before you can create an invoice.</p>
-    <p>At minimum you need one <strong>Asset</strong> account (typically "Accounts Receivable") and one <strong>Revenue</strong> account (typically "Sales").</p>
+    <p>You need at least one <strong>Revenue</strong> account (typically "Sales") in your Chart of Accounts before you can create an invoice.</p>
   </div>
 <% else %>
-  <%= render "form", document: @document, receivable_accounts: @receivable_accounts, revenue_accounts: @revenue_accounts, customers: @customers, tax_rates: @tax_rates %>
+  <%= render "form", document: @document, revenue_accounts: @revenue_accounts, customers: @customers, tax_rates: @tax_rates %>
 <% end %>

@@ -9,11 +9,12 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     @ap      = Plutus::Liability.create!(tenant: @org, name: "AP", code: "2000")
     @sales   = Plutus::Revenue.create!(tenant: @org, name: "Sales", code: "200")
     @hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting", code: "400")
+    @org.settings.update!(receivable_account: @ar, payable_account: @ap)
   end
 
   def line(amount, account) = { "0" => { description: "Line", quantity: 1, unit_amount: amount, account_id: account.id } }
-  def invoice_params(**extra) = { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id }, line_items_attributes: line(500, @sales) }, **extra }
-  def bill_params(**extra)    = { document: { date: "2026-09-01", documentable_attributes: { vendor: "AWS", payable_account_id: @ap.id }, line_items_attributes: line(45, @hosting) }, **extra }
+  def invoice_params(**extra) = { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01" }, line_items_attributes: line(500, @sales) }, **extra }
+  def bill_params(**extra)    = { document: { date: "2026-09-01", documentable_attributes: { vendor: "AWS" }, line_items_attributes: line(45, @hosting) }, **extra }
   def status_id(doc) = ActionView::RecordIdentifier.dom_id(doc, :status)
 
   test "a new invoice is a draft with a number and no posting" do
@@ -171,7 +172,7 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "an empty draft can be saved, viewed, printed, and told what it needs on approval" do
-    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id } } }
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01" } } }
     doc = @org.documents.invoices.sole
     assert doc.draft?
     assert_empty doc.line_items
@@ -196,7 +197,7 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to invoice_path(doc)
     assert_empty doc.reload.line_items
 
-    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id } }, approve: "1" }
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01" } }, approve: "1" }
     assert_response :unprocessable_entity
     assert_match(/line item/i, response.body)
   end

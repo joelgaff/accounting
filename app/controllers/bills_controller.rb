@@ -1,8 +1,10 @@
 class BillsController < DocumentsController
+  before_action -> { require_control_account(:payable_account, "Accounts Payable") }, only: %i[new create]
+
   private
 
   def documentable_class     = Bill
-  def documentable_permitted = %i[number vendor payable_account_id]
+  def documentable_permitted = %i[number vendor]
   def index_preloads         = [ { documentable: :payable_account }, { line_items: :account } ]
   def after_create_path      = bills_path
   def created_notice         = "Bill recorded."
@@ -14,7 +16,6 @@ class BillsController < DocumentsController
   def load_form_collections
     scope = Plutus::Account.where(tenant: Current.organization)
     @expense_accounts   = scope.where(type: "Plutus::Expense").order(:name)
-    @liability_accounts = scope.where(type: "Plutus::Liability").order(:code, :name)
     @vendors            = Current.organization.contacts.vendors.ordered
     @tax_rates          = Current.organization.tax_rates.ordered
   end

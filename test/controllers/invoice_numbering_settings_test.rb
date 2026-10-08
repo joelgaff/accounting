@@ -6,6 +6,7 @@ class InvoiceNumberingSettingsTest < ActionDispatch::IntegrationTest
     sign_in_as_launchpad_user(@org)
     @ar    = Plutus::Asset.create!(tenant: @org, name: "AR", code: "1200")
     @sales = Plutus::Revenue.create!(tenant: @org, name: "Sales", code: "4100")
+    @org.settings.update!(receivable_account: @ar)
   end
 
   test "the Books panel shows the numbering and saves a new prefix and next number" do

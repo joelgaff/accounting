@@ -10,12 +10,13 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
     @ap      = Plutus::Liability.create!(tenant: @org, name: "Accounts Payable", code: "2000")
     @sales   = Plutus::Revenue.create!(tenant: @org, name: "Sales", code: "200")
     @hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting", code: "400")
+    @org.settings.update!(receivable_account: @ar, payable_account: @ap)
   end
 
   def line(amount, account) = { "0" => { description: "Line", quantity: 1, unit_amount: amount, account_id: account.id } }
 
   test "creates an invoice with a line item and posts it when approved" do
-    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01", receivable_account_id: @ar.id },
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { client_name: "Acme", due_date: "2026-10-01" },
                                               line_items_attributes: line(500, @sales) }, approve: "1" }
     assert_redirected_to invoices_path
     doc = @org.documents.invoices.sole
@@ -28,7 +29,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "creates a bill accrued to AP and a payment against it" do
-    post bills_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "AWS", payable_account_id: @ap.id },
+    post bills_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "AWS" },
                                            line_items_attributes: line(45, @hosting) }, approve: "1" }
     assert_redirected_to bills_path
     bill = @org.documents.bills.sole
@@ -63,7 +64,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "re-renders the form with the type's errors" do
-    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: { receivable_account_id: @ar.id }, line_items_attributes: line(5, @sales) } }
+    post invoices_path, params: { document: { date: "2026-09-01", documentable_attributes: {}, line_items_attributes: line(5, @sales) } }
     assert_response :unprocessable_entity
     assert_match(/Client name can(?:&#39;|')t be blank/, response.body)
   end
