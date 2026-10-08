@@ -6,11 +6,20 @@
   </div>
 </header>
 
-<nav style="display:flex;gap:12px;margin-bottom:20px;font-size:13px;">
-  <%= link_to "All", contacts_path, class: (params[:kind].blank? ? "active" : nil), style: "font-weight:600;" %>
-  <%= link_to "Customers", contacts_path(kind: "customer"), class: (params[:kind] == "customer" ? "active" : nil) %>
-  <%= link_to "Vendors", contacts_path(kind: "vendor"), class: (params[:kind] == "vendor" ? "active" : nil) %>
+<%# Search drives the list through a frame: only the rows redraw, the box keeps its text and focus. %>
+<%= form_with url: contacts_path, method: :get, class: "search-bar", data: { controller: "search", turbo_frame: dom_id(Current.organization, :contacts), turbo_action: "advance" } do |f| %>
+  <%= f.hidden_field :kind, value: params[:kind] if params[:kind].present? %>
+  <%= f.search_field :q, value: @q, placeholder: "Search name, email or phone", autocomplete: "off",
+        data: { action: "input->search#submit" }, "aria-label": "Search contacts" %>
+<% end %>
+
+<nav class="chips" aria-label="Kind">
+  <%= chip_link "All", contacts_path(q: @q.presence), active: params[:kind].blank? %>
+  <%= chip_link "Customers", contacts_path(kind: "customer", q: @q.presence), active: params[:kind] == "customer" %>
+  <%= chip_link "Vendors", contacts_path(kind: "vendor", q: @q.presence), active: params[:kind] == "vendor" %>
 </nav>
+
+<%= turbo_frame_tag dom_id(Current.organization, :contacts), target: "_top" do %>
 
 <% if @contacts.any? %>
   <table class="data-table cards">
@@ -25,7 +34,7 @@
     </thead>
     <tbody>
       <% @contacts.each do |c| %>
-        <tr>
+        <tr id="<%= dom_id(c) %>">
           <td data-cell="primary"><%= link_to c.name, contact_path(c) %></td>
           <td class="muted" data-cell="secondary"><%= c.kind %></td>
           <td data-cell="secondary"><%= c.email %></td>
@@ -42,4 +51,5 @@
     <%= link_to "Import a Xero Contacts CSV", new_contact_import_path %> or
     <%= link_to "add one manually", new_contact_path %>.
   </p>
+<% end %>
 <% end %>

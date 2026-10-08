@@ -245,6 +245,21 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("reconcile card hidden")
   end
 
+  test "typing in the contacts search narrows the list as you type, without leaving the page" do
+    @org.contacts.create!(name: "Gusto", kind: "vendor")
+    visit "/contacts"
+    assert_selector "td[data-cell=primary]", text: "Northwind Trail Series"
+    assert_selector "td[data-cell=primary]", text: "Gusto"
+    fill_in "q", with: "gus"
+    assert_no_selector "td[data-cell=primary]", text: "Northwind Trail Series", wait: 5
+    assert_selector "td[data-cell=primary]", text: "Gusto"
+    assert_equal "gus", find_field("q").value, "the box keeps what was typed"
+    assert_equal "q", page.evaluate_script("document.activeElement.name"), "and the focus"
+    assert_match(/q=gus/, current_url, "the search is in the address, so back and reload keep it")
+    assert_fits_viewport("contacts search")
+    shoot("contacts search")
+  end
+
   test "the dashboard on a phone: quick actions, stacked tiles, activity as cards" do
     visit "/"
     assert_selector ".quick-actions a", text: "Reconcile · 1"

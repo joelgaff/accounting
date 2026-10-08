@@ -368,6 +368,11 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 /* ── Reports: two columns that stack, and a frozen name column ──────────── */
 .report-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
+/* ── Search box above a list ────────────────────────────────────────────── */
+.search-bar { margin: 0 0 12px; }
+.search-bar input[type="search"] { width: 100%; max-width: 420px; padding: 9px 12px; font: inherit; color: var(--ink-bright); background: var(--panel); border: 1px solid var(--rule-lit); border-radius: var(--radius-sm); }
+.search-bar input[type="search"]:focus { outline: 1px solid var(--cyan); outline-offset: -1px; border-color: var(--cyan); }
+
 /* ── Chips: a row of filter links, one marked current ───────────────────── */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
 .chips a {

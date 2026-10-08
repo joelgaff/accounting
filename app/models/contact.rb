@@ -10,6 +10,13 @@ class Contact < ApplicationRecord
 
   # Find by name regardless of case, or create; a contact seen on both sides
   # of the books becomes "both".
+  # Name, email or phone containing the text, case aside. LIKE's own
+  # wildcards are escaped, so "%" is a character nobody is named.
+  scope :matching, ->(text) {
+    pattern = "%#{sanitize_sql_like(text.to_s.strip)}%"
+    where("contacts.name LIKE :p ESCAPE '\\' OR contacts.email LIKE :p ESCAPE '\\' OR contacts.phone LIKE :p ESCAPE '\\'", p: pattern)
+  }
+
   def self.find_or_create_named(organization, name, kind:)
     name = name.to_s.strip
     contact = organization.contacts.where("LOWER(name) = ?", name.downcase).first

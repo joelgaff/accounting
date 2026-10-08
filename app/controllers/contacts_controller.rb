@@ -4,8 +4,10 @@ class ContactsController < ApplicationController
   before_action :load_contact, only: %i[show edit update destroy]
 
   def index
+    @q        = params[:q].to_s.strip
     contacts  = Current.organization.contacts.ordered
     contacts  = contacts.where(kind: [ params[:kind], "both" ]) if Contact::KINDS.include?(params[:kind])
+    contacts  = contacts.matching(@q) if @q.present?
     @contacts = paginate(contacts)
   end
 
