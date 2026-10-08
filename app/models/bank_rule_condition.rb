@@ -15,6 +15,8 @@ class BankRuleCondition < ApplicationRecord
 
   belongs_to :bank_rule, inverse_of: :conditions
 
+  before_validation :normalize_amounts, if: :amount?
+
   validates :field,    inclusion: { in: FIELDS }
   validates :value,    presence: true, length: { maximum: 200 }
   validate  :operator_suits_field
@@ -72,13 +74,22 @@ class BankRuleCondition < ApplicationRecord
     errors.add(:operator, "#{OPERATOR_LABELS[operator] || operator} does not apply to #{FIELD_LABELS[field] || field}") unless allowed.include?(operator)
   end
 
+  # "$1,000.50" is a number too.
+  def normalize_amounts
+    self.value    = value.to_s.delete("$, ").presence
+    self.value_to = value_to.to_s.delete("$, ").presence
+  end
+
   def amounts_are_numbers
     [ value, (value_to if operator == "between") ].compact.each do |v|
       Float(v)
     rescue ArgumentError, TypeError
       errors.add(:value, "must be a number")
     end
-    errors.add(:value_to, "is needed for between") if operator == "between" && value_to.blank?
+    if operator == "between"
+      errors.add(:value_to, "is needed for between") if value_to.blank?
+      errors.add(:value, "and the second value must run low to high") if value_to.present? && errors.empty? && BigDecimal(value) > BigDecimal(value_to)
+    end
   end
 
   def regex_compiles

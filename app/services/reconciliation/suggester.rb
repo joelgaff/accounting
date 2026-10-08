@@ -17,7 +17,7 @@ module Reconciliation
       @txns       = Array(transactions)
       @candidates = candidates
       @memory     = memory
-      @rules      = @org.bank_rules.active.ordered.includes(:account, :contact, :transfer_bank_account).to_a
+      @rules      = @org.bank_rules.active.ordered.includes(:account, :contact, :transfer_bank_account, :conditions).to_a
       @memo       = {}
       @option_names = @org.tracking_categories.includes(:options).flat_map(&:options).to_h { |o| [ o.id, o.name ] }
     end

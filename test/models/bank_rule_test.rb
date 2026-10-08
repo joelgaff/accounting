@@ -113,6 +113,30 @@ class BankRuleTest < ActiveSupport::TestCase
     assert_not nan.valid?
   end
 
+  test "amounts may be typed with a currency sign or commas, and between must run low to high" do
+    r = @org.bank_rules.create!(name: "big", amount_sign: "any", action_kind: "Expense", account: @hosting,
+                                conditions_attributes: [ { field: "amount", operator: "more_than", value: "$1,000.50" } ])
+    assert_equal "1000.50", r.conditions.sole.value
+    assert r.matches?(line(-1000.51))
+
+    backwards = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting,
+                                      conditions_attributes: [ { field: "amount", operator: "between", value: "20", value_to: "10" } ])
+    assert_not backwards.valid?
+    assert_includes backwards.errors.full_messages.join, "low to high"
+  end
+
+  test "the suggester and the import pass load every rule's conditions up front" do
+    3.times { |i| conditioned(name: "r#{i}") }
+    txn = line(-25, payee: "LYFT").tap(&:save!)
+    suggester = Reconciliation::Suggester.new(@org, [ txn ], candidates: Reconciliation::Candidates.new(@org, [ txn ]))
+    applier   = Reconciliation::ApplyRules.new(@org, [ txn ])
+    [ suggester, applier ].each do |service|
+      rules = service.instance_variable_get(:@rules)
+      assert_equal 3, rules.size
+      assert rules.all? { |r| r.association(:conditions).loaded? }, "#{service.class} loads conditions with the rules"
+    end
+  end
+
   test "pattern and match_kind still build the rule's first condition" do
     r = rule(match_kind: "starts_with", pattern: "sq *")
     assert_equal [ [ "text", "starts_with", "sq *" ] ], r.conditions.map { |c| [ c.field, c.operator, c.value ] }

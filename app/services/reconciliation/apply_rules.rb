@@ -7,7 +7,7 @@ module Reconciliation
     def initialize(organization, transactions)
       @org   = organization
       @txns  = Array(transactions)
-      @rules = @org.bank_rules.active.ordered.to_a
+      @rules = @org.bank_rules.active.ordered.includes(:conditions).to_a
     end
 
     def call
