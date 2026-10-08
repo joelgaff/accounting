@@ -68,7 +68,8 @@
 - **Statements** (`Imports::BankStatementService`) take a CSV or an array of row hashes; OFX/QFX
   files go through `Imports::OfxParser` (SGML 1.x and XML 2.x). Lines with the bank's own id
   (`external_id`) dedupe on it and adopt an earlier id-less CSV row; id-less rows dedupe on
-  the composite index. Bank rules (`BankRule`, `Reconciliation::ApplyRules`) run after every import.
+  the composite index. Bank rules (`BankRule` with `BankRuleCondition` rows, all or any of which
+  must hold; `Reconciliation::ApplyRules`) run after every import.
 - **Reconcile** (`app/services/reconciliation/`): a `Payment` carries the `bank_transaction` it
   settled and a line carries at most one `document`; `Allocate` splits, `Unmatch` undoes,
   `Suggester` ranks (rule, then document or transfer match, then `Memory`), `Summary` compares
