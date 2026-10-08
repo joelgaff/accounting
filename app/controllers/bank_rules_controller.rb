@@ -3,11 +3,12 @@ class BankRulesController < ApplicationController
   before_action :load_collections, only: %i[new create edit update]
 
   def index
-    @rules = Current.organization.bank_rules.ordered.includes(:bank_account, :account, :contact, :transfer_bank_account)
+    @rules = Current.organization.bank_rules.ordered.includes(:bank_account, :account, :contact, :transfer_bank_account, :conditions)
   end
 
   def new
     @rule = Current.organization.bank_rules.build(prefill)
+    @rule.conditions.build(field: "text", operator: "contains") if @rule.conditions.empty?
   end
 
   def create
@@ -17,6 +18,7 @@ class BankRulesController < ApplicationController
     if @rule.save
       redirect_to bank_rules_path, notice: "Rule added."
     else
+      @rule.conditions.build(field: "text", operator: "contains") if @rule.conditions.empty?
       render :new, status: :unprocessable_entity
     end
   end
@@ -54,13 +56,12 @@ class BankRulesController < ApplicationController
 
   # "Create a rule from this line": start from what the line shows.
   def prefill
-    return { match_kind: "contains", amount_sign: "any", action_kind: "Expense" } if params[:bank_transaction_id].blank?
+    return { amount_sign: "any", action_kind: "Expense" } if params[:bank_transaction_id].blank?
     txn = Current.organization.bank_transactions.find(params[:bank_transaction_id])
     hit = Reconciliation::Memory.new(Current.organization, [ txn ]).for(txn)
     {
       name:         txn.display_payee.to_s.truncate(40),
-      pattern:      txn.display_payee.to_s,
-      match_kind:   "contains",
+      conditions_attributes: [ { field: "text", operator: "contains", value: txn.display_payee.to_s } ],
       amount_sign:  txn.deposit? ? "in" : "out",
       action_kind:  txn.deposit? ? "Deposit" : "Expense",
       bank_account: nil,
@@ -78,7 +79,8 @@ class BankRulesController < ApplicationController
   end
 
   def rule_params
-    params.require(:bank_rule).permit(:name, :match_kind, :pattern, :amount_sign, :bank_account_id, :action_kind,
-                                      :contact_id, :tax_rate_id, :transfer_bank_account_id, :auto_apply, :active, tracking_option_ids: [])
+    params.require(:bank_rule).permit(:name, :amount_sign, :bank_account_id, :action_kind, :match_all,
+                                      :contact_id, :tax_rate_id, :transfer_bank_account_id, :auto_apply, :active, tracking_option_ids: [],
+                                      conditions_attributes: [ :id, :field, :operator, :value, :value_to, :_destroy ])
   end
 end

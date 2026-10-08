@@ -8,19 +8,37 @@
     <%= f.text_field :name, placeholder: "Cloudflare hosting" %>
   </div>
 
-  <fieldset style="border:0;padding:0;margin:0 0 16px;">
-    <legend style="font-weight:600;font-size:13px;margin-bottom:8px;">When a line…</legend>
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;">
-      <div class="field">
-        <%= f.label :match_kind, "Payee or description" %>
-        <%= f.select :match_kind, BankRule::MATCH_KINDS.map { |k| [ k.humanize.downcase, k ] } %>
-      </div>
-      <div class="field">
-        <%= f.label :pattern %>
-        <%= f.text_field :pattern, placeholder: "CLOUDFLARE" %>
+  <fieldset class="line-items" style="margin:0 0 16px;" data-controller="nested-rows" data-nested-rows-index-value="<%= rule.conditions.size %>">
+    <legend>When a line…</legend>
+    <div class="field">
+      <div class="theme-choice">
+        <% [ [ true, "meets every condition" ], [ false, "meets any condition" ] ].each do |value, text| %>
+          <label class="theme-option">
+            <%= f.radio_button :match_all, value, class: "theme-radio" %>
+            <span class="theme-mark" aria-hidden="true"></span><%= text %>
+          </label>
+        <% end %>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="sheet-scroll">
+      <table class="data-table sheet">
+        <thead><tr><th style="width:180px;">Field</th><th style="width:140px;">Test</th><th>Value</th><th style="width:120px;">and</th><th style="width:40px;"></th></tr></thead>
+        <tbody data-nested-rows-target="rows">
+          <%= f.fields_for :conditions do |c| %>
+            <%= render "bank_rules/condition_fields", c: c %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <template data-nested-rows-target="template">
+      <%= f.fields_for :conditions, BankRuleCondition.new, child_index: "NEW_RECORD" do |c| %>
+        <%= render "bank_rules/condition_fields", c: c %>
+      <% end %>
+    </template>
+    <button type="button" class="btn btn-secondary" data-action="nested-rows#add">+ Add condition</button>
+    <p class="settings-row-help" style="margin:8px 0 0;">Amount tests compare the size of the amount; direction is set below. Text tests ignore case.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
       <div class="field">
         <%= f.label :amount_sign, "Direction" %>
         <%= f.select :amount_sign, [ [ "either way", "any" ], [ "money in", "in" ], [ "money out", "out" ] ] %>

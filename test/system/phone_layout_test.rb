@@ -216,6 +216,17 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("reconcile memory ok")
   end
 
+  test "a rule's conditions read as cards on a phone and a condition can be added" do
+    visit "/bank_rules/new"
+    assert_fits_viewport("new rule")
+    assert_selector "input[name='bank_rule[conditions_attributes][0][value]']", visible: true
+    assert_selector "select[name='bank_rule[conditions_attributes][0][field]']", visible: true
+    click_on "+ Add condition"
+    assert_selector ".condition-row", count: 2
+    assert_fits_viewport("new rule with two conditions")
+    shoot("rule form")
+  end
+
   test "the dashboard on a phone: quick actions, stacked tiles, activity as cards" do
     visit "/"
     assert_selector ".quick-actions a", text: "Reconcile · 1"

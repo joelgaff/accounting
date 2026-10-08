@@ -19,7 +19,7 @@
         <tr id="<%= dom_id(rule) %>" class="<%= 'muted' unless rule.active? %>">
           <td><%= link_to rule.name, edit_bank_rule_path(rule) %></td>
           <td>
-            <code><%= rule.match_kind.humanize.downcase %> “<%= rule.pattern %>”</code>
+            <code><%= rule.when_summary %></code>
             <span class="muted" style="font-size:12px;">
               <%= { "in" => "money in", "out" => "money out", "any" => "either way" }[rule.amount_sign] %><%= rule.bank_account ? " · #{rule.bank_account.name}" : "" %>
             </span>

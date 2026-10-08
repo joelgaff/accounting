@@ -23,7 +23,7 @@ class ReconcileLinksTest < ApplicationSystemTestCase
     end
     assert_current_path new_bank_rule_path(bank_transaction_id: txn.id)
     assert_selector "h1", text: /rule/i
-    assert_field "bank_rule[pattern]", with: "Blue Pixel Hosting"
+    assert_field "bank_rule[conditions_attributes][0][value]", with: "Blue Pixel Hosting"
   end
 
   test "a matched line's document link opens the document" do

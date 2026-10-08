@@ -204,18 +204,39 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, Payment.count
   end
 
-  test "bank rules can be created from a line and edited" do
+  test "bank rules can be created from a line, carry several conditions, and be edited" do
     txn = line(-8, payee: "CLOUDFLARE")
     get new_bank_rule_path(bank_transaction_id: txn.id)
     assert_response :success
-    assert_select "input[name='bank_rule[pattern]'][value=CLOUDFLARE]"
-    post bank_rules_path, params: { bank_rule: { name: "CF", match_kind: "contains", pattern: "cloudflare", amount_sign: "out", action_kind: "Expense", account_id: @hosting.id, auto_apply: "1", active: "1" } }
+    assert_select "input[name='bank_rule[conditions_attributes][0][value]'][value=CLOUDFLARE]"
+    assert_select "select[name='bank_rule[conditions_attributes][0][field]'] option[selected][value=text]"
+    assert_select "input[name='bank_rule[match_all]'][value=true]"
+    assert_select "template[data-nested-rows-target=template]"
+
+    post bank_rules_path, params: { bank_rule: { name: "CF", amount_sign: "out", action_kind: "Expense", account_id: @hosting.id, auto_apply: "1", active: "1", match_all: "true",
+      conditions_attributes: { "0" => { field: "text", operator: "contains", value: "cloudflare" }, "1" => { field: "amount", operator: "less_than", value: "50" } } } }
     assert_redirected_to bank_rules_path
     rule = @org.bank_rules.sole
+    assert_equal 2, rule.conditions.count
+    probe = ->(amount) { @org.bank_transactions.new(bank_account: @checking, posted_on: Date.current, amount: amount, payee: "CLOUDFLARE", description: "x") }
+    assert rule.matches?(probe.(-8))
+    assert_not rule.matches?(probe.(-80))
+
     get bank_rules_path
     assert_select "td", text: "CF"
-    patch bank_rule_path(rule), params: { bank_rule: { name: "Cloudflare" } }
-    assert_equal "Cloudflare", rule.reload.name
+    assert_select "td", text: /contains “cloudflare” and amount less than 50\.00/
+
+    second = rule.conditions.last
+    patch bank_rule_path(rule), params: { bank_rule: { name: "Cloudflare", match_all: "false", conditions_attributes: { "0" => { id: second.id, _destroy: "1" } } } }
+    rule.reload
+    assert_equal "Cloudflare", rule.name
+    assert_equal 1, rule.conditions.count
+    assert_not rule.match_all?
+
+    patch bank_rule_path(rule), params: { bank_rule: { conditions_attributes: { "0" => { id: rule.conditions.sole.id, _destroy: "1" } } } }
+    assert_response :unprocessable_entity
+    assert_match(/at least one/, response.body)
+
     get bank_transactions_path
     assert_select ".suggestion", text: /Rule/
     delete bank_rule_path(rule)

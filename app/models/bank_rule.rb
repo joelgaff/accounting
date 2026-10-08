@@ -1,13 +1,12 @@
-# "When a line looks like this, it is that": a pattern over payee/description
-# plus what to create for it. Rules suggest by default; auto_apply lets a
-# trusted rule categorize straight from an import.
+# "When a line looks like this, it is that": one or more conditions on the
+# line, all or any of which must hold, plus what to create for it. Direction
+# and bank account are the rule's scope. Rules suggest by default; auto_apply
+# lets a trusted rule categorize straight from an import.
 class BankRule < ApplicationRecord
   include Trackable
 
-  MATCH_KINDS  = %w[contains starts_with regex].freeze
   AMOUNT_SIGNS = %w[any in out].freeze
   ACTIONS      = %w[Expense Deposit Transfer].freeze
-  REGEX_TIMEOUT = 0.05
 
   belongs_to :organization
   belongs_to :bank_account, optional: true
@@ -16,15 +15,19 @@ class BankRule < ApplicationRecord
   belongs_to :account,      class_name: "Plutus::Account", optional: true
   belongs_to :transfer_bank_account, class_name: "BankAccount", optional: true
   has_many   :bank_transactions, dependent: :nullify
+  has_many   :conditions, -> { order(:position, :id) }, class_name: "BankRuleCondition", dependent: :destroy, inverse_of: :bank_rule
+  accepts_nested_attributes_for :conditions, allow_destroy: true, reject_if: ->(a) { a["value"].blank? && a["id"].blank? }
 
-  validates :name, :pattern, presence: true
-  validates :pattern, length: { maximum: 200 }
-  validates :match_kind,  inclusion: { in: MATCH_KINDS }
+  # The old one-test shape, still accepted: pattern plus match_kind become the first condition.
+  attr_writer :pattern, :match_kind
+  before_validation :condition_from_pattern
+
+  validates :name, presence: true
   validates :amount_sign, inclusion: { in: AMOUNT_SIGNS }
   validates :action_kind, inclusion: { in: ACTIONS }
   validate  :action_has_a_target
   validate  :references_stay_in_organization
-  validate  :regex_compiles, if: -> { match_kind == "regex" }
+  validate  :has_a_condition
 
   scope :active,  -> { where(active: true) }
   scope :ordered, -> { order(:position, :id) }
@@ -37,17 +40,15 @@ class BankRule < ApplicationRecord
     return false if bank_account_id && txn.bank_account_id != bank_account_id
     return false if amount_sign == "in"  && !txn.deposit?
     return false if amount_sign == "out" && !txn.withdrawal?
-    hay = [ txn.payee, txn.description ].compact_blank.join(" ").downcase
-    case match_kind
-    when "contains"    then hay.include?(pattern.downcase)
-    when "starts_with" then hay.start_with?(pattern.downcase)
-    when "regex"       then regexp.match?(hay)
-    end
-  rescue RegexpError, Regexp::TimeoutError
-    false
+    live = conditions.reject(&:marked_for_destruction?)
+    return false if live.empty?
+    match_all? ? live.all? { |c| c.holds_for?(txn) } : live.any? { |c| c.holds_for?(txn) }
   end
 
-  def regexp = Regexp.new(pattern, Regexp::IGNORECASE, timeout: REGEX_TIMEOUT)
+  # "payee or description contains “lyft” and amount more than 20.00"
+  def when_summary
+    conditions.reject(&:marked_for_destruction?).map(&:to_sentence).join(match_all? ? " and " : " or ")
+  end
 
   def summary
     case action_kind
@@ -84,9 +85,13 @@ class BankRule < ApplicationRecord
     errors.add(:account, "must belong to this organization")               if account && account.tenant_id != organization_id
   end
 
-  def regex_compiles
-    Regexp.new(pattern)
-  rescue RegexpError => e
-    errors.add(:pattern, "is not a valid regex (#{e.message})")
+  def condition_from_pattern
+    return if @pattern.blank?
+    conditions.build(field: "text", operator: @match_kind.presence || "contains", value: @pattern) if conditions.empty?
+    @pattern = nil
+  end
+
+  def has_a_condition
+    errors.add(:conditions, "need at least one") if conditions.reject(&:marked_for_destruction?).empty?
   end
 end

@@ -1,0 +1,11 @@
+<%# One condition row: field, operator, value (and a second value for between). %>
+<tr data-nested-rows-target="row" class="condition-row" data-open="true">
+  <td data-label="Field"><%= c.select :field, BankRuleCondition::FIELDS.map { |f| [ BankRuleCondition::FIELD_LABELS[f], f ] }, {}, style: "width:100%;", data: { no_combobox: "" } %></td>
+  <td data-label="Test"><%= c.select :operator, (BankRuleCondition::TEXT_OPERATORS + BankRuleCondition::AMOUNT_OPERATORS).uniq.map { |o| [ BankRuleCondition::OPERATOR_LABELS[o], o ] }, {}, style: "width:100%;", data: { no_combobox: "" } %></td>
+  <td data-label="Value"><%= c.text_field :value, placeholder: "CLOUDFLARE or 14.99", style: "width:100%;" %></td>
+  <td data-label="and, for between"><%= c.text_field :value_to, placeholder: "to", style: "width:100%;" %></td>
+  <td data-cell="tools">
+    <%= c.hidden_field :_destroy %>
+    <button type="button" class="btn btn-secondary" data-action="nested-rows#remove" style="padding:2px 8px;" aria-label="Remove condition">×</button>
+  </td>
+</tr>
