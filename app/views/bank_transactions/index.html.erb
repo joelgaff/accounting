@@ -36,7 +36,8 @@
   <% @contact_names.each do |name| %><option value="<%= name %>"></option><% end %>
 </datalist>
 
-<%= turbo_frame_tag dom_id(Current.organization, :bank_transactions) do %>
+<%# Rows are swapped by stream; a link inside leads to a whole page, not into the frame. %>
+<%= turbo_frame_tag dom_id(Current.organization, :bank_transactions), target: "_top" do %>
   <% if @transactions.any? %>
     <table class="data-table recon-table">
       <thead>
