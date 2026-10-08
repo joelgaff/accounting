@@ -1,4 +1,8 @@
+<%# The theme comes in the URL: this controller has no session, and the manifest
+    should paint the window the colour the person chose. %>
+<% light = params[:theme] == "light" %>
 {
+  "id": "/",
   "name": "<%= Rails.application.config.x.app_name %>",
   "short_name": "<%= Rails.application.config.x.app_name %>",
   "icons": [
@@ -21,8 +25,9 @@
   ],
   "start_url": "/",
   "display": "standalone",
+  "orientation": "any",
   "scope": "/",
   "description": "Double-entry books<%= " for #{Current.organization.name}" if Current.organization %>.",
-  "theme_color": "#060a12",
-  "background_color": "#060a12"
+  "theme_color": "<%= light ? "#eef2f7" : "#060a12" %>",
+  "background_color": "<%= light ? "#eef2f7" : "#060a12" %>"
 }
