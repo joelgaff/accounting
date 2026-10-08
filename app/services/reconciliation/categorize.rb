@@ -2,8 +2,10 @@ module Reconciliation
   # Turn a statement line into a fresh expense (money out) or deposit (money
   # in) with one line item, then link the two.
   class Categorize
-    def initialize(txn, account:, tax_rate: nil, contact_name: nil, memo: nil, tracking_option_ids: [], source: "reconcile")
+    # via: what chose the coding when a person did not type it ("memory").
+    def initialize(txn, account:, tax_rate: nil, contact_name: nil, memo: nil, tracking_option_ids: [], source: "reconcile", via: nil)
       @txn          = txn
+      @via          = via
       @account      = account
       @tax_rate     = tax_rate
       @tracking     = Array(tracking_option_ids).compact_blank
@@ -28,6 +30,7 @@ module Reconciliation
           memo:         @memo || @txn.description,
           contact:      contact,
           source:       @source,
+          created_via:  @via,
           documentable: build_type(contact),
           line_items_attributes: [ { description: @txn.description.to_s.truncate(120), quantity: 1,
                                      unit_amount: net, account: @account, tax_rate: @tax_rate,

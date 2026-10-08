@@ -47,6 +47,9 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ timing.id ], doc.line_items.sole.tracking_option_ids
     assert_equal BigDecimal("48"), doc.total
     assert_match(/target="#{row_id(fresh)}"/, response.body)
+    created = doc.events.find_by!(action: "created")
+    assert_equal "memory", created.details["via"]
+    assert_equal "Created from a bank line, coded from memory", created.title
   end
 
   test "a payee seen fewer times gets no OK, but the create panel and a new rule come prefilled" do

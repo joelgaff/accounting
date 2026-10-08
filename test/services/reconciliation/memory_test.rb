@@ -70,6 +70,17 @@ class Reconciliation::MemoryTest < ActiveSupport::TestCase
     assert_nil Reconciliation::Memory.new(@org, [ stranger ]).for(stranger)
   end
 
+  test "a document created from memory says so in its history; one coded by hand does not" do
+    txn = line(-48, "BLUEPIXEL HOSTING 10/02")
+    Reconciliation::Categorize.new(txn, account: @hosting, contact_name: "Blue Pixel Hosting", via: "memory").call
+    assert_equal "memory", txn.document.events.find_by!(action: "created").details["via"]
+
+    other = line(-48, "BLUEPIXEL HOSTING 11/02")
+    Reconciliation::Categorize.new(other, account: @hosting, contact_name: "Blue Pixel Hosting").call
+    assert_nil other.document.events.find_by!(action: "created").details["via"]
+    assert_equal "Created from a bank line", other.document.events.find_by!(action: "created").title
+  end
+
   test "an expense typed by hand teaches the same lesson when its vendor is in the line" do
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 7, 1))
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 8, 1))

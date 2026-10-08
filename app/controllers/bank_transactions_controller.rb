@@ -73,7 +73,7 @@ class BankTransactionsController < ApplicationController
         # Re-read the books rather than trust the page: the coding must still be confident.
         hit = Reconciliation::Memory.new(org, [ @txn ]).for(@txn)
         raise Reconciliation::MatchDocument::Mismatch, "the books no longer agree on this payee; use Create" unless hit&.confident?
-        Reconciliation::Categorize.new(@txn, **hit.coding).call
+        Reconciliation::Categorize.new(@txn, **hit.coding, via: "memory").call
       else
         raise Reconciliation::MatchDocument::Mismatch, "unknown suggestion"
       end

@@ -13,6 +13,8 @@ class Document < ApplicationRecord
   include HasBalanceDue
   include DocumentHistory
 
+  attr_accessor :created_via   # noted in the history: "memory" when reconcile coded it from past codings
+
   belongs_to :organization
   belongs_to :contact, optional: true
   delegated_type :documentable, types: TYPES, dependent: :destroy, autosave: true, inverse_of: :document

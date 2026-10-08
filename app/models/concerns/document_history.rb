@@ -50,7 +50,7 @@ module DocumentHistory
   private
 
   def record_created_event
-    record_event!(:created, source: source, total: total, reference: reference)
+    record_event!(:created, source: source, via: created_via, total: total, reference: reference)
   end
 
   def account_name_for(col, id)

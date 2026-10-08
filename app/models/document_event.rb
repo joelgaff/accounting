@@ -21,7 +21,12 @@ class DocumentEvent < ApplicationRecord
 
   def title
     case action
-    when "created"          then details["source"] == "reconcile" ? "Created from a bank line" : "Created"
+    when "created"
+      if details["source"] == "reconcile"
+        details["via"] == "memory" ? "Created from a bank line, coded from memory" : "Created from a bank line"
+      else
+        "Created"
+      end
     when "edited"           then "Edited"
     when "approved"         then "Approved"
     when "unapproved"       then "Back to draft"
