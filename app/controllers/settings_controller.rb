@@ -25,24 +25,18 @@ class SettingsController < ApplicationController
 
   # The name mail goes out under and where replies land. The address itself is the operator's.
   def emailing
-    settings = Current.organization.settings
-    if settings.update(params.require(:organization_settings).permit(:email_from_name, :email_reply_to))
-      redirect_to settings_path, notice: "Email will go out as #{settings.email_sender_name}#{settings.email_reply_to ? ", replies to #{settings.email_reply_to}" : ''}."
-    else
-      redirect_to settings_path, alert: "Email settings not saved: #{settings.errors.full_messages.to_sentence.sub('Email reply to', 'reply-to')}."
-    end
+    save_settings(params.require(:organization_settings).permit(:email_from_name, :email_reply_to), what: "Email settings",
+                  notice: ->(s) { "Email will go out as #{s.email_sender_name}#{s.email_reply_to ? ", replies to #{s.email_reply_to}" : ''}." },
+                  plain: { "Email reply to" => "reply-to" })
   end
 
   # Invoice prefix and next number. A blank next number means "follow the invoices".
   def invoicing
-    settings = Current.organization.settings
-    attrs    = params.require(:organization_settings).permit(:invoice_prefix, :invoice_next_number)
+    attrs = params.require(:organization_settings).permit(:invoice_prefix, :invoice_next_number)
     attrs[:invoice_next_number] = attrs[:invoice_next_number].presence
-    if settings.update(attrs)
-      redirect_to settings_path, notice: "Invoices will be numbered from #{settings.next_invoice_number}."
-    else
-      redirect_to settings_path, alert: "Invoice numbering not saved: #{settings.errors.full_messages.to_sentence.sub('Invoice next number', 'the next number')}."
-    end
+    save_settings(attrs, what: "Invoice numbering",
+                  notice: ->(s) { "Invoices will be numbered from #{s.next_invoice_number}." },
+                  plain: { "Invoice next number" => "the next number" })
   end
 
   # ── The "You" panel (local mode; Launchpad owns name and email otherwise) ──
@@ -103,6 +97,18 @@ class SettingsController < ApplicationController
   end
 
   private
+
+  # One settings row saved: say what it now means, or why it was refused in plain words.
+  def save_settings(attrs, what:, notice:, plain: {})
+    settings = Current.organization.settings
+    if settings.update(attrs)
+      redirect_to settings_path, notice: notice.call(settings)
+    else
+      message = settings.errors.full_messages.to_sentence
+      plain.each { |from, to| message = message.sub(from, to) }
+      redirect_to settings_path, alert: "#{what} not saved: #{message}."
+    end
+  end
 
   def load_accounts
     @bank_accounts      = Current.organization.bank_accounts.active.ordered
