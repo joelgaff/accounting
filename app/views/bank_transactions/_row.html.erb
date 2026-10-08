@@ -24,7 +24,7 @@
           <% if suggestion&.confident? %>
             <div class="suggestion" title="<%= suggestion.label %>">
               <span class="suggestion-text">→ <%= suggestion.label %></span>
-              <%= button_to "OK", accept_suggestion_bank_transaction_path(txn), params: { kind: suggestion.kind, target_id: suggestion.target.id }, class: "btn btn-primary" %>
+              <%= button_to "OK", accept_suggestion_bank_transaction_path(txn), params: { kind: suggestion.kind, target_id: suggestion.target&.id }.compact, class: "btn btn-primary" %>
             </div>
           <% end %>
           <div class="segments" role="tablist">
@@ -54,7 +54,7 @@
         <% if candidates_index.pool_for(txn).any? %>
           <div data-segments-target="panel" data-segment="split" hidden><%= render "bank_transactions/panels/split", txn: txn, pool: candidates_index.pool_for(txn) %></div>
         <% end %>
-        <div data-segments-target="panel" data-segment="create" hidden><%= render "bank_transactions/panels/create", txn: txn %></div>
+        <div data-segments-target="panel" data-segment="create" hidden><%= render "bank_transactions/panels/create", txn: txn, hint: local_assigns[:hint] %></div>
         <div data-segments-target="panel" data-segment="transfer" hidden><%= render "bank_transactions/panels/transfer", txn: txn, candidates: candidates %></div>
       </td>
     </tr>

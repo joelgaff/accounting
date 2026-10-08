@@ -49,7 +49,7 @@
         </tr>
       </thead>
       <% @transactions.each do |txn| %>
-        <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn), suggestion: @suggestions.top(txn), candidates_index: @candidates %>
+        <%= render "bank_transactions/row", txn: txn, candidates: @candidates.for(txn), suggestion: @suggestions.top(txn), hint: @memory.for(txn), candidates_index: @candidates %>
       <% end %>
     </table>
     <%= render "shared/pagination" %>

@@ -1,6 +1,6 @@
-<%= turbo_stream.replace @txn, partial: "bank_transactions/row", locals: { txn: @txn, candidates: @candidates.for(@txn), suggestion: @suggestions.top(@txn), candidates_index: @candidates } %>
+<%= turbo_stream.replace @txn, partial: "bank_transactions/row", locals: { txn: @txn, candidates: @candidates.for(@txn), suggestion: @suggestions.top(@txn), hint: @memory.for(@txn), candidates_index: @candidates } %>
 <% if @sibling %>
-  <%= turbo_stream.replace @sibling, partial: "bank_transactions/row", locals: { txn: @sibling, candidates: @candidates.for(@sibling), suggestion: @suggestions.top(@sibling), candidates_index: @candidates } %>
+  <%= turbo_stream.replace @sibling, partial: "bank_transactions/row", locals: { txn: @sibling, candidates: @candidates.for(@sibling), suggestion: @suggestions.top(@sibling), hint: @memory.for(@sibling), candidates_index: @candidates } %>
 <% end %>
 <%= turbo_stream.update dom_id(Current.organization, :unmatched_count), Current.organization.bank_transactions.unmatched.count.to_s %>
 <% @summary.each do |row| %>

@@ -1,18 +1,22 @@
 module Reconciliation
-  # Ranks what a line most likely is: exact amount beats near amount, then
-  # closeness in date, then words the line shares with the document. Exact
-  # matches earn a one-click OK; the rest just sort the Match select.
+  # Ranks what a line most likely is: a rule first, then an exact amount
+  # over a near amount, closeness in date, words the line shares with the
+  # document, and last what the books remember about the payee. Confident
+  # suggestions earn a one-click OK; the rest just sort the Match select.
   class Suggester
-    Suggestion = Struct.new(:kind, :target, :score, :label, keyword_init: true) do
+    Suggestion = Struct.new(:kind, :target, :score, :label, :data, keyword_init: true) do
       def confident? = score >= 100
     end
+    MEMORY_CONFIDENT = 100
+    MEMORY_HINT      = 30
     DATE_WINDOW = 7
     STOPWORDS   = %w[the and inc llc ltd payment pmt pos card visa debit credit online ach transfer tfr].freeze
 
-    def initialize(organization, transactions, candidates:)
+    def initialize(organization, transactions, candidates:, memory: nil)
       @org        = organization
       @txns       = Array(transactions)
       @candidates = candidates
+      @memory     = memory
       @rules      = @org.bank_rules.active.ordered.includes(:account, :contact, :transfer_bank_account).to_a
       @memo       = {}
     end
@@ -31,6 +35,10 @@ module Reconciliation
       out += set.transfers.map { |d| Suggestion.new(kind: :transfer_side, target: d, score: 100 + date_score(txn.posted_on, d.date, window: 3), label: "#{d.label} · #{d.party_name} · #{'%.2f' % d.total}") }
       out += @candidates.mirror_lines_for(txn).map { |o| Suggestion.new(kind: :transfer_pair, target: o, score: 90 + date_score(txn.posted_on, o.posted_on, window: 3), label: "Transfer #{txn.deposit? ? 'from' : 'to'} #{o.bank_account.name} (#{o.posted_on.iso8601})") }
       out  = out.sort_by { |s| -s.score }
+      if (hit = @memory&.for(txn))
+        memory = memory_suggestion(txn, hit)
+        out.insert(out.index { |s| s.score <= memory.score } || out.size, memory)   # after anything that scores higher
+      end
       rule = txn.bank_rule || @rules.detect { |r| r.matches?(txn) }
       out.unshift(Suggestion.new(kind: :rule, target: rule, score: 100, label: "Rule “#{rule.name}”: #{rule.summary}")) if rule
       out
@@ -46,6 +54,12 @@ module Reconciliation
       score += date_score(txn.posted_on, doc.date)
       score += 10 * (tokens(txn.payee, txn.description, txn.reference) & tokens(doc.counterparty, doc.reference)).size.clamp(0, 3)
       Suggestion.new(kind: :document, target: doc, score: score, label: "#{doc.label} · #{doc.display_name} · #{'%.2f' % due}")
+    end
+
+    def memory_suggestion(txn, hit)
+      account = [ hit.account.code, hit.account.name ].compact_blank.join(" ")
+      Suggestion.new(kind: :memory, target: nil, data: hit, score: hit.confident? ? MEMORY_CONFIDENT : MEMORY_HINT,
+                     label: "#{txn.deposit? ? 'Deposit' : 'Expense'} · #{hit.contact_name.presence || 'no contact'} · #{account}")
     end
 
     def date_score(a, b, window: DATE_WINDOW)

@@ -56,13 +56,18 @@ class BankRulesController < ApplicationController
   def prefill
     return { match_kind: "contains", amount_sign: "any", action_kind: "Expense" } if params[:bank_transaction_id].blank?
     txn = Current.organization.bank_transactions.find(params[:bank_transaction_id])
+    hit = Reconciliation::Memory.new(Current.organization, [ txn ]).for(txn)
     {
       name:         txn.display_payee.to_s.truncate(40),
       pattern:      txn.display_payee.to_s,
       match_kind:   "contains",
       amount_sign:  txn.deposit? ? "in" : "out",
       action_kind:  txn.deposit? ? "Deposit" : "Expense",
-      bank_account: nil
+      bank_account: nil,
+      account:      hit&.account,
+      tax_rate:     hit&.tax_rate,
+      contact:      hit && Current.organization.contacts.find_by(name: hit.contact_name),
+      tracking_option_ids: hit&.tracking_option_ids || []
     }
   end
 

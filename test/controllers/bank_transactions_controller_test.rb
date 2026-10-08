@@ -18,6 +18,58 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
   def counter_id = ActionView::RecordIdentifier.dom_id(@org, :unmatched_count)
   def row_id(txn) = ActionView::RecordIdentifier.dom_id(txn)
 
+  # ── Memory: what a payee was coded to before ──────────────────────────────
+
+  def coded(description, account:, on:, contact: "Blue Pixel Hosting", amount: -48, tracking: [])
+    txn = line(amount, on: on, description: description)
+    Reconciliation::Categorize.new(txn, account: account, contact_name: contact, tracking_option_ids: tracking).call
+    txn
+  end
+
+  test "a payee coded the same way three times gets a one-tap OK that creates the expense" do
+    klass  = @org.tracking_categories.create!(name: "Class")
+    timing = klass.options.create!(name: "Timing")
+    3.times { |i| coded("BLUEPIXEL HOSTING 0#{7 + i}/02", account: @hosting, on: Date.new(2026, 7 + i, 2), tracking: [ timing.id ]) }
+    fresh = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+
+    get bank_transactions_path(status: "unmatched")
+    assert_select "##{row_id(fresh)} .suggestion-text", text: /Expense · Blue Pixel Hosting · Hosting/
+    assert_select "##{row_id(fresh)} .suggestion input[name=kind][value=memory]"
+
+    post accept_suggestion_bank_transaction_path(fresh), params: { kind: "memory" }, as: :turbo_stream
+    assert_response :success
+    fresh.reload
+    assert_equal "matched", fresh.status
+    doc = fresh.document
+    assert doc.expense?
+    assert_equal @hosting, doc.line_items.sole.account
+    assert_equal "Blue Pixel Hosting", doc.counterparty
+    assert_equal [ timing.id ], doc.line_items.sole.tracking_option_ids
+    assert_equal BigDecimal("48"), doc.total
+    assert_match(/target="#{row_id(fresh)}"/, response.body)
+  end
+
+  test "a payee seen fewer times gets no OK, but the create panel and a new rule come prefilled" do
+    coded("AMZN MKTP US*2K3", account: @hosting, on: Date.new(2026, 9, 1), contact: "Amazon")
+    fresh = line(-20, description: "AMZN MKTP US*1A1")
+
+    get bank_transactions_path(status: "unmatched")
+    assert_select "##{row_id(fresh)} .suggestion", 0
+    assert_select "##{row_id(fresh)} [data-segment=create] select[name=account_id] option[selected][value=?]", @hosting.id.to_s
+    assert_select "##{row_id(fresh)} [data-segment=create] input[name=contact_name][value=Amazon]"
+
+    get new_bank_rule_path(bank_transaction_id: fresh.id)
+    assert_select "select[name='bank_rule[account_id]'] option[selected][value=?]", @hosting.id.to_s
+  end
+
+  test "memory OK is refused when the books no longer agree" do
+    coded("ZOOM.US", account: @hosting, on: Date.new(2026, 9, 1), contact: "Zoom")
+    fresh = line(-15, description: "ZOOM.US")
+    post accept_suggestion_bank_transaction_path(fresh), params: { kind: "memory" }, as: :turbo_stream
+    assert_response :unprocessable_entity
+    assert_equal "unmatched", fresh.reload.status
+  end
+
   test "index renders every unmatched line with its panels and one contact datalist" do
     create_invoice(@org, client_name: "Acme", amount: 100, receivable: @ar, revenue: @sales)
     @org.contacts.create!(name: "Acme", kind: "customer")

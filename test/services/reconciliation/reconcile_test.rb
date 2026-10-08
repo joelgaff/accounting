@@ -25,6 +25,24 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     end
   end
 
+  test "memory ranks below a rule and below an exact document match, above nothing" do
+    3.times { |i| t = line(-48, on: Date.new(2026, 7 + i, 2), description: "BLUEPIXEL HOSTING"); Reconciliation::Categorize.new(t, account: @hosting, contact_name: "Blue Pixel Hosting").call }
+    fresh = line(-48, description: "BLUEPIXEL HOSTING")
+    suggest = ->(txn) { Reconciliation::Suggester.new(@org, [ txn ], candidates: Reconciliation::Candidates.new(@org, [ txn ]), memory: Reconciliation::Memory.new(@org, [ txn ])).top(txn) }
+
+    top = suggest.(fresh)
+    assert_equal :memory, top.kind
+    assert top.confident?
+    assert_match(/Expense · Blue Pixel Hosting · Hosting/, top.label)
+
+    bill = create_bill(@org, vendor: "Blue Pixel Hosting", amount: 48, category: @hosting, payable: @ap)
+    assert_equal :document, suggest.(fresh).kind, "an open bill for the amount beats memory"
+    bill.destroy!
+
+    @org.bank_rules.create!(name: "Pixel", pattern: "BLUEPIXEL", match_kind: "contains", amount_sign: "any", action_kind: "Expense", account: @hosting, position: 1)
+    assert_equal :rule, suggest.(fresh).kind, "a rule beats memory"
+  end
+
   test "matching a deposit to an invoice creates a payment and marks the line" do
     inv = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
     txn = line(500)

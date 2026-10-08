@@ -67,9 +67,10 @@ module ApplicationHelper
   end
 
   # One select per active category for a line; posts as <name>[tracking_option_ids][]
-  def tracking_selects(object_name, line, style: "width:100%;")
+  def tracking_selects(object_name, line, style: "width:100%;", selected: nil)
     safe_join(tracking_categories.map do |category|
       current = line.respond_to?(:tracking_option_for) ? line.tracking_option_for(category)&.id : nil
+      current = category.active_options.find { |o| Array(selected).include?(o.id) }&.id if selected
       select_tag "#{object_name}[tracking_option_ids][]",
                  options_for_select([ [ "— #{category.name} —", "" ] ] + category.active_options.map { |o| [ o.name, o.id ] }, current),
                  style: style, "aria-label": category.name

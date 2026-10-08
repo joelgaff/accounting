@@ -10,7 +10,8 @@ class BankTransactionsController < ApplicationController
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
     @transactions    = paginate(scope.order(posted_on: :desc, id: :desc), per: 100)
     @candidates      = Reconciliation::Candidates.new(Current.organization, @transactions)
-    @suggestions     = Reconciliation::Suggester.new(Current.organization, @transactions, candidates: @candidates)
+    @memory          = Reconciliation::Memory.new(Current.organization, @transactions)
+    @suggestions     = Reconciliation::Suggester.new(Current.organization, @transactions, candidates: @candidates, memory: @memory)
     @summary         = Reconciliation::Summary.new(Current.organization).rows
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
   end
@@ -68,6 +69,12 @@ class BankTransactionsController < ApplicationController
         Reconciliation::CreateTransfer.new(@txn, other_bank_account: other).call
       when "rule"
         org.bank_rules.find(params[:target_id]).apply!(@txn)
+      when "memory"
+        # Re-read the books rather than trust the page: the coding must still be confident.
+        hit = Reconciliation::Memory.new(org, [ @txn ]).for(@txn)
+        raise Reconciliation::MatchDocument::Mismatch, "the books no longer agree on this payee; use Create" unless hit&.confident?
+        Reconciliation::Categorize.new(@txn, account: hit.account, tax_rate: hit.tax_rate, contact_name: hit.contact_name,
+                                       tracking_option_ids: hit.tracking_option_ids).call
       else
         raise Reconciliation::MatchDocument::Mismatch, "unknown suggestion"
       end
@@ -106,7 +113,8 @@ class BankTransactionsController < ApplicationController
     @sibling = result.sibling&.reload
     rows     = [ @txn, @sibling ].compact
     @candidates  = Reconciliation::Candidates.new(Current.organization, rows)
-    @suggestions = Reconciliation::Suggester.new(Current.organization, rows, candidates: @candidates)
+    @memory      = Reconciliation::Memory.new(Current.organization, rows)
+    @suggestions = Reconciliation::Suggester.new(Current.organization, rows, candidates: @candidates, memory: @memory)
     @summary     = Reconciliation::Summary.new(Current.organization).rows.select { |r| rows.map(&:bank_account_id).include?(r.bank_account.id) }
     respond_to do |format|
       format.turbo_stream { render :row }
