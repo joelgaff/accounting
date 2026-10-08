@@ -1,13 +1,12 @@
 # Partita Doppia
 
-Double-entry books for one small business. Invoices, bills, spend and receive
+Double-entry books for small businesses. Invoices, bills, spend and receive
 money, transfers, manual journals, bank reconciliation, Xero-style tracking
 categories and the standard reports, in a Rails 8 app that runs on SQLite and
 needs nothing else. Built by someone leaving Xero who wanted to keep the parts
 that worked and own the rest.
 
-*Partita doppia* is Italian for double entry. The name is always the two words
-together.
+*Partita doppia* is Italian for double entry.
 
 ![Dashboard: operating bank, receivables, payables and the latest ledger entries](docs/screenshots/dashboard.jpg)
 
