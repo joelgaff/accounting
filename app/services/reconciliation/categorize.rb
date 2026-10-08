@@ -32,7 +32,7 @@ module Reconciliation
           source:       @source,
           created_via:  @via,
           documentable: build_type(contact),
-          line_items_attributes: [ { description: @txn.description.to_s.truncate(120), quantity: 1,
+          line_items_attributes: [ { description: (@memo || @txn.description.to_s).truncate(120), quantity: 1,
                                      unit_amount: net, account: @account, tax_rate: @tax_rate,
                                      tracking_option_ids: @tracking } ]
         )

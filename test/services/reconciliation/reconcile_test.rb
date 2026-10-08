@@ -44,6 +44,18 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     assert_equal :rule, suggest.(fresh).kind, "a rule beats memory"
   end
 
+  test "a Why typed on create becomes the line's description and the document's memo; blank keeps the bank's words" do
+    typed = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    Reconciliation::Categorize.new(typed, account: @hosting, memo: "Monthly hosting, October").call
+    assert_equal "Monthly hosting, October", typed.document.memo
+    assert_equal "Monthly hosting, October", typed.document.line_items.sole.description
+
+    blank = line(-48, description: "BLUEPIXEL HOSTING 11/02")
+    Reconciliation::Categorize.new(blank, account: @hosting, memo: "  ").call
+    assert_equal "BLUEPIXEL HOSTING 11/02", blank.document.memo
+    assert_equal "BLUEPIXEL HOSTING 11/02", blank.document.line_items.sole.description
+  end
+
   test "matching a deposit to an invoice creates a payment and marks the line" do
     inv = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
     txn = line(500)

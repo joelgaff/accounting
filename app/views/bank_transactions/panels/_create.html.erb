@@ -21,6 +21,10 @@
       <div style="display:flex;gap:6px;"><%= tracking_selects("", txn, style: "font-size:12px;min-width:120px;", selected: hint&.tracking_option_ids) %></div>
     </div>
   <% end %>
+  <div class="field grow">
+    <%= f.label :memo, "Why" %>
+    <%= f.text_field :memo, placeholder: txn.description.to_s.truncate(60).presence || "What this was for", maxlength: 120 %>
+  </div>
   <div class="field">
     <%= f.label :contact_name, txn.deposit? ? "From (optional)" : "Vendor (optional)" %>
     <%= f.text_field :contact_name, value: hint&.contact_name, list: dom_id(Current.organization, :contact_names), placeholder: "Existing or new contact" %>

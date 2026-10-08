@@ -118,6 +118,18 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "##{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}"
   end
 
+  test "the create panel asks why, and the answer lands on the expense" do
+    txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    get bank_transactions_path
+    assert_select "##{row_id(txn)} [data-segment=create] input[name=memo][placeholder]"
+
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting" }, as: :turbo_stream
+    assert_response :success
+    doc = txn.reload.document
+    assert_equal "Monthly hosting", doc.memo
+    assert_equal "Monthly hosting", doc.line_items.sole.description
+  end
+
   test "memory OK is refused when the books no longer agree" do
     coded("ZOOM.US", account: @hosting, on: Date.new(2026, 9, 1), contact: "Zoom")
     fresh = line(-15, description: "ZOOM.US")
