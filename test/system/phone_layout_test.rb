@@ -194,6 +194,26 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("reconcile")
   end
 
+  test "a remembered payee gets a one-tap OK on a phone, and the tap codes the line" do
+    3.times do |i|
+      t = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.new(2026, 7 + i, 2), amount: -15, description: "ZOOM.US 888-799-9666")
+      Reconciliation::Categorize.new(t, account: @hosting, contact_name: "Zoom").call
+    end
+    fresh = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -15, description: "ZOOM.US 888-799-9666")
+    visit "/bank_transactions?status=unmatched"
+    row = find("##{ActionView::RecordIdentifier.dom_id(fresh)}")
+    within(row) do
+      assert_selector ".suggestion-text", text: /Expense · Zoom · 6820 Web Hosting/
+      ok = find(".suggestion .btn", text: "OK")
+      assert_operator ok.native.size.height, :>=, 40
+      ok.click
+    end
+    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .badge-matched", wait: 5
+    assert_equal "Zoom", fresh.reload.document.counterparty
+    assert_fits_viewport("reconcile after memory OK")
+    shoot("reconcile memory ok")
+  end
+
   test "the dashboard on a phone: quick actions, stacked tiles, activity as cards" do
     visit "/"
     assert_selector ".quick-actions a", text: "Reconcile · 1"
