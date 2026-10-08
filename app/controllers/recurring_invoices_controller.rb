@@ -1,6 +1,6 @@
 class RecurringInvoicesController < ApplicationController
   before_action :load_form_collections, only: %i[new create edit update]
-  before_action :require_receivable_account, only: %i[new create]
+  before_action -> { require_control_account(:receivable_account, "Accounts Receivable", "recurring invoices") }, only: %i[new create]
   before_action :load_recurring, only: %i[show edit update destroy run_now]
 
   def index
@@ -68,11 +68,6 @@ class RecurringInvoicesController < ApplicationController
     @revenue_accounts    = Plutus::Revenue.where(tenant: Current.organization).order(:code, :name)
     @customers           = Current.organization.contacts.customers.ordered
     @tax_rates           = Current.organization.tax_rates.ordered
-  end
-
-  def require_receivable_account
-    return if Current.organization.settings.receivable_account.present?
-    redirect_to settings_path, alert: "Pick your Accounts Receivable account under Dashboard accounts before creating recurring invoices."
   end
 
   def recurring_params

@@ -110,13 +110,6 @@ class DocumentsController < ApplicationController
     @document = scope.find(params[:id])
   end
 
-  # Invoices and bills post to one receivable or payable account, chosen once
-  # in Settings; a form never asks. Without it there is nothing to post to.
-  def require_control_account(attr, label)
-    return if Current.organization.settings.public_send(attr).present?
-    redirect_to settings_path, alert: "Pick your #{label} account under Dashboard accounts before creating #{type_name.downcase.pluralize}."
-  end
-
   def refuse_if_voided
     return unless @document.voided?
     redirect_to helpers.document_path_for(@document), alert: "#{@document.label} is voided and can't be changed."

@@ -1,6 +1,6 @@
 class InvoicesController < DocumentsController
   before_action :refuse_if_draft, only: %i[email send_email]
-  before_action -> { require_control_account(:receivable_account, "Accounts Receivable") }, only: %i[new create]
+  before_action -> { require_control_account(:receivable_account, "Accounts Receivable", "invoices") }, only: %i[new create]
 
   def print
     respond_to do |format|

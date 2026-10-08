@@ -20,4 +20,11 @@ class ApplicationController < ActionController::Base
   def set_organization
     Current.organization = Organization.first || Organization.create!(name: "Default")
   end
+
+  # Invoices and bills post to one receivable or payable account, chosen once
+  # in Settings; a form never asks. Without it there is nothing to post to.
+  def require_control_account(attr, label, noun)
+    return if Current.organization.settings.public_send(attr).present?
+    redirect_to settings_path, alert: "Pick your #{label} account under Control accounts before creating #{noun}."
+  end
 end
