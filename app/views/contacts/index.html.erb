@@ -45,6 +45,8 @@
     </tbody>
   </table>
   <%= render "shared/pagination" %>
+<% elsif @q.present? %>
+  <p class="empty-state">Nothing matches “<%= @q %>”<%= params[:kind].present? ? " among #{params[:kind].pluralize}" : "" %>.</p>
 <% else %>
   <p class="empty-state">
     No contacts yet.

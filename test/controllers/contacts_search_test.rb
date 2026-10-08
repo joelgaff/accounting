@@ -33,5 +33,7 @@ class ContactsSearchTest < ActionDispatch::IntegrationTest
 
     get contacts_path(q: "%")
     assert_select "tbody tr", 0, "a wildcard is just a character nobody is named"
+    assert_select ".empty-state", text: /Nothing matches “%”/
+    assert_select ".empty-state", text: /No contacts yet/, count: 0
   end
 end
