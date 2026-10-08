@@ -14,6 +14,17 @@
         </div>
         <div class="settings-row-action"><%= f.submit "Save name", class: "btn btn-primary" %></div>
       <% end %>
+      <%= form_with model: @settings, url: emailing_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+        <div class="settings-row-label"><%= f.label :email_from_name, "Email" %></div>
+        <div class="settings-row-main">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <%= f.text_field :email_from_name, placeholder: Current.organization.name, style: "max-width:220px;", "aria-label": "Sender name" %>
+            <%= f.email_field :email_reply_to, placeholder: "replies to (optional)", style: "max-width:260px;", "aria-label": "Reply-to address" %>
+          </div>
+          <p class="settings-row-help">Invoices and login codes go out as <strong><%= @settings.email_sender_name %></strong> &lt;<%= ApplicationMailer.sending_address %>&gt;. The address is set by whoever runs the server; the name and where replies go are yours.</p>
+        </div>
+        <div class="settings-row-action"><%= f.submit "Save email", class: "btn btn-primary" %></div>
+      <% end %>
       <div class="settings-row">
         <div class="settings-row-label">People</div>
         <div class="settings-row-main">

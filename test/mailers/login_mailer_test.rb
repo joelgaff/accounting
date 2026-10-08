@@ -11,6 +11,13 @@ class LoginMailerTest < ActionMailer::TestCase
     assert_match(/10 minutes/, mail.text_part.body.to_s)
   end
 
+  test "login codes carry the organisation's name as sender" do
+    user = organizations(:one).users.create!(email_address: "sam@example.com", name: "Sam")
+    organizations(:one).settings.update!(email_from_name: "EE Timing")
+    mail = LoginMailer.code(user, "123456")
+    assert_equal "EE Timing", mail[:from].display_names.first
+  end
+
   test "the welcome email names who added them and where to sign in" do
     org   = organizations(:one)
     joel  = org.users.create!(email_address: "joel@example.com", name: "Joel")

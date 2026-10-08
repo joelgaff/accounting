@@ -9,6 +9,12 @@ class OrganizationSettings < ApplicationRecord
   NUMBER_WIDTH = 4   # INV-0001; the digits grow past four on their own
 
   normalizes :invoice_prefix, with: ->(p) { p.to_s.strip }
+  normalizes :email_from_name, :email_reply_to, with: ->(v) { v.to_s.strip.presence }
+  validates :email_reply_to, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be an email address" }, allow_nil: true
+  validates :email_from_name, length: { maximum: 80 }
+
+  # The name mail goes out under: what was set, else the organisation itself.
+  def email_sender_name = email_from_name.presence || organization.name
   validates :invoice_next_number, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
   validate  :control_accounts_stay_set
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_160000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -290,6 +290,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_150000) do
     t.datetime "updated_at", null: false
     t.string "invoice_prefix", default: "INV-", null: false
     t.integer "invoice_next_number"
+    t.string "email_from_name"
+    t.string "email_reply_to"
     t.index ["bank_account_id"], name: "index_organization_settings_on_bank_account_id"
     t.index ["organization_id"], name: "index_organization_settings_on_organization_id", unique: true
     t.index ["payable_account_id"], name: "index_organization_settings_on_payable_account_id"

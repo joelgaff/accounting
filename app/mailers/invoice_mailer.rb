@@ -6,7 +6,7 @@ class InvoiceMailer < ApplicationMailer
     @invoice = invoice
     @body    = body
     attachments[InvoicePdf.filename(invoice)] = { mime_type: "application/pdf", content: InvoicePdf.new(invoice).render }
-    mail to: to, subject: subject.presence || self.class.default_subject(invoice)
+    mail to: to, subject: subject.presence || self.class.default_subject(invoice), **sender_for(invoice.organization)
   end
 
   def self.default_subject(invoice)

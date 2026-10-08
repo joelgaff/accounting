@@ -23,6 +23,16 @@ class SettingsController < ApplicationController
     end
   end
 
+  # The name mail goes out under and where replies land. The address itself is the operator's.
+  def emailing
+    settings = Current.organization.settings
+    if settings.update(params.require(:organization_settings).permit(:email_from_name, :email_reply_to))
+      redirect_to settings_path, notice: "Email will go out as #{settings.email_sender_name}#{settings.email_reply_to ? ", replies to #{settings.email_reply_to}" : ''}."
+    else
+      redirect_to settings_path, alert: "Email settings not saved: #{settings.errors.full_messages.to_sentence.sub('Email reply to', 'reply-to')}."
+    end
+  end
+
   # Invoice prefix and next number. A blank next number means "follow the invoices".
   def invoicing
     settings = Current.organization.settings
