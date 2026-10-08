@@ -157,7 +157,10 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
   border: 1px solid var(--rule-lit);
   border-radius: 5px;
   box-shadow: var(--shadow-md);
-  overflow: hidden;
+  /* clip, not hidden: a hidden overflow can still be scrolled by script, and
+     Turbo refocusing a replaced control did exactly that, pushing the title
+     bar and sidebar out of the frame. */
+  overflow: clip;
 }
 .app-titlebar, .app-statusbar { flex: none; }
 /* The one bright edge in the interface. */
