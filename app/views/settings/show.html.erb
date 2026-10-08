@@ -29,13 +29,13 @@
   </section>
 
   <section class="panel">
-    <div class="panel-head"><h2 class="panel-title">Dashboard accounts</h2><span class="meta">chart of accounts</span></div>
+    <div class="panel-head"><h2 class="panel-title">Control accounts</h2><span class="meta">posting · dashboard</span></div>
     <div class="panel-body">
       <%= form_with model: @settings, url: settings_path, method: :patch, class: "app-form" do |f| %>
         <% if @settings.errors.any? %>
           <div class="form-errors"><ul><% @settings.errors.full_messages.each { |m| %><li><%= m %></li><% } %></ul></div>
         <% end %>
-        <p class="settings-row-help" style="margin:0 0 14px;">The accounts behind the three dashboard cards. Bank accounts are managed under <%= link_to "Banking", bank_accounts_path %>.</p>
+        <p class="settings-row-help" style="margin:0 0 14px;">Every invoice posts to the receivable account and every bill to the payable account; the three also drive the dashboard cards. Bank accounts are managed under <%= link_to "Banking", bank_accounts_path %>.</p>
         <div class="settings-row">
           <div class="settings-row-label"><%= f.label :bank_account_id, "Operating bank" %></div>
           <div class="settings-row-main"><%= f.collection_select :bank_account_id, @bank_accounts, :id, :display_name, include_blank: "—" %></div>
