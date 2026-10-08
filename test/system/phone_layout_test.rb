@@ -15,6 +15,7 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     create_bill(@org, vendor: "Gusto", amount: 6459, category: @hosting, payable: @ap)
     create_expense(@org, vendor: "Blue Pixel Hosting", amount: 48, category: @hosting, bank_account: @bank)
     @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: 5400, payee: "Northwind Trail Series", description: "ACH CREDIT")
+    @klass = @org.tracking_categories.create!(name: "Class")
     sign_in_as_launchpad_user(@org)
     on_phone
   end
@@ -165,6 +166,24 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     tiles = all(".kpi-card").map { |c| c.native.location.x }
     assert_equal 1, tiles.uniq.size, "KPI tiles stack in one column"
     shoot("dashboard")
+  end
+
+  test "reports on a phone: the balance sheet stacks, wide tables freeze the account column" do
+    visit "/reports/balance_sheet"
+    assert_fits_viewport("balance sheet")
+    columns = all(".report-columns > *").map { |c| c.native.location.x }
+    assert_equal 1, columns.uniq.size, "assets and liabilities stack"
+
+    visit "/reports/profit_and_loss_by_tracking"
+    assert_fits_viewport("P&L by tracking")
+    cell = find("table.frozen-first tbody tr td[data-frozen]", match: :first)
+    assert_equal "sticky", page.evaluate_script("getComputedStyle(arguments[0]).position", cell.native)
+    shoot("tracking pnl")
+
+    on_desktop
+    visit "/reports/balance_sheet"
+    columns = all(".report-columns > *").map { |c| c.native.location.x }
+    assert_equal 2, columns.uniq.size, "side by side on a desktop"
   end
 
   test "a document page keeps its actions in a bar above the tabs, with the rest in a sheet" do

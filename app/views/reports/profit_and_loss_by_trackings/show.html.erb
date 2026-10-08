@@ -22,21 +22,21 @@
     <section class="account-group">
       <h2><%= title %></h2>
       <div style="overflow-x:auto;">
-        <table class="data-table">
+        <table class="data-table frozen-first">
           <thead>
-            <tr><th style="width:70px;">Code</th><th>Account</th><% columns.each do |c| %><th class="num"><%= label.(c) %></th><% end %><th class="num">Total</th></tr>
+            <tr><th style="width:70px;">Code</th><th data-frozen>Account</th><% columns.each do |c| %><th class="num"><%= label.(c) %></th><% end %><th class="num">Total</th></tr>
           </thead>
           <tbody>
             <% rows.each do |row| %>
               <tr>
                 <td><%= row.account.code %></td>
-                <td><%= row.account.name %></td>
+                <td data-frozen><%= row.account.name %></td>
                 <% columns.each do |c| %><td class="num"><%= row.by_option[c] ? money(row.by_option[c]) : "" %></td><% end %>
                 <td class="num"><%= money(row.total) %></td>
               </tr>
             <% end %>
             <tr class="subtotal">
-              <td></td><td>Total <%= title.downcase %></td>
+              <td></td><td data-frozen>Total <%= title.downcase %></td>
               <% columns.each do |c| %><td class="num"><%= money(@report.column_total(rows, c)) %></td><% end %>
               <td class="num"><%= money(rows.sum(&:total)) %></td>
             </tr>
@@ -48,10 +48,10 @@
 
   <section class="account-group">
     <div style="overflow-x:auto;">
-      <table class="data-table">
+      <table class="data-table frozen-first">
         <tbody>
           <tr class="grand-total">
-            <td style="width:70px;"></td><td>Net income</td>
+            <td style="width:70px;"></td><td data-frozen>Net income</td>
             <% columns.each do |c| %><td class="num"><%= money(@report.net_income(c)) %></td><% end %>
             <td class="num"><%= money(@report.total_revenue - @report.total_expenses) %></td>
           </tr>
