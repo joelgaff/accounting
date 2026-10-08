@@ -38,6 +38,12 @@ export default class extends Controller {
 
   place() {
     const r = this.input.getBoundingClientRect()
+    if (window.innerWidth <= 700) {                     // phone: a sheet along the bottom
+      this.list.classList.add("combobox-sheet")
+      this.list.style.left = ""; this.list.style.top = ""; this.list.style.width = ""; this.list.style.maxHeight = ""
+      return
+    }
+    this.list.classList.remove("combobox-sheet")
     const below = window.innerHeight - r.bottom
     const height = Math.min(260, Math.max(120, below - 12))
     this.list.style.left = `${r.left}px`

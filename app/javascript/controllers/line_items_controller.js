@@ -24,6 +24,16 @@ export default class extends Controller {
     this.recalc()
   }
 
+  // Phone cards: show or hide the row's full set of fields.
+  toggle(event) {
+    event.preventDefault()
+    const row  = event.target.closest("tr")
+    const open = row.dataset.open !== "true"
+    row.dataset.open = String(open)
+    event.target.setAttribute("aria-expanded", String(open))
+    if (open) row.querySelector('select[name*="[account_id]"]')?.focus()
+  }
+
   remove(event) {
     event.preventDefault()
     const row = event.target.closest("tr")

@@ -353,6 +353,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 .action-bar .bar-only { display: contents; }
 .action-bar .inline-form, .action-sheet .inline-form { display: inline; margin: 0; }
 .action-bar .more-trigger, .status-actions .action-sheet, .status-actions .sheet-dimmer { display: none; }
+.line-items .line-details { display: none; }    /* the card's Details toggle, phones only */
 
 /* ── Folded sections: a button on phones, open on wide screens ──────────── */
 .fold-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1051,6 +1052,49 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   /* Folded sections. */
   .fold-trigger { display: inline-flex; }
   .fold-body[hidden] { display: none; }
+
+  /* Forms: one column, the line-item sheet becomes a stack of cards, and
+     the save bar pins above the tabs. */
+  .app-form { padding: 14px; }
+  .sheet-scroll { overflow: visible; }
+  .line-items .data-table.sheet { display: block; min-width: 0; white-space: normal; }
+  .line-items .data-table.sheet thead { display: none; }
+  .line-items .data-table.sheet tbody { display: flex; flex-direction: column; gap: 10px; }
+  .line-items .data-table.sheet tbody tr {
+    display: grid; grid-template-columns: 1fr 112px; grid-template-areas: "description amount" "fields fields" "tools tools";
+    gap: 8px; padding: 10px; border: 1px solid var(--rule-lit); border-radius: 6px; background: var(--panel-head);
+  }
+  .line-items .data-table.sheet tbody tr[hidden], .line-items .data-table.sheet tbody tr[style*="display: none"] { display: none; }
+  .line-items .data-table.sheet tbody td { display: block; padding: 0; min-width: 0; }
+  .line-items .data-table.sheet tbody td[data-cell="description"] { grid-area: description; }
+  .line-items .data-table.sheet tbody td[data-cell="amount"] { grid-area: amount; }
+  .line-items .data-table.sheet tbody td[data-cell="tools"] { grid-area: tools; display: flex; gap: 8px; justify-content: flex-end; }
+  .line-items .data-table.sheet tbody td:not([data-cell]) { grid-column: 1 / -1; }
+  .line-items .data-table.sheet tbody tr:not([data-open="true"]) td:not([data-cell]) { display: none; }
+  .line-items .data-table.sheet tbody td > input, .line-items .data-table.sheet tbody td > select, .line-items .data-table.sheet tbody td > .combobox > input { width: 100%; min-width: 0; }
+  .line-items .data-table.sheet tbody td:not([data-cell]) > select, .line-items .data-table.sheet tbody td:not([data-cell]) > input { margin-top: 2px; }
+  .line-items .line-details { display: inline-flex; align-items: center; min-height: 36px; padding: 4px 12px; }
+  .line-items .line-details[aria-expanded="true"] { color: var(--cyan); border-color: rgba(34, 211, 238, 0.45); }
+  .line-items .data-table.sheet tfoot { display: block; }
+  .line-items .data-table.sheet tfoot tr { display: grid; grid-template-columns: 1fr auto; padding: 4px 2px; }
+  .line-items .data-table.sheet tfoot td { display: block; padding: 2px 0; }
+  .line-items .data-table.sheet tfoot td:last-child:empty { display: none; }
+
+  .form-actions {
+    position: fixed; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 19;
+    display: flex; gap: 8px; margin: 0; padding: 8px 12px;
+    background: var(--frame); border-top: 1px solid var(--rule);
+  }
+  .form-actions .btn, .form-actions input[type="submit"] { flex: 1 1 0; min-height: 42px; text-align: center; margin: 0; }
+  body:has(.form-actions) .app-main { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+
+  /* The searchable select opens as a sheet along the bottom. */
+  .combobox-list.combobox-sheet {
+    left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto !important; max-height: 55vh !important;
+    border-radius: 14px 14px 0 0; padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.45);
+  }
+  .combobox-list.combobox-sheet li { padding: 12px 16px; white-space: normal; font-size: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

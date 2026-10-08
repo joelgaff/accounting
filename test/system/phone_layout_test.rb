@@ -109,6 +109,40 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("invoices chips")
   end
 
+  test "a form on a phone is one column, lines are cards that expand, and the save bar is pinned" do
+    visit "/invoices/new"
+    assert_fits_viewport("new invoice")
+    assert_no_selector ".line-items thead", visible: true
+    # A fresh row opens with every field; Details folds it to description and amount, and back.
+    row = find(".line-items tbody tr", match: :first)
+    within(row) do
+      assert_selector "input[name*='[description]']", visible: true
+      assert_selector "input[aria-label='Amount']", visible: true
+      assert_selector "select[name*='[account_id]']", visible: true
+      click_on "Details"
+      assert_no_selector "select[name*='[account_id]']", visible: true
+      assert_no_selector "input[name*='[quantity]']", visible: true
+      find("input[aria-label='Amount']").fill_in(with: "250")
+      click_on "Details"
+      assert_selector "input[name*='[quantity]']", visible: true
+    end
+    assert_selector "[data-line-items-target=total]", text: "$250.00"
+    click_on "+ Add line"
+    assert_selector ".line-items tbody tr", count: 2
+    within(all(".line-items tbody tr").last) { assert_selector "select[name*='[account_id]']", visible: true }
+
+    bar = find(".form-actions")
+    assert_equal "fixed", page.evaluate_script("getComputedStyle(arguments[0]).position", bar.native)
+    within(bar) { assert_button "Save draft"; assert_button "Approve" }
+    shoot("new invoice form")
+
+    on_desktop
+    visit "/invoices/new"
+    assert_selector ".line-items thead", visible: true
+    assert_no_button "Details", visible: true
+    assert_not_equal "fixed", page.evaluate_script("getComputedStyle(document.querySelector('.form-actions')).position")
+  end
+
   test "a document page keeps its actions in a bar above the tabs, with the rest in a sheet" do
     visit "/invoices/#{@invoice.id}"
     assert_fits_viewport("invoice")
