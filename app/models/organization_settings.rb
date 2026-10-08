@@ -24,18 +24,19 @@ class OrganizationSettings < ApplicationRecord
     end
   end
 
-  # The number the next invoice gets: the prefix plus the next number, or,
-  # until one is set, one past the highest invoice already carrying the prefix.
+  # The number the next invoice gets: the prefix plus the first free number at
+  # or after the counter. Until a counter is set, that is one past the highest
+  # invoice already carrying the prefix.
   def next_invoice_number
-    "#{invoice_prefix}#{format("%0#{NUMBER_WIDTH}d", invoice_next_number || highest_invoice_number_in_sequence + 1)}"
+    "#{invoice_prefix}#{format("%0#{NUMBER_WIDTH}d", first_free_invoice_number)}"
   end
 
   # An invoice was saved with this number: if it is in our sequence, the
-  # sequence moves past it. Numbers under another prefix are not ours.
+  # counter moves to the next free number past it. Numbers under another
+  # prefix are not ours.
   def advance_invoice_sequence!(number)
     n = number_within_sequence(number) or return
-    current = invoice_next_number || highest_invoice_number_in_sequence + 1
-    update!(invoice_next_number: [ current, n + 1 ].max)
+    update!(invoice_next_number: first_free_invoice_number(from: [ first_free_invoice_number, n + 1 ].max))
   end
 
   private
@@ -45,8 +46,16 @@ class OrganizationSettings < ApplicationRecord
     m[1].to_i
   end
 
-  def highest_invoice_number_in_sequence
+  # Every number under the prefix that an invoice already carries.
+  def used_invoice_numbers
     Invoice.joins(:document).where(documents: { organization_id: organization_id }).where.not(number: nil)
-           .pluck(:number).filter_map { |n| number_within_sequence(n) }.max || 0
+           .pluck(:number).filter_map { |n| number_within_sequence(n) }
+  end
+
+  def first_free_invoice_number(from: nil)
+    used = used_invoice_numbers.to_set
+    n = from || invoice_next_number || (used.max || 0) + 1
+    n += 1 while used.include?(n)
+    n
   end
 end

@@ -57,6 +57,21 @@ class InvoiceNumberingTest < ActiveSupport::TestCase
     assert_equal "0701", Invoice.next_number(@org)
   end
 
+  test "the sequence steps over numbers already in the books" do
+    create_invoice(@org, client_name: "Old", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "INV-2378" })
+    settings = @org.settings
+    settings.update!(invoice_next_number: 2377)
+    assert_equal "INV-2377", Invoice.next_number(@org), "the gap below is free"
+
+    filled = create_invoice(@org, client_name: "A", amount: 10, receivable: @ar, revenue: @sales)
+    assert_equal "INV-2377", filled.invoice.number
+    assert_equal 2379, settings.reload.invoice_next_number, "2378 is taken, so the counter lands past it"
+    assert_equal "INV-2379", Invoice.next_number(@org)
+
+    settings.update!(invoice_next_number: 2378)
+    assert_equal "INV-2379", Invoice.next_number(@org), "a counter set on a used number offers the next free one"
+  end
+
   test "the next number must be a whole number of one or more" do
     settings = @org.settings
     assert_not settings.update(invoice_next_number: 0)
