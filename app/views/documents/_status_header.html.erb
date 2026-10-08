@@ -3,12 +3,18 @@
     the less-used actions live behind ···. %>
 <%= tag.div id: dom_id(document, :status), class: "status-actions", data: { controller: "sheet", action: "keydown@window->sheet#keydown" } do %>
   <%= status_badge(document.status) %>
+  <% if document.invoice? && document.invoice.sent? %>
+    <span class="sent-mark" title="Sent <%= document.invoice.sent_at.strftime("%b %-d, %Y") %>">✓ sent</span>
+  <% end %>
   <div class="action-bar">
     <% if document.draft? %>
       <%= button_to "Approve", approve_document_path_for(document), class: "btn btn-primary",
             form: { class: "inline-form", data: { turbo_confirm: "Approve #{document.label}? It posts to the ledger and starts counting." } } %>
     <% elsif document.settleable? && document.approved? && !document.voided? && !document.paid? %>
       <%= link_to "Record payment", new_document_payment_path(document), class: "btn btn-primary" %>
+    <% end %>
+    <% if document.invoice? && document.approved? && !document.voided? && !document.invoice.sent? %>
+      <%= button_to "Mark as sent", mark_sent_invoice_path(document), class: "btn btn-secondary", form: { class: "inline-form" } %>
     <% end %>
     <% unless document.voided? %>
       <%= link_to "Edit", edit_document_path_for(document), class: "btn btn-secondary" %>

@@ -16,6 +16,8 @@ Rails.application.routes.draw do
       post :send_email
       post :void
       post :approve
+      post :mark_sent
+      post :mark_unsent
     end
   end
   resources :bills, only: %i[index show new create edit update destroy] do

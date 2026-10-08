@@ -17,6 +17,20 @@ class Invoice < ApplicationRecord
   def party_name  = client_name
   def settleable? = true
   def draftable?  = true
+  def sent?       = sent_at.present?
+
+  # Sent to the customer: emailed from here, or marked by hand because it went
+  # some other way. quietly: true when the email event already tells the story.
+  def mark_sent!(quietly: false)
+    raise ActiveRecord::RecordInvalid.new(self) if document.draft?
+    update!(sent_at: Time.current)
+    document.record_event!(:sent) unless quietly
+  end
+
+  def mark_unsent!
+    update!(sent_at: nil)
+    document.record_event!(:unsent)
+  end
 
   def take_control_account_from(settings)
     self.receivable_account = settings.receivable_account if settings.receivable_account

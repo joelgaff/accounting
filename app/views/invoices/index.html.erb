@@ -6,7 +6,7 @@
   </div>
 </header>
 
-<%= render "documents/status_filter", statuses: %w[draft open partial overdue paid] %>
+<%= render "documents/status_filter", statuses: %w[draft unsent open partial overdue paid] %>
 
 <% if @documents.any? %>
   <table class="data-table cards">
@@ -28,7 +28,7 @@
           <td><%= document.date.iso8601 %></td>
           <td data-cell="primary"><%= link_to document.counterparty, invoice_path(document) %></td>
           <td data-cell="secondary" data-label="due"><%= document.invoice.due_date.iso8601 %></td>
-          <td data-cell="status"><%= status_badge(document.status) %></td>
+          <td data-cell="status"><%= status_badge(document.status) %><% if document.invoice.sent? %> <span class="sent-mark" title="Sent <%= document.invoice.sent_at.strftime("%b %-d, %Y") %>">✓ sent</span><% end %></td>
           <td class="num" data-cell="amount"><%= money(document.total) %></td>
           <td class="num"><%= money(document.balance_due) %></td>
         </tr>

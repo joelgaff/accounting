@@ -202,6 +202,39 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_match(/line item/i, response.body)
   end
 
+  test "an invoice can be marked sent from its page, shows it on the list, and emailing counts as sending" do
+    inv = create_invoice(@org, client_name: "Acme", amount: 500, receivable: @ar, revenue: @sales)
+    get invoice_path(inv)
+    assert_select ".action-bar button", text: "Mark as sent"
+    assert_select ".sent-mark", 0
+
+    post mark_sent_invoice_path(inv), as: :turbo_stream
+    assert_response :success
+    assert_match(/target="#{status_id(inv)}"/, response.body)
+    assert_match(/sent-mark/, response.body)
+    assert inv.invoice.reload.sent?
+
+    get invoices_path
+    assert_select "tr##{ActionView::RecordIdentifier.dom_id(inv)} .sent-mark"
+    get invoices_path(status: "unsent")
+    assert_select "tr##{ActionView::RecordIdentifier.dom_id(inv)}", 0
+
+    get invoice_path(inv)
+    assert_select ".action-bar button", text: "Mark as sent", count: 0
+    assert_select "button", text: "Mark as unsent"
+    post mark_unsent_invoice_path(inv), as: :turbo_stream
+    assert_not inv.invoice.reload.sent?
+    get invoices_path(status: "unsent")
+    assert_select "tr##{ActionView::RecordIdentifier.dom_id(inv)}", 1
+
+    post send_email_invoice_path(inv), params: { to: "billing@acme.example" }
+    assert inv.invoice.reload.sent?, "emailing is sending"
+
+    draft = create_invoice(@org, client_name: "Acme", amount: 180, receivable: @ar, revenue: @sales, state: "draft")
+    get invoice_path(draft)
+    assert_select "button", text: "Mark as sent", count: 0
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", contact_name: "DO", documentable_attributes: { bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }

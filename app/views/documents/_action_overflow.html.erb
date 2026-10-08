@@ -3,6 +3,7 @@
 <% if document.invoice? %>
   <%= link_to "Print / PDF", print_invoice_path(document), class: "btn btn-secondary" %>
   <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" unless document.draft? %>
+  <%= button_to "Mark as unsent", mark_unsent_invoice_path(document), class: "btn btn-secondary", form: { class: "inline-form" } if document.invoice.sent? %>
 <% end %>
 <% unless document.voided? || document.draft? %>
   <%= button_to "Void", void_document_path_for(document), class: "btn btn-secondary",

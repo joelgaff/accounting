@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_150000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -236,6 +236,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "number"
+    t.datetime "sent_at"
     t.index ["number"], name: "index_invoices_on_number", unique: true, where: "number IS NOT NULL"
     t.index ["receivable_account_id"], name: "index_invoices_on_receivable_account_id"
     t.index ["xero_invoice_number"], name: "index_invoices_on_xero_invoice_number", unique: true, where: "xero_invoice_number IS NOT NULL"

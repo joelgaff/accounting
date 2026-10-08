@@ -17,10 +17,38 @@ class InvoicesController < DocumentsController
 
     InvoiceMailer.send_invoice(@document, to: to, subject: subject, body: body).deliver_later
     @document.record_event!(:emailed, to: to, subject: subject || InvoiceMailer.default_subject(@document), pdf: true)
+    @document.invoice.mark_sent!(quietly: true)
     redirect_to invoice_path(@document), notice: "Invoice emailed to #{to} with the PDF attached."
   end
 
+  # Sent some other way than email from here: by hand, by post, from another system.
+  def mark_sent
+    @document.invoice.mark_sent!
+    respond_to do |format|
+      format.turbo_stream { render "documents/status" }
+      format.html { redirect_to invoice_path(@document), notice: "Marked as sent." }
+    end
+  rescue ActiveRecord::RecordInvalid
+    redirect_to invoice_path(@document), alert: "#{@document.label} is a draft; approve it before marking it sent."
+  end
+
+  def mark_unsent
+    @document.invoice.mark_unsent!
+    respond_to do |format|
+      format.turbo_stream { render "documents/status" }
+      format.html { redirect_to invoice_path(@document), notice: "Marked as not sent." }
+    end
+  end
+
   private
+
+  # "unsent" is not a status the invoice answers; it is approved, open and not yet sent.
+  def filtered
+    return super unless @status == "unsent"
+    base = scope.posted.includes(:documentable, :contact, :payments).chronological
+    base = base.preload(*index_preloads) if index_preloads.any?
+    base.select { |d| !d.invoice.sent? && !d.paid? }
+  end
 
   def refuse_if_draft
     return unless @document.draft?

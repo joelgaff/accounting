@@ -47,6 +47,7 @@ class RecurringInvoice < ApplicationRecord
       # Optional auto-email; a draft is never sent, it waits for approval.
       if email_on_generate && invoice.approved? && contact&.email.present?
         InvoiceMailer.send_invoice(invoice, to: contact.email).deliver_later
+        invoice.invoice.mark_sent!(quietly: true)
       end
 
       invoice

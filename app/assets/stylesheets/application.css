@@ -1234,6 +1234,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 /* ── Voided documents ───────────────────────────────────────────────────── */
 .badge-voided { background: rgba(41, 74, 120, 0.2); color: var(--dim); border-color: var(--rule-lit); text-decoration: line-through; }
 .badge-draft  { background: transparent; color: var(--dim); border-color: var(--rule-lit); border-style: dashed; }
+.sent-mark    { display: inline-block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--credit); margin-left: 6px; white-space: nowrap; }
 .data-table tr.muted td.num { text-decoration: line-through; }
 
 /* ── Reconcile: summary strip ───────────────────────────────────────────── */
