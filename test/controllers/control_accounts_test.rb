@@ -63,6 +63,18 @@ class ControlAccountsTest < ActionDispatch::IntegrationTest
     assert_redirected_to settings_path
   end
 
+  test "Settings refuses to blank a control account in use, and says documents keep theirs on a change" do
+    @org.settings.update!(receivable_account: @ar, payable_account: @ap)
+    create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales)
+    get settings_path
+    assert_match(/already posted keep/i, response.body)
+
+    patch settings_path, params: { organization_settings: { receivable_account_id: "" } }
+    assert_response :unprocessable_entity
+    assert_match(/invoices/, response.body)
+    assert_equal @ar, @org.settings.reload.receivable_account
+  end
+
   test "an invoice imported with its own account keeps it when edited" do
     other = Plutus::Asset.create!(tenant: @org, name: "Old receivables", code: "1210")
     @org.settings.update!(receivable_account: @ar)

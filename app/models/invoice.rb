@@ -18,6 +18,10 @@ class Invoice < ApplicationRecord
   def settleable? = true
   def draftable?  = true
 
+  def take_control_account_from(settings)
+    self.receivable_account = settings.receivable_account if settings.receivable_account
+  end
+
   def status
     return "paid"    if document.paid?
     return "partial" if document.paid_amount.positive?

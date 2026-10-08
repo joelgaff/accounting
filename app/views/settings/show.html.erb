@@ -48,6 +48,7 @@
           <div class="settings-row-label"><%= f.label :payable_account_id, "Payable" %></div>
           <div class="settings-row-main"><%= f.collection_select :payable_account_id, @liability_accounts, :id, ->(a) { "#{a.code.present? ? "#{a.code} — " : ""}#{a.name}" }, include_blank: "—" %></div>
         </div>
+        <p class="settings-row-help">Changing the receivable or payable account moves only what is not yet posted: drafts take the new account when approved, documents already posted keep theirs.</p>
         <div class="settings-actions"><%= f.submit "Save accounts", class: "btn btn-primary" %></div>
       <% end %>
     </div>

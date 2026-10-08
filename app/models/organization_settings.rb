@@ -10,6 +10,17 @@ class OrganizationSettings < ApplicationRecord
 
   normalizes :invoice_prefix, with: ->(p) { p.to_s.strip }
   validates :invoice_next_number, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
+  validate  :control_accounts_stay_set
+
+  # A control account may change, but not go blank while documents post to it.
+  def control_accounts_stay_set
+    if receivable_account_id.nil? && receivable_account_id_was.present? && organization.documents.invoices.exists?
+      errors.add(:receivable_account, "can't be cleared while invoices post to it; pick another account instead")
+    end
+    if payable_account_id.nil? && payable_account_id_was.present? && organization.documents.bills.exists?
+      errors.add(:payable_account, "can't be cleared while bills post to it; pick another account instead")
+    end
+  end
 
   # The number the next invoice gets: the prefix plus the next number, or,
   # until one is set, one past the highest invoice already carrying the prefix.

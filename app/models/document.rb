@@ -83,6 +83,7 @@ class Document < ApplicationRecord
   def approve!
     raise ActiveRecord::RecordInvalid.new(self) unless draft?
     transaction do
+      documentable.take_control_account_from(organization.settings)   # Settings is the truth until it posts
       documentable.validate!          # the type record is checked again, it may have gone stale
       update!(state: "approved")
       post_to_ledger
