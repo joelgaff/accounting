@@ -93,6 +93,31 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "##{row_id(zoom)} .recon-actions .coding", text: /Timing/
   end
 
+  test "a person can hide a bank account's summary card and bring the hidden ones back" do
+    get bank_transactions_path
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@checking, :recon_summary)}"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}"
+    assert_select ".recon-summary .hidden-cards", text: ""     # the empty note is the stream's target
+
+    patch card_visibility_bank_transactions_path, params: { bank_account_id: @savings.id, hidden: "1" }, as: :turbo_stream
+    assert_response :success
+    assert_match(/action="remove" target="#{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}"/, response.body)
+    user = User.find_by!(launchpad_public_id: "u-#{@org.id}")
+    assert_equal [ @savings.id ], user.reload.hidden_reconcile_card_ids
+
+    get bank_transactions_path
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}", 0
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@checking, :recon_summary)}"
+    assert_select ".recon-summary .hidden-cards", text: /1 hidden/
+    assert_select "nav.chips a", { text: /Savings/, count: 1 }, "the account chip stays; only the card goes"
+
+    patch card_visibility_bank_transactions_path, params: { bank_account_id: @savings.id, hidden: "0" }
+    assert_redirected_to bank_transactions_path
+    assert_equal [], user.reload.hidden_reconcile_card_ids
+    get bank_transactions_path
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@savings, :recon_summary)}"
+  end
+
   test "memory OK is refused when the books no longer agree" do
     coded("ZOOM.US", account: @hosting, on: Date.new(2026, 9, 1), contact: "Zoom")
     fresh = line(-15, description: "ZOOM.US")

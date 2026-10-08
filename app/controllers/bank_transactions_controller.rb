@@ -13,8 +13,29 @@ class BankTransactionsController < ApplicationController
     @candidates      = Reconciliation::Candidates.new(Current.organization, @transactions)
     @memory          = Reconciliation::Memory.new(Current.organization, @transactions)
     @suggestions     = Reconciliation::Suggester.new(Current.organization, @transactions, candidates: @candidates, memory: @memory)
-    @summary         = Reconciliation::Summary.new(Current.organization).rows
+    @all_summary     = Reconciliation::Summary.new(Current.organization).rows
+    @summary         = @all_summary.reject { |row| Current.user.hidden_reconcile_card_ids.include?(row.bank_account.id) }
+    @hidden_count    = @all_summary.size - @summary.size
     @unmatched_count = Current.organization.bank_transactions.unmatched.count
+  end
+
+  # Tuck a bank account's summary card away for this person, or bring them back.
+  def card_visibility
+    if params[:all].present?
+      Current.user.show_all_reconcile_cards!
+      return redirect_to bank_transactions_path, notice: "All cards shown."
+    end
+    @bank_account = Current.organization.bank_accounts.find(params[:bank_account_id])
+    if params[:hidden] == "1"
+      Current.user.hide_reconcile_card!(@bank_account.id)
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to bank_transactions_path }
+      end
+    else
+      Current.user.show_reconcile_card!(@bank_account.id)
+      redirect_to bank_transactions_path
+    end
   end
 
   # Settle an invoice or bill (fully or with the amount given), or link an

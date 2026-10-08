@@ -227,6 +227,21 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("rule form")
   end
 
+  test "hiding a summary card on a phone lifts the lines up the page" do
+    visit "/bank_transactions"
+    card = find("##{ActionView::RecordIdentifier.dom_id(@bank, :recon_summary)}")
+    top = "document.querySelector('.recon-table').getBoundingClientRect().top + window.scrollY"   # page position, whatever the scroll
+    before = page.evaluate_script(top)
+    within(card) { click_on "Hide" }
+    assert_no_selector "##{ActionView::RecordIdentifier.dom_id(@bank, :recon_summary)}"
+    after = page.evaluate_script(top)
+    assert_operator after, :<, before - 60, "the lines moved up by about a card"
+    assert_selector ".recon-summary .hidden-cards", text: /1 hidden/
+    click_on "Show all"
+    assert_selector "##{ActionView::RecordIdentifier.dom_id(@bank, :recon_summary)}"
+    shoot("reconcile card hidden")
+  end
+
   test "the dashboard on a phone: quick actions, stacked tiles, activity as cards" do
     visit "/"
     assert_selector ".quick-actions a", text: "Reconcile · 1"

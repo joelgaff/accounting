@@ -22,6 +22,11 @@ class User < ApplicationRecord
 
   def local? = launchpad_public_id.nil?
 
+  # The reconcile page's summary cards this person has tucked away.
+  def hide_reconcile_card!(bank_account_id) = update!(hidden_reconcile_card_ids: (hidden_reconcile_card_ids + [ bank_account_id ]).uniq)
+  def show_reconcile_card!(bank_account_id) = update!(hidden_reconcile_card_ids: hidden_reconcile_card_ids - [ bank_account_id ])
+  def show_all_reconcile_cards!            = update!(hidden_reconcile_card_ids: [])
+
   # ── Magic-code sign-in (local mode), the rails-now way ─────────────────────
 
   # Generate a 6-digit code, store its digest, return the plaintext to email.

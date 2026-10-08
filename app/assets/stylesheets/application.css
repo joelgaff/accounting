@@ -1236,6 +1236,14 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 
 /* ── Reconcile: summary strip ───────────────────────────────────────────── */
 .recon-summary { margin-bottom: 16px; }
+.recon-card { position: relative; }
+.card-hide-form { position: absolute; top: 8px; right: 8px; margin: 0; }
+.card-hide { background: none; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--dimmer); font: inherit; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; cursor: pointer; min-height: 28px; }
+.card-hide:hover { color: var(--ink); border-color: var(--rule-lit); }
+.hidden-cards { font-size: 12px; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+.hidden-cards:empty { display: none; }
+.hidden-cards form { display: inline; margin: 0; }
+.link-button { background: none; border: 0; padding: 0; color: var(--cyan); font: inherit; cursor: pointer; text-decoration: underline; min-height: 0; }
 .recon-summary .kpi-source { line-height: 1.5; }
 
 /* Sheet cells: an empty field should still look like a field. */

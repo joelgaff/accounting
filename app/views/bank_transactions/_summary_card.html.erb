@@ -1,4 +1,6 @@
-<%= tag.article id: dom_id(row.bank_account, :recon_summary), class: "kpi-card" do %>
+<%= tag.article id: dom_id(row.bank_account, :recon_summary), class: "kpi-card recon-card" do %>
+  <%= button_to "Hide", card_visibility_bank_transactions_path, method: :patch, params: { bank_account_id: row.bank_account.id, hidden: "1" },
+        class: "card-hide", title: "Hide this card", "aria-label": "Hide #{row.bank_account.name}", form: { class: "card-hide-form" } %>
   <div class="kpi-label"><%= link_to row.bank_account.name, bank_transactions_path(bank_account_id: row.bank_account.id) %></div>
   <div class="kpi-value"><%= money(row.ledger_balance) %></div>
   <div class="kpi-source">

@@ -9,11 +9,14 @@
   </div>
 </header>
 
-<% if @summary.any? %>
-  <section class="kpi-grid recon-summary">
-    <% @summary.each do |row| %>
-      <%= render "bank_transactions/summary_card", row: row %>
-    <% end %>
+<% if @summary.any? || @hidden_count.positive? %>
+  <section class="recon-summary">
+    <div class="kpi-grid">
+      <% @summary.each do |row| %>
+        <%= render "bank_transactions/summary_card", row: row %>
+      <% end %>
+    </div>
+    <%= render "bank_transactions/hidden_cards", count: @hidden_count %>
   </section>
 <% end %>
 
@@ -21,7 +24,7 @@
 <% bank_id, status = params[:bank_account_id].presence, params[:status].presence %>
 <nav class="chips" aria-label="Bank account">
   <%= chip_link "All accounts", bank_transactions_path(status: status), active: bank_id.nil? %>
-  <% @summary.each do |row| %>
+  <% @all_summary.each do |row| %>
     <%= chip_link "#{row.bank_account.name} · #{row.unmatched_count}", bank_transactions_path(bank_account_id: row.bank_account.id, status: status), active: bank_id == row.bank_account.id.to_s %>
   <% end %>
 </nav>

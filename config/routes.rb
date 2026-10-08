@@ -46,6 +46,7 @@ Rails.application.routes.draw do
     member { post :run_now }
   end
   resources :bank_transactions, only: %i[index] do
+    collection { patch :card_visibility }
     member do
       post :match
       post :allocate

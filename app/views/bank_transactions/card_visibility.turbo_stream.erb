@@ -1,0 +1,2 @@
+<%= turbo_stream.remove dom_id(@bank_account, :recon_summary) %>
+<%= turbo_stream.replace dom_id(Current.user, :hidden_cards), partial: "bank_transactions/hidden_cards", locals: { count: Current.user.hidden_reconcile_card_ids.size } %>

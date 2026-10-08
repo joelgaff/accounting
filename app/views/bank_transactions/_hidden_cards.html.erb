@@ -1,0 +1,7 @@
+<%# How many summary cards this person has hidden, with the way back. Replaced over turbo_stream. %>
+<%= tag.div id: dom_id(Current.user, :hidden_cards), class: "hidden-cards muted" do %>
+  <% if count.positive? %>
+    <%= count %> hidden ·
+    <%= button_to "Show all", card_visibility_bank_transactions_path, method: :patch, params: { all: "1", hidden: "0" }, class: "link-button" %>
+  <% end %>
+<% end %>
