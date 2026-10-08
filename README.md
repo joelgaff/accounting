@@ -18,20 +18,25 @@ together.
   deposits move money straight through a bank account. Transfers move it
   between two. Manual journals cover the rest. Each document carries line
   items, attachments, a history of who changed what, and can be edited, voided
-  or deleted while nothing depends on it.
+  or deleted while nothing depends on it. Invoices and bills start as drafts
+  and post when approved; one receivable and one payable account, chosen in
+  Settings, is where they post.
 - **Bank reconciliation** against a nightly [SimpleFIN](https://bridge.simplefin.org)
   feed or uploaded CSV, OFX and QFX statements. Each line gets a ranked
   suggestion with a one-click OK, or you match it, split it across several
   documents, categorise it into a new expense or deposit, or pair it with its
-  transfer counterpart in another account. Bank rules do the repetitive ones.
-  Every match is undoable.
+  transfer counterpart in another account. Bank rules do the ones you write
+  down; for the rest, the books remember how a payee was coded before and,
+  after three agreeing codings, offer that on one tap too. Every match is
+  undoable, and every document says in its history how it came to be.
 - **Tracking categories** the way Xero does them: up to two active categories,
   one option per category on any line, and a profit and loss broken out by
   option.
 - **Reports:** profit and loss, balance sheet, trial balance, general ledger,
   receivables and payables aging, profit and loss by tracking category.
-- **Invoicing:** numbered invoices with a PDF, emailed to the customer with the
-  PDF attached, recurring invoices, and a per-document activity log.
+- **Invoicing:** invoices numbered from a prefix and counter you set, with a
+  PDF, emailed to the customer with the PDF attached, recurring invoices, and
+  a per-document activity log.
 - **Xero import over the API.** Connect a Xero app under Settings and pull the
   chart of accounts, tax rates, contacts, tracking categories, every invoice
   and bill with lines and payments, spend and receive money, transfers and
@@ -39,7 +44,9 @@ together.
   as a fallback.
 - **Passwordless sign-in.** Every sign-in emails a six-digit code. An
   installation can instead trust an SSO hub's cookie (see [Sign-in](#sign-in)).
-- **Dark and light themes**, chosen per person, in a terminal-flavoured UI.
+- **Dark and light themes**, chosen per person, in a terminal-flavoured UI
+  that works on a phone: a tab bar, cards instead of tables, and the actions
+  you need pinned above your thumb.
 
 ![Bank reconciliation: suggestions with a one-click OK, split, categorise or transfer](docs/screenshots/reconcile.jpg)
 
