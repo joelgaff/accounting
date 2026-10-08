@@ -80,6 +80,7 @@
           <% else %>
             <%= row.party %>
           <% end %>
+          <% if row.why %><span class="why"><%= row.why %></span><% end %>
         </td>
         <td class="muted"><%= row.reference %></td>
         <td class="num <%= 'amount-out' if row.spent? %>" data-cell="amount"><%= row.spent?    ? money(row.spent)    : "" %></td>

@@ -74,6 +74,14 @@ class Document < ApplicationRecord
   end
   # The label plus the name, for lists where a numbered document needs both.
   def title        = documentable.try(:number).present? ? "#{label} · #{display_name}" : label
+  # The memo when someone wrote it; the bank's own words copied onto a
+  # reconciled line are not a why and are not worth repeating.
+  def why(bank_words = bank_transactions.first&.description)
+    words = memo.to_s.strip
+    return nil if words.blank? || words.casecmp?(bank_words.to_s.strip)
+    words
+  end
+
   def counterparty = contact&.name.presence || party_name
   def display_name = counterparty.presence || memo.to_s.truncate(40).presence || label
 

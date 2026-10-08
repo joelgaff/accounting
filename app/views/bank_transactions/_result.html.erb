@@ -7,6 +7,7 @@
     → <%= safe_join(parts, ", ") %>
     <% coded = txn.document || txn.payments.first&.document %>
     <%= coding_chips(Reconciliation::Coding.of_document(coded)) if coded %>
+    <% if (why = txn.document&.why(txn.description)) %><span class="why"><%= why %></span><% end %>
   <% end %>
 </span>
 <%= button_to "Undo", unmatch_bank_transaction_path(txn), class: "btn btn-secondary segments-aside" %>

@@ -12,6 +12,7 @@
         <th>Date</th>
         <th>Vendor</th>
         <th>Category</th>
+        <th>Memo</th>
         <th>Paid from</th>
         <th class="num">Amount</th>
       </tr>
@@ -22,6 +23,7 @@
           <td data-cell="secondary"><%= document.date.iso8601 %></td>
           <td data-cell="primary"><%= link_to document.counterparty, expense_path(document) %></td>
           <td data-cell="secondary"><%= document.expense.category_display %></td>
+          <td data-cell="secondary" class="muted"><%= document.why %></td>
           <td><%= document.expense.bank_account.name %></td>
           <td class="num" data-cell="amount"><%= money(document.total) %></td>
         </tr>

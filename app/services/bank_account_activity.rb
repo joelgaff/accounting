@@ -3,7 +3,7 @@
 # pointing at the document or payment behind it and saying whether a
 # statement line has been reconciled against it.
 class BankAccountActivity
-  Row = Struct.new(:date, :entry, :record, :document, :kind, :party, :reference, :spent, :received, :balance, :reconciled, keyword_init: true) do
+  Row = Struct.new(:date, :entry, :record, :document, :kind, :party, :reference, :why, :spent, :received, :balance, :reconciled, keyword_init: true) do
     def spent?    = spent.positive?
     def received? = received.positive?
   end
@@ -27,7 +27,7 @@ class BankAccountActivity
         record   = entry.commercial_document
         document = record.is_a?(Payment) ? record.document : record
         Row.new(date: entry.date || entry.created_at.to_date, entry: entry, record: record, document: document,
-                kind: kind_of(record), party: party_of(record, document), reference: document&.reference,
+                kind: kind_of(record), party: party_of(record, document), reference: document&.reference, why: document&.why,
                 spent: spent, received: received, balance: running, reconciled: reconciled?(record, document))
       end
     end
@@ -70,7 +70,7 @@ class BankAccountActivity
     payments  = records.grep(Payment)
     ActiveRecord::Associations::Preloader.new(records: payments, associations: :document).call if payments.any?
     documents = (records.grep(Document) + payments.map(&:document)).compact.uniq
-    ActiveRecord::Associations::Preloader.new(records: documents, associations: [ :contact, :documentable ]).call if documents.any?
+    ActiveRecord::Associations::Preloader.new(records: documents, associations: [ :contact, :documentable, :bank_transactions ]).call if documents.any?
   end
 
   def kind_of(record)

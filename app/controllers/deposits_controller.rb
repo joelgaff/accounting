@@ -1,6 +1,8 @@
 class DepositsController < DocumentsController
   private
 
+  def index_preloads         = [ { documentable: :bank_account }, { line_items: :account }, :bank_transactions ]
+
   def documentable_class     = Deposit
   def documentable_permitted = %i[bank_account_id]
   def after_create_path      = deposits_path

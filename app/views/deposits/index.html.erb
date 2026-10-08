@@ -12,6 +12,7 @@
         <th>Date</th>
         <th>From</th>
         <th>Account</th>
+        <th>Memo</th>
         <th>Into</th>
         <th class="num">Amount</th>
       </tr>
@@ -22,6 +23,7 @@
           <td data-cell="secondary"><%= document.date.iso8601 %></td>
           <td data-cell="primary"><%= link_to document.display_name, deposit_path(document) %></td>
           <td><%= document.line_items.filter_map { |li| li.account&.name }.uniq.to_sentence %></td>
+          <td data-cell="secondary" class="muted"><%= document.why %></td>
           <td data-cell="secondary" data-label="into"><%= document.deposit.bank_account.name %></td>
           <td class="num" data-cell="amount"><%= money(document.total) %></td>
         </tr>

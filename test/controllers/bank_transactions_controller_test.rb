@@ -142,6 +142,25 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Monthly hosting", doc.line_items.sole.description
   end
 
+  test "a matched line shows its why where the lines are read" do
+    txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting" }, as: :turbo_stream
+    get bank_transactions_path(status: "matched")
+    assert_select "##{row_id(txn)} .recon-actions .why", text: "Monthly hosting"
+
+    get expenses_path
+    assert_select "tr##{ActionView::RecordIdentifier.dom_id(txn.reload.document)} td[data-cell=secondary]", text: "Monthly hosting"
+
+    get bank_account_path(@checking)
+    assert_select ".why", text: "Monthly hosting"
+
+    # the bank's own words are not a why, so nothing is repeated
+    plain = line(-20, description: "AMZN MKTP US*2K3")
+    post categorize_bank_transaction_path(plain), params: { account_id: @hosting.id }, as: :turbo_stream
+    get bank_transactions_path(status: "matched")
+    assert_select "##{row_id(plain)} .recon-actions .why", 0
+  end
+
   test "memory OK is refused when the books no longer agree" do
     coded("ZOOM.US", account: @hosting, on: Date.new(2026, 9, 1), contact: "Zoom")
     fresh = line(-15, description: "ZOOM.US")
