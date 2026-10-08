@@ -11,6 +11,8 @@ module Reconciliation
 
     Hit    = Struct.new(:contact_name, :account, :tax_rate, :tracking_option_ids, :count, :confident, keyword_init: true) do
       def confident? = confident
+      # The keyword arguments Categorize takes.
+      def coding = { account: account, tax_rate: tax_rate, contact_name: contact_name, tracking_option_ids: tracking_option_ids }
     end
     Coding = Struct.new(:document, :contact_name, :account, :tax_rate, :tracking_option_ids, keyword_init: true)
 
