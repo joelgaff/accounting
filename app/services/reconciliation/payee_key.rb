@@ -7,12 +7,21 @@ module Reconciliation
   module PayeeKey
     MIN_LENGTH = 4
 
+    # Words that describe the transaction rather than the payee. "CHECK 1234"
+    # is every check, not one payee, so on their own they make no key.
+    STOPWORDS = %w[
+      check chk atm withdrawal withdrawl deposit payment pmt online mobile zelle
+      debit credit card purchase pos ach wire transfer tfr fee fees interest
+      thank you to from for id ppd ccd
+    ].freeze
+
     def self.for(text)
-      key = text.to_s.downcase
-                .gsub(%r{\b\d{1,2}/\d{1,2}(/\d{2,4})?\b}, " ")   # 10/02, 9/26/26
-                .gsub(/[^a-z0-9 ]/, " ")                         # punctuation
-                .gsub(/\b[a-z]*\d[a-z0-9]*\b/, " ")              # any token carrying a digit
-                .squeeze(" ").strip
+      words = text.to_s.downcase
+                  .gsub(%r{\b\d{1,2}/\d{1,2}(/\d{2,4})?\b}, " ")   # 10/02, 9/26/26
+                  .gsub(/[^a-z0-9 ]/, " ")                         # punctuation
+                  .gsub(/\b[a-z]*\d[a-z0-9]*\b/, " ")              # any token carrying a digit
+                  .split - STOPWORDS
+      key = words.join(" ")
       key.length >= MIN_LENGTH ? key : nil
     end
 

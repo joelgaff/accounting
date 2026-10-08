@@ -8,9 +8,8 @@ class Reconciliation::PayeeKeyTest < ActiveSupport::TestCase
     [ "BLUEPIXEL HOSTING 10/02", "BLUEPIXEL HOSTING 09/02", "bluepixel hosting" ],
     [ "GUSTO PAYROLL 09/26", "Gusto Payroll 10/10", "gusto payroll" ],
     [ "SQ *SUMMIT RACES", "SQ *SUMMIT RACES #4471", "sq summit races" ],
-    [ "ONLINE PAYMENT TO CARD 0042", "ONLINE PAYMENT TO CARD 0042", "online payment to card" ],
     [ "Xero Inv XERO US INV-7876814", "Xero Inv XERO US INV-7876902", "xero inv xero us inv" ],
-    [ "Chase Credit Crd Autopay  PPD ID: 4760039224", "CHASE CREDIT CRD AUTOPAY PPD ID: 4760039991", "chase credit crd autopay ppd id" ]
+    [ "Chase Credit Crd Autopay  PPD ID: 4760039224", "CHASE CREDIT CRD AUTOPAY PPD ID: 4760039991", "chase crd autopay" ]
   ].freeze
 
   test "charges from the same payee share a key" do
@@ -18,6 +17,19 @@ class Reconciliation::PayeeKeyTest < ActiveSupport::TestCase
       assert_equal key, Reconciliation::PayeeKey.for(a), a
       assert_equal key, Reconciliation::PayeeKey.for(b), b
     end
+  end
+
+  test "words that describe the transaction, not the payee, never make a key on their own" do
+    [ "CHECK 1234", "Check #1250", "ATM WITHDRAWAL 10/02", "MOBILE DEPOSIT", "ONLINE PAYMENT", "ZELLE PAYMENT", "ONLINE PAYMENT TO CARD 0042",
+      "DEBIT CARD PURCHASE", "ACH CREDIT", "WIRE TRANSFER FEE", "POS DEBIT", "INTEREST PAYMENT" ].each do |text|
+      assert_nil Reconciliation::PayeeKey.for(text), text
+    end
+  end
+
+  test "those words still drop out when a payee is there too" do
+    assert_equal "landlord llc", Reconciliation::PayeeKey.for("CHECK 1234 LANDLORD LLC")
+    assert_equal "northwind trail", Reconciliation::PayeeKey.for("ACH CREDIT NORTHWIND TRAIL")
+    assert_equal "summit races", Reconciliation::PayeeKey.for("ZELLE PAYMENT TO SUMMIT RACES")
   end
 
   test "too little text is no key at all" do
