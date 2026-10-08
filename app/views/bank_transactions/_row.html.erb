@@ -23,7 +23,10 @@
         <div class="recon-strip">
           <% if suggestion&.confident? %>
             <div class="suggestion" title="<%= suggestion.label %>">
-              <span class="suggestion-text">→ <%= suggestion.label %><%= coding_chips(suggestion.coding) %></span>
+              <div class="suggestion-body">
+                <span class="suggestion-text">→ <%= suggestion.label %></span>
+                <%= coding_chips(suggestion.coding) %>
+              </div>
               <%= button_to "OK", accept_suggestion_bank_transaction_path(txn), params: { kind: suggestion.kind, target_id: suggestion.target&.id }.compact, class: "btn btn-primary" %>
             </div>
           <% end %>
