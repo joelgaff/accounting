@@ -12,13 +12,15 @@ class OrganizationSettings < ApplicationRecord
   validates :invoice_next_number, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
   validate  :control_accounts_stay_set
 
+  # Which documents post to each control account.
+  CONTROL_ACCOUNTS = { receivable_account: :invoices, payable_account: :bills }.freeze
+
   # A control account may change, but not go blank while documents post to it.
   def control_accounts_stay_set
-    if receivable_account_id.nil? && receivable_account_id_was.present? && organization.documents.invoices.exists?
-      errors.add(:receivable_account, "can't be cleared while invoices post to it; pick another account instead")
-    end
-    if payable_account_id.nil? && payable_account_id_was.present? && organization.documents.bills.exists?
-      errors.add(:payable_account, "can't be cleared while bills post to it; pick another account instead")
+    CONTROL_ACCOUNTS.each do |attr, documents|
+      next unless public_send("#{attr}_id").nil? && public_send("#{attr}_id_was").present?
+      next unless organization.documents.public_send(documents).exists?
+      errors.add(attr, "can't be cleared while #{documents} post to it; pick another account instead")
     end
   end
 
