@@ -21,7 +21,7 @@ class Reconciliation::UpgradesTest < ActiveSupport::TestCase
     b = create_invoice(@org, client_name: "Bolt", amount: 200, receivable: @ar, revenue: @sales)
     txn = line(550)
 
-    Reconciliation::Allocate.new(txn, allocations: [ { document_id: a.id, amount: "300" }, { document_id: b.id, amount: "200" } ], remainder: { account_id: @sales.id }).call
+    Reconciliation::Allocate.new(txn, allocations: [ { document_id: a.id, amount: "300" }, { document_id: b.id, amount: "200" } ], remainder: { account_id: @sales.id, contact_name: "Sponsor" }).call
     txn.reload
     assert txn.matched?
     assert_equal 2, txn.payments.count
@@ -43,7 +43,7 @@ class Reconciliation::UpgradesTest < ActiveSupport::TestCase
     assert_raises(Reconciliation::MatchDocument::Mismatch) do
       Reconciliation::Allocate.new(txn, allocations: [ { document_id: a.id, amount: "250" } ]).call
     end
-    Reconciliation::Categorize.new(txn, account: @sales).call     # the rest
+    Reconciliation::Categorize.new(txn, account: @sales, contact_name: "Sponsor").call     # the rest
     assert txn.reload.matched?
     assert_equal BigDecimal("200"), txn.document.total
   end
@@ -58,7 +58,7 @@ class Reconciliation::UpgradesTest < ActiveSupport::TestCase
     assert_equal "open", inv.reload.status
 
     t2 = line(-30)
-    Reconciliation::Categorize.new(t2, account: @hosting).call
+    Reconciliation::Categorize.new(t2, account: @hosting, contact_name: "Hetzner").call
     made = t2.reload.document
     Reconciliation::Unmatch.new(t2).call
     assert_not Document.exists?(made.id), "a document the reconcile page created goes away"
@@ -108,8 +108,9 @@ class Reconciliation::UpgradesTest < ActiveSupport::TestCase
   end
 
   test "apply_rules auto-applies flagged rules and only suggests the others" do
-    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true)
-    @org.bank_rules.create!(name: "AWS", pattern: "amazon", action_kind: "Expense", account: @hosting)
+    cf = @org.contacts.create!(name: "Cloudflare", kind: "vendor")
+    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true, contact: cf)
+    @org.bank_rules.create!(name: "AWS", pattern: "amazon", action_kind: "Expense", account: @hosting, contact: @org.contacts.create!(name: "Amazon", kind: "vendor"))
     cf, aws, other = line(-8, payee: "CLOUDFLARE"), line(-40, payee: "AMAZON WEB"), line(-1, payee: "?")
     outcome = Reconciliation::ApplyRules.new(@org, [ cf, aws, other ]).call
     assert_equal 1, outcome.applied
@@ -121,7 +122,7 @@ class Reconciliation::UpgradesTest < ActiveSupport::TestCase
   end
 
   test "statement import keeps payee and runs the rules" do
-    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true)
+    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true, contact: @org.contacts.create!(name: "Cloudflare", kind: "vendor"))
     csv = "*Date,*Amount,Payee,Description\n15 Jul 2026,-8.00,Cloudflare,Hosting\n16 Jul 2026,250.00,Acme,INV 1\n"
     result = Imports::BankStatementService.new(csv, bank_account: @checking, organization: @org).call
     assert_equal 2, result.imported

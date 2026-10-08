@@ -204,7 +204,7 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
 
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
-    post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }
+    post expenses_path, params: { document: { date: "2026-09-01", contact_name: "DO", documentable_attributes: { bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }
     doc = @org.documents.expenses.sole
     assert doc.approved?
     assert_equal 1, doc.entries.count

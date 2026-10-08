@@ -14,7 +14,7 @@ class SimpleFin::SyncTest < ActiveSupport::TestCase
   end
 
   test "imports mapped accounts, skips pending, records balances and unmapped names, idempotently" do
-    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true)
+    @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: @hosting, auto_apply: true, contact: @org.contacts.create!(name: "Cloudflare", kind: "vendor"))
     summary = SimpleFin::Sync.new(@feed, client: @client).call
 
     assert_equal 1, summary.accounts

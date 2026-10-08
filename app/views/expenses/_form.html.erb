@@ -4,14 +4,14 @@
   <% if vendors.any? %>
     <div class="field">
       <%= f.label :contact_id, "Vendor" %>
-      <%= f.collection_select :contact_id, vendors, :id, :name, include_blank: "— pick a vendor or type a name below —" %>
+      <%= f.collection_select :contact_id, vendors, :id, :name, include_blank: "— pick a vendor or type a new one below —" %>
     </div>
   <% end %>
 
   <%= f.fields_for :documentable, document.expense do |exp| %>
     <div class="field">
-      <%= exp.label :vendor, "Vendor name (used if no vendor picked)" %>
-      <%= exp.text_field :vendor, autofocus: vendors.empty? %>
+      <%= f.label :contact_name, "New vendor (if not in the list)" %>
+      <%= f.text_field :contact_name, autofocus: vendors.empty?, placeholder: "Typed here, the vendor is added to Contacts" %>
     </div>
 
     <div class="field">

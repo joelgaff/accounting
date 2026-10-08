@@ -123,7 +123,7 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     get bank_transactions_path
     assert_select "##{row_id(txn)} [data-segment=create] input[name=memo][placeholder]"
 
-    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting" }, as: :turbo_stream
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting", contact_name: "Blue Pixel Hosting" }, as: :turbo_stream
     assert_response :success
     doc = txn.reload.document
     assert_equal "Monthly hosting", doc.memo
@@ -144,7 +144,7 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
 
   test "a matched line shows its why where the lines are read" do
     txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
-    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting" }, as: :turbo_stream
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, memo: "Monthly hosting", contact_name: "Blue Pixel Hosting" }, as: :turbo_stream
     get bank_transactions_path(status: "matched")
     assert_select "##{row_id(txn)} .recon-actions .why", text: "Monthly hosting"
 
@@ -156,9 +156,36 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
 
     # the bank's own words are not a why, so nothing is repeated
     plain = line(-20, description: "AMZN MKTP US*2K3")
-    post categorize_bank_transaction_path(plain), params: { account_id: @hosting.id }, as: :turbo_stream
+    post categorize_bank_transaction_path(plain), params: { account_id: @hosting.id, contact_name: "Amazon" }, as: :turbo_stream
     get bank_transactions_path(status: "matched")
     assert_select "##{row_id(plain)} .recon-actions .why", 0
+  end
+
+  test "on the unmatched view a reconciled line leaves the page; elsewhere it stays and shows its result" do
+    txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    @org.contacts.create!(name: "Blue Pixel Hosting", kind: "vendor")
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, contact_name: "Blue Pixel Hosting" }, as: :turbo_stream,
+         headers: { "Referer" => bank_transactions_url(status: "unmatched") }
+    assert_response :success
+    assert_match(/action="remove" target="#{row_id(txn)}"/, response.body)
+    assert_no_match(/action="replace" target="#{row_id(txn)}"/, response.body)
+    assert_match(/unmatched_count/, response.body)
+
+    other = line(-20, description: "ZOOM.US")
+    post categorize_bank_transaction_path(other), params: { account_id: @hosting.id, contact_name: "Zoom" }, as: :turbo_stream,
+         headers: { "Referer" => bank_transactions_url }
+    assert_match(/action="replace" target="#{row_id(other)}"/, response.body)
+    assert_match(/badge-matched/, response.body)
+  end
+
+  test "the create panel insists on a vendor" do
+    txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    get bank_transactions_path
+    assert_select "##{row_id(txn)} [data-segment=create] input[name=contact_name][required]"
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id }, as: :turbo_stream
+    assert_response :unprocessable_entity
+    assert_match(/who this was with/i, response.body)
+    assert txn.reload.unmatched?
   end
 
   test "memory OK is refused when the books no longer agree" do
@@ -281,7 +308,8 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='bank_rule[match_all]'][value=true]"
     assert_select "template[data-nested-rows-target=template]"
 
-    post bank_rules_path, params: { bank_rule: { name: "CF", amount_sign: "out", action_kind: "Expense", account_id: @hosting.id, auto_apply: "1", active: "1", match_all: "true",
+    cf = @org.contacts.create!(name: "Cloudflare", kind: "vendor")
+    post bank_rules_path, params: { bank_rule: { name: "CF", amount_sign: "out", action_kind: "Expense", account_id: @hosting.id, contact_id: cf.id, auto_apply: "1", active: "1", match_all: "true",
       conditions_attributes: { "0" => { field: "text", operator: "contains", value: "cloudflare" }, "1" => { field: "amount", operator: "less_than", value: "50" } } } }
     assert_redirected_to bank_rules_path
     rule = @org.bank_rules.sole

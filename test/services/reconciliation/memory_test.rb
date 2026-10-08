@@ -97,6 +97,15 @@ class Reconciliation::MemoryTest < ActiveSupport::TestCase
     assert_nil Reconciliation::Memory.new(@org, [ again ]).for(again).memo, "the bank's own words are not a why worth repeating"
   end
 
+  test "a payee is never confident without a contact to put on the document" do
+    3.times { |i| coded("ZOOM.US", account: @hosting, on: Date.new(2026, 7 + i, 1), contact: "Zoom") }
+    fresh = line(-15, "ZOOM.US")
+    assert Reconciliation::Memory.new(@org, [ fresh ]).for(fresh).confident?
+    @org.documents.where(documentable_type: "Expense").update_all(contact_id: nil)
+    Expense.update_all(vendor: "")
+    assert_not Reconciliation::Memory.new(@org, [ fresh ]).for(fresh).confident?
+  end
+
   test "an expense typed by hand teaches the same lesson when its vendor is in the line" do
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 7, 1))
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 8, 1))

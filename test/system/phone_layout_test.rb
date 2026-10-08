@@ -209,10 +209,13 @@ class PhoneLayoutTest < ApplicationSystemTestCase
       assert_operator ok.native.size.height, :>=, 40
       ok.click
     end
-    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .badge-matched", wait: 5
-    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .recon-actions .coding", text: /Web Hosting/, visible: true
+    # Reconciled from the unmatched view, the line leaves it; the matched view shows what it became.
+    assert_no_selector "##{ActionView::RecordIdentifier.dom_id(fresh)}", wait: 5
     assert_equal "Zoom", fresh.reload.document.counterparty
     assert_fits_viewport("reconcile after memory OK")
+    visit "/bank_transactions?status=matched"
+    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .badge-matched"
+    assert_selector "##{ActionView::RecordIdentifier.dom_id(fresh)} .recon-actions .coding", text: /Web Hosting/, visible: true
     shoot("reconcile memory ok")
   end
 

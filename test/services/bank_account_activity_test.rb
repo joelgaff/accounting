@@ -17,7 +17,7 @@ class BankAccountActivityTest < ActiveSupport::TestCase
     Reconciliation::MatchDocument.new(line, inv).call                                  # payment, reconciled
     create_expense(@org, vendor: "DO", amount: 30, category: @hosting, bank_account: @bank, date: Date.new(2026, 1, 12))   # unreconciled
     @org.documents.create!(date: Date.new(2026, 1, 15), total: 100, documentable: Transfer.new(from_bank_account: @bank, to_bank_account: @savings))
-    @org.documents.create!(date: Date.new(2025, 12, 20), documentable: Deposit.new(bank_account: @bank),
+    @org.documents.create!(date: Date.new(2025, 12, 20), contact: @org.contacts.create!(name: "Sponsor", kind: "customer"), documentable: Deposit.new(bank_account: @bank),
       line_items_attributes: [ { description: "seed", quantity: 1, unit_amount: 1000, account_id: @sales.id } ])
 
     a = BankAccountActivity.new(@bank, from: Date.new(2026, 1, 1))

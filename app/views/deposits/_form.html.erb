@@ -3,10 +3,14 @@
 
   <% if customers.any? %>
     <div class="field">
-      <%= f.label :contact_id, "From (optional)" %>
-      <%= f.collection_select :contact_id, customers, :id, :name, include_blank: "—" %>
+      <%= f.label :contact_id, "From" %>
+      <%= f.collection_select :contact_id, customers, :id, :name, include_blank: "— pick a contact or type a new one below —" %>
     </div>
   <% end %>
+  <div class="field">
+    <%= f.label :contact_name, "New contact (if not in the list)" %>
+    <%= f.text_field :contact_name, placeholder: "Typed here, the contact is added to Contacts" %>
+  </div>
 
   <%= f.fields_for :documentable, document.deposit do |dep| %>
     <div class="field">

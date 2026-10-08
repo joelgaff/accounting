@@ -10,7 +10,7 @@ class DepositTest < ActiveSupport::TestCase
   end
 
   def create_deposit(amount:, tax_rate: nil, bank: @bank, **doc)
-    @org.documents.create!(doc.merge(date: Date.current, documentable: Deposit.new(bank_account: bank),
+    @org.documents.create!({ contact_name: "Sponsor" }.merge(doc).merge(date: Date.current, documentable: Deposit.new(bank_account: bank),
       line_items_attributes: [ { description: "Sponsor", quantity: 1, unit_amount: amount, account_id: @sales.id, tax_rate_id: tax_rate&.id } ]))
   end
 
@@ -32,7 +32,7 @@ class DepositTest < ActiveSupport::TestCase
   end
 
   test "display name falls back from contact to memo to label" do
-    dep = create_deposit(amount: 5, memo: "Cheque from the fair")
+    dep = create_deposit(amount: 5, memo: "Cheque from the fair", contact_name: nil, source: "xero_import")   # only imported history lacks a contact
     assert_equal "Cheque from the fair", dep.display_name
     contact = @org.contacts.create!(name: "Fair Committee", kind: "customer")
     assert_equal "Fair Committee", create_deposit(amount: 5, contact: contact).display_name

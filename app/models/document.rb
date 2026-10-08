@@ -14,6 +14,7 @@ class Document < ApplicationRecord
   include DocumentHistory
 
   attr_accessor :created_via   # noted in the history: "memory" when reconcile coded it from past codings
+  attr_accessor :contact_name  # a name typed on a form: the contact is found or made before validation
 
   belongs_to :organization
   belongs_to :contact, optional: true
@@ -24,6 +25,7 @@ class Document < ApplicationRecord
 
   before_validation :default_date
   before_validation :link_documentable
+  before_validation :contact_from_name
   before_validation :sync_totals
   scoped_to_organization :contact, organization: ->(doc) { doc.organization }
   enum :state, { draft: "draft", approved: "approved" }, validate: true
@@ -32,6 +34,7 @@ class Document < ApplicationRecord
   # A draft may be empty; lines and a total are what approval requires.
   validates :total, numericality: { greater_than: 0 }, if: :approved?
   validate  :must_have_line_items, if: -> { approved? && documentable&.line_items? }
+  validate  :party_named,          if: -> { (expense? || deposit?) && source != "xero_import" }
   validate  :not_voided,             on: :update
   validate  :total_covers_payments,  on: :update
   validate  :total_matches_bank_line, on: :update
@@ -179,6 +182,19 @@ class Document < ApplicationRecord
 
   def default_date
     self.date ||= Date.current
+  end
+
+  # Expenses and deposits name who they were with, as a contact rather than a
+  # string. Xero's history is not held to it: some of it never had one.
+  def party_named
+    errors.add(:contact, "is required: name who this was with") if contact.nil?
+  end
+
+  def contact_from_name
+    name = contact_name.to_s.strip
+    return if name.blank? || contact.present? || organization.nil?
+    kind = (expense? || bill?) ? "vendor" : "customer"
+    self.contact = Contact.find_or_create_named(organization, name, kind: kind)
   end
 
   # A freshly built type record needs to see its document (contact, lines)

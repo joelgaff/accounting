@@ -52,10 +52,10 @@ class TrackingTest < ActiveSupport::TestCase
   test "reconcile categorize and bank rules pin tracking on the new line" do
     hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
     txn  = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
-    Reconciliation::Categorize.new(txn, account: hosting, tracking_option_ids: [ opt(@klass, "Summit Races").id ]).call
+    Reconciliation::Categorize.new(txn, account: hosting, contact_name: "Summit Races", tracking_option_ids: [ opt(@klass, "Summit Races").id ]).call
     assert_equal "Summit Races", txn.reload.document.line_items.sole.tracking_option_for(@klass).name
 
-    rule = @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: hosting, tracking_option_ids: [ opt(@year, "2026").id ])
+    rule = @org.bank_rules.create!(name: "CF", pattern: "cloudflare", action_kind: "Expense", account: hosting, contact: @org.contacts.create!(name: "Cloudflare", kind: "vendor"), tracking_option_ids: [ opt(@year, "2026").id ])
     txn2 = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -8, payee: "CLOUDFLARE", description: "x")
     rule.apply!(txn2)
     assert_equal "2026", txn2.reload.document.line_items.sole.tracking_option_for(@year).name
@@ -97,7 +97,7 @@ class TrackingTest < ActiveSupport::TestCase
     assert_equal r.ledger_net_income, r.total_revenue - r.total_expenses
 
     # A refund received against an expense account reduces that expense, as in the ledger.
-    @org.documents.create!(date: Date.current, documentable: Deposit.new(bank_account: @bank),
+    @org.documents.create!(date: Date.current, contact_name: "Sponsor", documentable: Deposit.new(bank_account: @bank),
       line_items_attributes: [ { description: "refund", quantity: 1, unit_amount: 50, account_id: hosting.id, tracking_option_ids: [ opt(@klass, "Summit Races").id ] } ])
     r = Reports::ProfitAndLossByTracking.new(organization: @org, category: @klass)
     assert_equal BigDecimal("-10"), r.column_total(r.expense_rows, ironman)

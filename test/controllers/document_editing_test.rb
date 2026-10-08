@@ -60,7 +60,7 @@ class DocumentEditingTest < ActionDispatch::IntegrationTest
     savings = create_bank_account(@org, name: "Savings", code: "091", kind: "savings")
     bill = create_bill(@org, vendor: "AWS", amount: 45, category: @hosting, payable: @ap)
     exp  = create_expense(@org, vendor: "DO", amount: 20, category: @hosting, bank_account: @bank)
-    dep  = @org.documents.create!(date: Date.current, documentable: Deposit.new(bank_account: @bank),
+    dep  = @org.documents.create!(date: Date.current, contact_name: "Sponsor", documentable: Deposit.new(bank_account: @bank),
                                   line_items_attributes: [ { description: "d", quantity: 1, unit_amount: 9, account_id: @sales.id } ])
     tr   = @org.documents.create!(date: Date.current, total: 100, documentable: Transfer.new(from_bank_account: @bank, to_bank_account: savings))
     je   = @org.documents.create!(date: Date.current, documentable: JournalEntry.new(narrative: "Adj",

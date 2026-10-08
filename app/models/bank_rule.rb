@@ -72,8 +72,9 @@ class BankRule < ApplicationRecord
   def action_has_a_target
     if action_kind == "Transfer"
       errors.add(:transfer_bank_account, "is required for a transfer rule") if transfer_bank_account.nil?
-    elsif account.nil?
-      errors.add(:account, "is required")
+    else
+      errors.add(:account, "is required") if account.nil?
+      errors.add(:contact, "is required: an expense or deposit names who it was with") if contact.nil?
     end
   end
 

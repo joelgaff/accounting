@@ -2,7 +2,7 @@ class ExpensesController < DocumentsController
   private
 
   def documentable_class     = Expense
-  def documentable_permitted = %i[vendor bank_account_id]
+  def documentable_permitted = %i[bank_account_id]
   def index_preloads         = [ { documentable: :bank_account }, { line_items: :account }, :bank_transactions ]
   def after_create_path      = expenses_path
   def created_notice         = "Expense recorded."

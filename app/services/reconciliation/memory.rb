@@ -36,7 +36,7 @@ module Reconciliation
       return nil if codings.empty?
 
       recent = codings.first(CONFIDENT_AFTER)
-      agree  = recent.size >= CONFIDENT_AFTER &&
+      agree  = recent.size >= CONFIDENT_AFTER && recent.first.contact_name.present? &&
                recent.map { |c| [ c.account.id, c.tracking_option_ids ] }.uniq.size == 1
       tax    = agree && recent.map { |c| c.tax_rate&.id }.uniq.size == 1 ? recent.first.tax_rate : nil
       newest = codings.first

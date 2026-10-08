@@ -86,7 +86,7 @@ class DocumentsController < ApplicationController
   def documents_path_for_type = helpers.documents_path_for(@document)
   def created_notice         = "#{type_name} created."
   def type_name              = documentable_class.model_name.human
-  def universal_permitted    = %i[contact_id date reference memo]
+  def universal_permitted    = %i[contact_id contact_name date reference memo]
   def approve_requested?     = params[:approve].present?
 
   def scope

@@ -35,7 +35,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
 
   test "voiding a reconcile-created expense returns its line to the queue" do
     txn = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
-    Reconciliation::Categorize.new(txn, account: @hosting).call
+    Reconciliation::Categorize.new(txn, account: @hosting, contact_name: "Vendor").call
     exp = txn.reload.document
     exp.void!
     assert txn.reload.unmatched?
@@ -87,7 +87,7 @@ class DocumentVoidTest < ActiveSupport::TestCase
     assert_equal BigDecimal("500"), inv.reload.total
 
     txn = @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: -30, description: "HOST")
-    Reconciliation::Categorize.new(txn, account: @hosting).call
+    Reconciliation::Categorize.new(txn, account: @hosting, contact_name: "Vendor").call
     exp = txn.reload.document
     err = assert_raises(ActiveRecord::RecordInvalid) do
       exp.update_and_repost!(line_items_attributes: [ { id: exp.line_items.sole.id, unit_amount: 31 } ])

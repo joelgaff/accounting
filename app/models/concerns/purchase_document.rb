@@ -19,7 +19,7 @@ module PurchaseDocument
   private
 
   def sync_vendor_from_contact
-    self.vendor = document.contact.name if document&.contact && vendor.blank?
+    self.vendor = document.contact.name if document&.contact
   end
 
   # One debit per category account; recoverable tax debits the tax asset,

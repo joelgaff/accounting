@@ -40,20 +40,27 @@ class Reconciliation::ReconcileTest < ActiveSupport::TestCase
     assert_equal :document, suggest.(fresh).kind, "an open bill for the amount beats memory"
     bill.destroy!
 
-    @org.bank_rules.create!(name: "Pixel", pattern: "BLUEPIXEL", match_kind: "contains", amount_sign: "any", action_kind: "Expense", account: @hosting, position: 1)
+    @org.bank_rules.create!(name: "Pixel", pattern: "BLUEPIXEL", match_kind: "contains", amount_sign: "any", action_kind: "Expense", account: @hosting, position: 1, contact: @org.contacts.find_by!(name: "Blue Pixel Hosting"))
     assert_equal :rule, suggest.(fresh).kind, "a rule beats memory"
   end
 
   test "a Why typed on create becomes the line's description and the document's memo; blank keeps the bank's words" do
     typed = line(-48, description: "BLUEPIXEL HOSTING 10/02")
-    Reconciliation::Categorize.new(typed, account: @hosting, memo: "Monthly hosting, October").call
+    Reconciliation::Categorize.new(typed, account: @hosting, contact_name: "Blue Pixel Hosting", memo: "Monthly hosting, October").call
     assert_equal "Monthly hosting, October", typed.document.memo
     assert_equal "Monthly hosting, October", typed.document.line_items.sole.description
 
     blank = line(-48, description: "BLUEPIXEL HOSTING 11/02")
-    Reconciliation::Categorize.new(blank, account: @hosting, memo: "  ").call
+    Reconciliation::Categorize.new(blank, account: @hosting, contact_name: "Blue Pixel Hosting", memo: "  ").call
     assert_equal "BLUEPIXEL HOSTING 11/02", blank.document.memo
     assert_equal "BLUEPIXEL HOSTING 11/02", blank.document.line_items.sole.description
+  end
+
+  test "a line cannot be categorised without naming who it was with" do
+    txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    error = assert_raises(Reconciliation::MatchDocument::Mismatch) { Reconciliation::Categorize.new(txn, account: @hosting).call }
+    assert_match(/who this was with/i, error.message)
+    assert txn.reload.unmatched?
   end
 
   test "matching a deposit to an invoice creates a payment and marks the line" do

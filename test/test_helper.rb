@@ -25,6 +25,7 @@ module DocumentBuilders
   end
 
   def create_expense(org, amount:, category:, bank_account:, vendor: nil, date: Date.current, tax_rate: nil, contact: nil, **doc)
+    contact ||= Contact.find_or_create_named(org, vendor, kind: "vendor") if vendor.present?
     org.documents.create!(doc.merge(
       contact: contact, date: date,
       documentable: Expense.new(vendor: vendor, bank_account: bank_account),

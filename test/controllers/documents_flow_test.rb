@@ -44,7 +44,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
   end
 
   test "creates an expense paid from a bank" do
-    post expenses_path, params: { document: { date: "2026-09-01", documentable_attributes: { vendor: "DO", bank_account_id: @bank.id },
+    post expenses_path, params: { document: { date: "2026-09-01", contact_name: "DO", documentable_attributes: { bank_account_id: @bank.id },
                                               line_items_attributes: line(20, @hosting) } }
     assert_redirected_to expenses_path
     assert_equal BigDecimal("-20"), @bank.balance
@@ -82,7 +82,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
     assert inv.reload.paid?
     assert_equal "matched", dep.reload.status
 
-    post categorize_bank_transaction_path(wd), params: { account_id: @hosting.id }, as: :turbo_stream
+    post categorize_bank_transaction_path(wd), params: { account_id: @hosting.id, contact_name: "Hetzner" }, as: :turbo_stream
     assert_response :success
     exp = @org.documents.expenses.sole
     assert_equal BigDecimal("30"), exp.total
@@ -112,7 +112,7 @@ class DocumentsFlowTest < ActionDispatch::IntegrationTest
 
   test "creates a deposit and a transfer through their pages" do
     savings = create_bank_account(@org, name: "Savings", code: "091", kind: "savings")
-    post deposits_path, params: { document: { date: "2026-09-01", documentable_attributes: { bank_account_id: @bank.id },
+    post deposits_path, params: { document: { date: "2026-09-01", contact_name: "Sponsor", documentable_attributes: { bank_account_id: @bank.id },
                                               line_items_attributes: line(250, @sales) } }
     assert_redirected_to deposits_path
     assert_equal BigDecimal("250"), @bank.balance

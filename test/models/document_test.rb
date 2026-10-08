@@ -96,7 +96,7 @@ class DocumentTest < ActiveSupport::TestCase
   test "a document without a number is named by what it is and who it was with, never by its id" do
     exp  = create_expense(@org, vendor: "Zoom", amount: 15, category: @hosting, bank_account: @bank)
     bill = create_bill(@org, vendor: "Gusto", amount: 10, category: @hosting, payable: @ap)
-    dep  = @org.documents.create!(date: Date.current, memo: "Race day cash", documentable: Deposit.new(bank_account: @bank),
+    dep  = @org.documents.create!(date: Date.current, memo: "Race day cash", contact_name: "Walk-ups", documentable: Deposit.new(bank_account: @bank),
                                   line_items_attributes: [ { description: "Cash", quantity: 1, unit_amount: 40, account_id: @sales.id } ])
     savings = create_bank_account(@org, name: "Savings", kind: "savings")
     xfer = @org.documents.create!(date: Date.current, total: 100, documentable: Transfer.new(from_bank_account: @bank, to_bank_account: savings))
@@ -104,7 +104,7 @@ class DocumentTest < ActiveSupport::TestCase
 
     assert_equal "Expense · Zoom",            exp.label
     assert_equal "Bill · Gusto",              bill.label
-    assert_equal "Deposit · Race day cash",   dep.label
+    assert_equal "Deposit · Walk-ups",        dep.label
     assert_equal "Transfer · Bank → Savings", xfer.label
     assert_equal "Journal entry · Depreciation", je.label
     [ exp, bill, dep, xfer, je ].each { |d| assert_no_match(/#\d/, d.label, d.label) }

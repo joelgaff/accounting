@@ -6,6 +6,7 @@ class BankRuleTest < ActiveSupport::TestCase
     Current.organization = @org
     @bank    = create_bank_account(@org, name: "Checking")
     @hosting = Plutus::Expense.create!(tenant: @org, name: "Hosting")
+    @cf      = @org.contacts.create!(name: "Cloudflare", kind: "vendor")
   end
 
   def line(amount, payee: "", description: "LINE", bank: @bank)
@@ -13,7 +14,7 @@ class BankRuleTest < ActiveSupport::TestCase
   end
 
   def rule(**attrs)
-    @org.bank_rules.create!({ name: "r", match_kind: "contains", pattern: "cloudflare", amount_sign: "any", action_kind: "Expense", account: @hosting }.merge(attrs))
+    @org.bank_rules.create!({ name: "r", match_kind: "contains", pattern: "cloudflare", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf }.merge(attrs))
   end
 
   test "contains, starts_with and regex match case-insensitively over payee and description" do
@@ -33,7 +34,7 @@ class BankRuleTest < ActiveSupport::TestCase
   end
 
   test "a bad regex is rejected, and a slow one fails closed" do
-    r = @org.bank_rules.build(name: "x", match_kind: "regex", pattern: "(", action_kind: "Expense", account: @hosting)
+    r = @org.bank_rules.build(name: "x", match_kind: "regex", pattern: "(", action_kind: "Expense", account: @hosting, contact: @cf)
     assert_not r.valid?
     assert_includes r.errors.full_messages.join, "regex"
     slow = rule(match_kind: "regex", pattern: "(a+)+$")
@@ -49,7 +50,7 @@ class BankRuleTest < ActiveSupport::TestCase
   # ── Several conditions on one rule ─────────────────────────────────────────
 
   def conditioned(match_all: true, **attrs)
-    @org.bank_rules.create!({ name: "r", amount_sign: "any", action_kind: "Expense", account: @hosting, match_all: match_all,
+    @org.bank_rules.create!({ name: "r", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf, match_all: match_all,
                               conditions_attributes: [ { field: "text", operator: "contains", value: "lyft" },
                                                        { field: "amount", operator: "more_than", value: "20" } ] }.merge(attrs))
   end
@@ -67,31 +68,31 @@ class BankRuleTest < ActiveSupport::TestCase
   end
 
   test "amount conditions compare the size of the amount, whichever way the money went" do
-    more = @org.bank_rules.create!(name: "big", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    more = @org.bank_rules.create!(name: "big", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                     conditions_attributes: [ { field: "amount", operator: "more_than", value: "1000" } ])
     assert more.matches?(line(-1500))
     assert more.matches?(line(1500))
     assert_not more.matches?(line(-999.99))
 
-    between = @org.bank_rules.create!(name: "mid", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    between = @org.bank_rules.create!(name: "mid", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                        conditions_attributes: [ { field: "amount", operator: "between", value: "10", value_to: "20" } ])
     assert between.matches?(line(-15))
     assert between.matches?(line(-20))
     assert_not between.matches?(line(-20.01))
 
-    exact = @org.bank_rules.create!(name: "exact", amount_sign: "out", action_kind: "Expense", account: @hosting,
+    exact = @org.bank_rules.create!(name: "exact", amount_sign: "out", action_kind: "Expense", account: @hosting, contact: @cf,
                                      conditions_attributes: [ { field: "amount", operator: "equals", value: "14.99" } ])
     assert exact.matches?(line(-14.99))
     assert_not exact.matches?(line(14.99)), "direction is still the rule's scope"
   end
 
   test "a condition can look at one field alone" do
-    payee = @org.bank_rules.create!(name: "p", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    payee = @org.bank_rules.create!(name: "p", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                      conditions_attributes: [ { field: "payee", operator: "contains", value: "gusto" } ])
     assert payee.matches?(line(-8, payee: "GUSTO", description: "ACH"))
     assert_not payee.matches?(line(-8, payee: "ACH", description: "GUSTO"))
 
-    ref = @org.bank_rules.create!(name: "ref", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    ref = @org.bank_rules.create!(name: "ref", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                    conditions_attributes: [ { field: "reference", operator: "equals", value: "INV-7" } ])
     l = line(-8); l.reference = "inv-7"
     assert ref.matches?(l)
@@ -102,24 +103,24 @@ class BankRuleTest < ActiveSupport::TestCase
     assert_not none.valid?
     assert_includes none.errors[:conditions].join, "at least one"
 
-    bad = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    bad = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                 conditions_attributes: [ { field: "amount", operator: "contains", value: "5" } ])
     assert_not bad.valid?
-    bad2 = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    bad2 = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                  conditions_attributes: [ { field: "payee", operator: "more_than", value: "5" } ])
     assert_not bad2.valid?
-    nan = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    nan = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                 conditions_attributes: [ { field: "amount", operator: "more_than", value: "lots" } ])
     assert_not nan.valid?
   end
 
   test "amounts may be typed with a currency sign or commas, and between must run low to high" do
-    r = @org.bank_rules.create!(name: "big", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    r = @org.bank_rules.create!(name: "big", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                 conditions_attributes: [ { field: "amount", operator: "more_than", value: "$1,000.50" } ])
     assert_equal "1000.50", r.conditions.sole.value
     assert r.matches?(line(-1000.51))
 
-    backwards = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting,
+    backwards = @org.bank_rules.build(name: "x", amount_sign: "any", action_kind: "Expense", account: @hosting, contact: @cf,
                                       conditions_attributes: [ { field: "amount", operator: "between", value: "20", value_to: "10" } ])
     assert_not backwards.valid?
     assert_includes backwards.errors.full_messages.join, "low to high"
@@ -147,10 +148,17 @@ class BankRuleTest < ActiveSupport::TestCase
     assert_equal "payee or description contains “lyft” or amount more than 20.00", conditioned(match_all: false).when_summary
   end
 
+  test "a rule that creates an expense or deposit names the contact" do
+    assert_not @org.bank_rules.build(name: "x", pattern: "p", action_kind: "Expense", account: @hosting).valid?
+    cf = @org.contacts.create!(name: "Cloudflare", kind: "vendor")
+    assert @org.bank_rules.build(name: "x", pattern: "p", action_kind: "Expense", account: @hosting, contact: cf).valid?
+    assert @org.bank_rules.build(name: "x", pattern: "p", action_kind: "Transfer", transfer_bank_account: @bank).valid?
+  end
+
   test "apply! categorizes or transfers" do
     savings = create_bank_account(@org, name: "Savings", kind: "savings")
     l1 = line(-8, payee: "CLOUDFLARE").tap(&:save!)
-    rule(contact: @org.contacts.create!(name: "Cloudflare", kind: "vendor")).apply!(l1)
+    rule.apply!(l1)
     assert l1.reload.matched?
     assert_equal "Cloudflare", l1.document.contact.name
     l2 = line(-100, payee: "TRANSFER TO SAVINGS").tap(&:save!)

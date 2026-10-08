@@ -128,11 +128,19 @@ class BankTransactionsController < ApplicationController
     @contact_names = org.contacts.ordered.pluck(:name)
   end
 
+  # The filter the page was showing, from where the form was sent.
+  def view_status
+    Rack::Utils.parse_query(URI(request.referer.to_s).query.to_s)["status"]
+  rescue URI::InvalidURIError
+    nil
+  end
+
   def respond_with_row
     result   = yield
     @txn     = result.transaction.reload
     @sibling = result.sibling&.reload
     rows     = [ @txn, @sibling ].compact
+    @leaving = view_status == "unmatched" ? rows.reject(&:unmatched?) : []   # done here, gone from a list of the undone
     @candidates  = Reconciliation::Candidates.new(Current.organization, rows)
     @memory      = Reconciliation::Memory.new(Current.organization, rows)
     @suggestions = Reconciliation::Suggester.new(Current.organization, rows, candidates: @candidates, memory: @memory)
