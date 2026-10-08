@@ -13,6 +13,10 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     options.add_argument("--force-device-scale-factor=1")
   end
 
+  # The browser window outlives a test: a phone-sized test leaves it narrow
+  # for whatever runs next in the same process. Every test starts on a desktop.
+  setup { on_desktop }
+
   def resize_to(width, height) = page.driver.browser.manage.window.resize_to(width, height)
   def on_phone   = resize_to(*PHONE)
   def on_desktop = resize_to(*DESKTOP)
