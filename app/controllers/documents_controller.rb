@@ -93,11 +93,16 @@ class DocumentsController < ApplicationController
     Current.organization.documents.public_send(documentable_class.model_name.plural)
   end
 
-  # ?status= narrows the index: voided, all, or one of the type's own statuses.
-  def filtered
+  # The index's rows with everything their row shows loaded, newest first.
+  def index_scope
     base = scope.includes(:documentable, :contact, :payments)
     base = base.preload(*index_preloads) if index_preloads.any?
-    base = base.chronological
+    base.chronological
+  end
+
+  # ?status= narrows the index: voided, all, or one of the type's own statuses.
+  def filtered
+    base = index_scope
     case @status
     when "voided" then base.voided
     when "all"    then base

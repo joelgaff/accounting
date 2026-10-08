@@ -45,9 +45,7 @@ class InvoicesController < DocumentsController
   # "unsent" is not a status the invoice answers; it is approved, open and not yet sent.
   def filtered
     return super unless @status == "unsent"
-    base = scope.posted.includes(:documentable, :contact, :payments).chronological
-    base = base.preload(*index_preloads) if index_preloads.any?
-    base.select { |d| !d.invoice.sent? && !d.paid? }
+    index_scope.posted.select { |d| !d.invoice.sent? && !d.paid? }
   end
 
   def refuse_if_draft
