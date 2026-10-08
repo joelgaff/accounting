@@ -38,8 +38,42 @@ class PhoneLayoutTest < ApplicationSystemTestCase
       visit path
       assert_selector "main"
       assert_fits_viewport(label)
-      assert_selector "nav.app-tabs a", minimum: 5
+      assert_selector "nav.app-tabs a, nav.app-tabs button", minimum: 5
+      shoot(label)
     end
+  end
+
+  test "the More tab opens a sheet with the rest of the app, and the sidebar is gone" do
+    visit "/reports"
+    assert_no_selector "nav.app-nav", visible: true
+    assert_no_selector ".sheet-panel", visible: true
+    within("nav.app-tabs") { click_on "More" }
+    within(".sheet-panel") do
+      assert_link "Reports"
+      assert_link "Settings"
+      assert_link "Contacts"
+      assert_button "Sign out"
+    end
+    shoot("more sheet")
+    find(".sheet-dimmer").click(x: 0, y: -320)    # near the top, above the sheet
+    assert_no_selector ".sheet-panel", visible: true
+  end
+
+  test "the tab for the current section is marked" do
+    visit "/expenses"
+    assert_selector "nav.app-tabs a[aria-current=page]", text: "Expenses", count: 1
+    visit "/reports"
+    assert_selector "nav.app-tabs button[aria-current=page]", text: "More", count: 1
+  end
+
+  test "a tablet keeps the sidebar as an icon rail" do
+    resize_to(820, 1180)
+    visit "/invoices"
+    assert_fits_viewport("tablet invoices")
+    assert_selector "nav.app-nav", visible: true
+    assert_no_selector "nav.app-tabs", visible: true
+    assert_operator find("nav.app-nav").native.size.width, :<, 80
+    shoot("tablet invoices")
   end
 
   test "an invoice page fits a phone and keeps its primary action on screen" do

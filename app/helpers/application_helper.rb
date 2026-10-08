@@ -16,6 +16,7 @@ module ApplicationHelper
     reconcile: %(<path d="M2.5 5.5h8l-2-2M13.5 10.5h-8l2 2"/>),
     imports:   %(<path d="M8 2.5v7M5.5 7 8 9.5 10.5 7"/><path d="M2.5 11.5v2h11v-2"/>),
     tax:       %(<circle cx="5" cy="5" r="1.75"/><circle cx="11" cy="11" r="1.75"/><path d="M12.5 3.5 3.5 12.5"/>),
+    more:      %(<circle cx="3.5" cy="8" r="1.2"/><circle cx="8" cy="8" r="1.2"/><circle cx="12.5" cy="8" r="1.2"/>),
     settings:  %(<path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.75"/><circle cx="10.5" cy="11" r="1.75"/>)
   }.freeze
 
@@ -99,10 +100,31 @@ module ApplicationHelper
   # Sidebar entry: icon + label, marked active when the current controller is one
   # of the sections it covers.
   def nav_item(label, path, icon:, sections: nil)
-    sections = Array(sections || icon)
-    active = sections.any? { |s| controller_path == s.to_s || controller_path.start_with?("#{s}/") }
+    active = nav_active?(sections || icon)
+    link_to(path, class: ("active" if active), "aria-current": ("page" if active), title: label) do
+      safe_join([ nav_icon(icon), tag.span(label) ])
+    end
+  end
+
+  # The phone's bottom bar. Four sections get a tab of their own; everything
+  # else lives behind More, which is marked current when none of the four is.
+  TAB_SECTIONS = {
+    dashboard: %w[dashboard],
+    invoices:  %w[invoices recurring_invoices],
+    expenses:  %w[expenses],
+    reconcile: %w[bank_transactions bank_rules]
+  }.freeze
+
+  def tab_item(label, path, icon:)
+    active = nav_active?(TAB_SECTIONS.fetch(icon))
     link_to(path, class: ("active" if active), "aria-current": ("page" if active)) do
       safe_join([ nav_icon(icon), tag.span(label) ])
     end
+  end
+
+  def more_tab_active? = TAB_SECTIONS.values.flatten.none? { |s| nav_active?(s) }
+
+  def nav_active?(sections)
+    Array(sections).any? { |s| controller_path == s.to_s || controller_path.start_with?("#{s}/") }
   end
 end

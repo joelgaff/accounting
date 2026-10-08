@@ -878,31 +878,23 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
-@media (max-width: 900px) {
-  .app-shell { margin: 0; border: 0; border-radius: 0; height: auto; min-height: 100vh; display: block; }
-  .app-body { grid-template-columns: 1fr; min-height: 0; }
-  .app-nav { overflow-y: visible; }
-  .app-main { overflow-y: visible; }
-  .app-nav {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--rule);
-    padding: 10px 12px;
-  }
-  .nav-links { flex-direction: row; gap: 4px; }
-  .nav-links a { white-space: nowrap; }
-  .nav-links.nav-secondary { margin: 0; padding: 0 0 0 12px; border-top: 0; border-left: 1px solid var(--rule); }
-  .nav-footer { display: none; }
+/* ── Three widths ────────────────────────────────────────────────────────
+   Above 1000px the shell is as designed. Between 700 and 1000px the sidebar
+   becomes an icon rail. At 700px and below the sidebar and status bar go,
+   a tab bar sits at the bottom, and everything else is behind More. */
+
+.app-tabs-wrap { display: none; }
+
+@media (max-width: 1000px) {
+  .app-shell { margin: 0; border: 0; border-radius: 0; height: 100vh; }
   .tb-tagline { display: none; }
-  .app-main { padding: 18px 14px 32px; }
+  .app-form-wide, .app-form { max-width: none; }
+  .page-header { align-items: flex-start; }
 
   /* Wide tables keep their shape and scroll inside the panel rather than
-     squeezing columns into unreadable stacks. */
-  /* The table becomes its own scroll box; its row groups stay one table so
-     header and body columns line up and the last column is reachable. */
+     squeezing columns into unreadable stacks. The table becomes its own
+     scroll box; its row groups stay one table so header and body columns
+     line up and the last column is reachable. */
   .data-table { display: block; overflow-x: auto; white-space: nowrap; }
   .data-table thead { display: table-header-group; }
   .data-table tbody { display: table-row-group; }
@@ -917,9 +909,60 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .data-table.sheet tbody { display: table-row-group; }
   .data-table.sheet tfoot { display: table-footer-group; }
   .data-table.sheet td > input, .data-table.sheet td > select, .data-table.sheet td > .combobox > input { font-size: 16px; padding: 10px 10px; }
+}
 
-  .app-form-wide, .app-form { max-width: none; }
-  .page-header { align-items: flex-start; }
+/* Tablet: the icon rail. Labels come back on hover as a tooltip. */
+@media (max-width: 1000px) and (min-width: 700.02px) {
+  .app-body { grid-template-columns: 56px minmax(0, 1fr); }
+  .app-nav { padding: 12px 8px; gap: 12px; }
+  .nav-links a { justify-content: center; padding: 9px 0; }
+  .nav-links a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .nav-links a svg { width: 17px; height: 17px; }
+  .nav-footer { display: none; }
+  .app-main { padding: 18px 18px 32px; }
+}
+
+/* Phone: tab bar, More sheet, 16px controls so iOS never zooms. */
+@media (max-width: 700px) {
+  .app-shell { height: auto; min-height: 100vh; display: block; }
+  .app-body { display: block; min-height: 0; }
+  .app-nav, .app-statusbar, .tb-session { display: none; }
+  .app-titlebar { position: sticky; top: 0; z-index: 10; height: 46px; padding: 0 14px; background: var(--frame); }
+  .app-main { overflow: visible; padding: 16px 14px calc(88px + env(safe-area-inset-bottom, 0px)); }
+
+  .app-tabs-wrap { display: block; }
+  .app-tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: flex; background: var(--frame); border-top: 1px solid var(--rule);
+    padding: 4px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-tabs a, .app-tabs button {
+    flex: 1; min-width: 0; min-height: 48px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    padding: 4px 0; border: 0; background: none; font: inherit; font-size: 10px; letter-spacing: 0.04em;
+    color: var(--dim); text-decoration: none; cursor: pointer;
+  }
+  .app-tabs svg { width: 18px; height: 18px; }
+  .app-tabs .active { color: var(--cyan); }
+  .app-tabs a:hover, .app-tabs button:hover { text-decoration: none; color: var(--ink); }
+
+  .sheet-dimmer { position: fixed; inset: 0; z-index: 21; background: rgba(4, 8, 16, 0.55); }
+  .sheet-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 22;
+    max-height: 82vh; overflow-y: auto; overscroll-behavior: contain;
+    background: var(--panel); border-top: 1px solid var(--rule-lit); border-radius: 14px 14px 0 0;
+    padding: 8px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.45);
+  }
+  .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--rule-lit); margin: 2px auto 10px; }
+  .sheet-panel .nav-links a { font-size: 14px; padding: 11px 10px; min-height: 44px; }
+  .sheet-panel .nav-links.nav-secondary { margin-top: 8px; padding-top: 8px; }
+  .sheet-session { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 10px 0; border-top: 1px solid var(--rule); font-size: 12px; color: var(--dim); }
+  .sheet-session button { background: none; border: 1px solid var(--rule-lit); border-radius: var(--radius-sm); color: var(--ink); font: inherit; padding: 8px 12px; cursor: pointer; }
+  body.sheet-open { overflow: hidden; }
+
+  .app-main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .app-main select, .app-main textarea { font-size: 16px; }
+  .app-main .btn, .app-main button.btn { min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1022,7 +1065,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .data-table.sheet td > select { background: var(--sheet-select-wash); }
 
 /* Phones: the reconcile list is cards, declared after the table rules so it wins. */
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   /* Reconcile: each transaction is a card, the drawer opens full width beneath. */
   .recon-table { white-space: normal; overflow: visible; }
   .recon-table thead { display: none; }

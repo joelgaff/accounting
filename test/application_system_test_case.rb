@@ -27,6 +27,13 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     page.driver.browser.manage.add_cookie(name: Ee::Jwt::COOKIE_NAME.to_s, value: token, path: "/")
   end
 
+  # SHOTS=1 saves a PNG of the current page under tmp/screenshots for a look.
+  def shoot(label)
+    return unless ENV["SHOTS"].present?
+    FileUtils.mkdir_p(Rails.root.join("tmp/screenshots"))
+    page.save_screenshot(Rails.root.join("tmp/screenshots", "#{label.parameterize}.png").to_s)
+  end
+
   # The page fits the viewport: no sideways scroll on the document.
   def assert_fits_viewport(label = page.current_path)
     scroll_width, client_width = page.evaluate_script("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")

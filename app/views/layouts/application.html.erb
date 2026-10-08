@@ -3,7 +3,7 @@
 <html data-theme="<%= theme %>">
   <head>
     <title><%= content_for(:title) || app_name %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="<%= app_name %>">
     <link rel="manifest" href="<%= pwa_manifest_path(format: :json) %>">
@@ -46,24 +46,8 @@
         </header>
 
         <div class="app-body">
-          <nav class="app-nav">
-            <div class="nav-links">
-              <%= nav_item "Dashboard", root_path,             icon: :dashboard %>
-              <%= nav_item "Contacts",  contacts_path,         icon: :contacts,  sections: %w[contacts contact_imports] %>
-              <%= nav_item "Invoices",  invoices_path,         icon: :invoices,  sections: %w[invoices recurring_invoices] %>
-              <%= nav_item "Bills",     bills_path,            icon: :bills %>
-              <%= nav_item "Expenses",  expenses_path,         icon: :expenses %>
-              <%= nav_item "Deposits",  deposits_path,         icon: :deposits %>
-              <%= nav_item "Journal",   journal_entries_path,  icon: :journal,   sections: %w[journal_entries] %>
-              <%= nav_item "Accounts",  accounts_path,         icon: :accounts,  sections: %w[accounts chart_of_accounts_imports] %>
-              <%= nav_item "Banking",   bank_accounts_path,    icon: :banking,   sections: %w[bank_accounts transfers] %>
-              <%= nav_item "Reports",   reports_path,          icon: :reports %>
-              <%= nav_item "Reconcile", bank_transactions_path, icon: :reconcile, sections: %w[bank_transactions bank_rules] %>
-            </div>
-
-            <div class="nav-links nav-secondary">
-              <%= nav_item "Settings",  settings_path,  icon: :settings, sections: %w[settings people bank_feeds tracking_categories xero_connections tax_rates imports chart_of_accounts_imports contact_imports] %>
-            </div>
+          <nav class="app-nav" aria-label="Sections">
+            <%= render "layouts/nav_links" %>
 
             <div class="nav-footer">
               <span class="mark"><%= render "shared/logo_mark", size: 14 %></span>
@@ -87,6 +71,31 @@
           <span><span class="live">●</span> <%= Current.organization.name %> — books as at <%= Date.current.strftime("%b %-d, %Y") %></span>
           <span><%= app_name %></span>
         </footer>
+
+        <%# Phone only: the bottom tab bar and the More sheet behind it. %>
+        <div class="app-tabs-wrap" data-controller="sheet" data-action="keydown@window->sheet#keydown">
+          <div class="sheet-dimmer" data-sheet-target="dimmer" data-action="click->sheet#close" hidden></div>
+          <div class="sheet-panel" data-sheet-target="panel" hidden>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <%= render "layouts/nav_links" %>
+            <div class="sheet-session">
+              <span><%= current_user.email %></span>
+              <% if Auth.launchpad? %>
+                <%= button_to "Sign out", "#{Auth.launchpad_base_url}/session", method: :delete, form: { style: "display:inline" } %>
+              <% else %>
+                <%= button_to "Sign out", session_path, method: :delete, form: { style: "display:inline" } %>
+              <% end %>
+            </div>
+          </div>
+          <nav class="app-tabs" aria-label="Main">
+            <%= tab_item "Home",      root_path,              icon: :dashboard %>
+            <%= tab_item "Invoices",  invoices_path,          icon: :invoices %>
+            <%= tab_item "Expenses",  expenses_path,          icon: :expenses %>
+            <%= tab_item "Reconcile", bank_transactions_path, icon: :reconcile %>
+            <button type="button" class="<%= 'active' if more_tab_active? %>" aria-current="<%= 'page' if more_tab_active? %>" aria-expanded="false"
+                    data-sheet-target="trigger" data-action="sheet#toggle"><%= nav_icon(:more) %><span>More</span></button>
+          </nav>
+        </div>
       </div>
     <% else %>
       <div class="guest-shell">
