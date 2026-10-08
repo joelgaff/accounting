@@ -3,8 +3,6 @@ class Invoice < ApplicationRecord
 
   belongs_to :receivable_account, class_name: "Plutus::Asset"
 
-  DEFAULT_PREFIX = "INV-".freeze
-
   before_validation :sync_client_name_from_contact
   before_validation :assign_number, on: :create
   after_save :advance_sequence, if: :saved_change_to_number?

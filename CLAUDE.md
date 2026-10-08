@@ -41,7 +41,9 @@
   only approved documents post, and `posted` (live and approved) is the scope for anything that
   counts money. A type answers `draftable?` (Invoice and Bill today): drafts are the default on
   create and `approve!` is the explicit step. `documents:audit` and `documents:state[...]` fix
-  state on a server. URLs use the document id (`/invoices/:id`),
+  state on a server. Invoice numbers come from `OrganizationSettings#next_invoice_number`
+  (prefix plus counter, Settings → Books); saving an invoice in the sequence advances it,
+  numbers under another prefix are ignored. URLs use the document id (`/invoices/:id`),
   payments nest under `/documents/:id/payments`, and controllers subclass `DocumentsController`.
 - **Shared behavior via concerns** with a common interface; let each type define divergent pieces.
 - **Name entities, not values** (no `Year` table with a `year` column).
