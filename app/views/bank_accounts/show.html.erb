@@ -55,7 +55,7 @@
   closing balance <strong><%= money(@activity.closing_balance) %></strong>
 </p>
 
-<table class="data-table">
+<table class="data-table cards">
   <thead>
     <tr>
       <th>Date</th>
@@ -71,9 +71,9 @@
   <tbody>
     <% @activity.rows.reverse_each do |row| %>
       <tr>
-        <td><%= row.date.iso8601 %></td>
-        <td class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;"><%= row.kind %></td>
-        <td>
+        <td data-cell="secondary"><%= row.date.iso8601 %></td>
+        <td class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;" data-cell="secondary"><%= row.kind %></td>
+        <td data-cell="primary">
           <% if row.document %>
             <%= link_to row.party, document_path_for(row.document) %>
             <% if row.document.voided? %><%= status_badge("voided") %><% end %>
@@ -82,10 +82,10 @@
           <% end %>
         </td>
         <td class="muted"><%= row.reference %></td>
-        <td class="num"><%= row.spent?    ? money(row.spent)    : "" %></td>
-        <td class="num"><%= row.received? ? money(row.received) : "" %></td>
+        <td class="num <%= 'amount-out' if row.spent? %>" data-cell="amount"><%= row.spent?    ? money(row.spent)    : "" %></td>
+        <td class="num <%= 'amount-in' if row.received? %>" data-cell="amount"><%= row.received? ? money(row.received) : "" %></td>
         <td class="num"><%= money(row.balance) %></td>
-        <td>
+        <td data-cell="status">
           <% if row.reconciled == true %>
             <span class="badge badge-paid">reconciled</span>
           <% elsif row.reconciled == false %>

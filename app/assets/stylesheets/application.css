@@ -963,6 +963,36 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 
   .app-main input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .app-main select, .app-main textarea { font-size: 16px; }
   .app-main .btn, .app-main button.btn { min-height: 40px; }
+
+  /* Lists as cards. A table marked .cards keeps its desktop markup; on a
+     phone the header goes, each row is a card, and only the cells marked
+     data-cell show: primary and amount on the first line, the secondary
+     cells and the status chip on the second. Unmarked cells are hidden. */
+  .data-table.cards { display: block; white-space: normal; overflow: visible; border: 0; }
+  .data-table.cards thead { display: none; }
+  .data-table.cards tbody { display: flex; flex-direction: column; gap: 8px; }
+  .data-table.cards tr {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px;
+    padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel);
+  }
+  .data-table.cards td { display: none; padding: 0; border: 0; background: none; white-space: normal; }
+  .data-table.cards td[data-cell] { display: block; }
+  .data-table.cards td[data-cell="primary"]   { order: 1; flex: 1 1 55%; min-width: 0; color: var(--ink-bright); font-weight: 500; overflow-wrap: anywhere; }
+  .data-table.cards td[data-cell="amount"]    { order: 2; margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-bright); }
+  .data-table.cards td[data-cell="amount"]:empty { display: none; }
+  .data-table.cards tr::before { content: ""; order: 3; flex-basis: 100%; height: 0; }   /* line break after the amount */
+  .data-table.cards td[data-cell="secondary"] { order: 4; flex: 0 1 auto; font-size: 11.5px; color: var(--dim); }
+  .data-table.cards td[data-cell="secondary"] a { color: var(--dim); }
+  .data-table.cards td[data-cell="secondary"]:empty { display: none; }
+  .data-table.cards td[data-cell="secondary"] ~ td[data-cell="secondary"]:not(:empty)::before { content: "·"; margin-right: 8px; color: var(--rule-lit); }
+  .data-table.cards td[data-label]::before { content: attr(data-label) " "; color: var(--dim); }
+  .data-table.cards td[data-cell="secondary"] ~ td[data-cell="secondary"][data-label]:not(:empty)::before { content: "· " attr(data-label) " "; }
+  .data-table.cards td[data-cell="status"]    { order: 5; margin-left: auto; }
+  .data-table.cards td[data-cell="status"] form { display: inline; }
+  .data-table.cards td.amount-in  { color: var(--credit); }
+  .data-table.cards td.amount-out { color: var(--debit); }
+  .data-table.cards tr.muted td[data-cell="amount"] { text-decoration: line-through; color: var(--dim); }
+  .data-table.cards tr:hover td { background: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

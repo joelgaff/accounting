@@ -76,6 +76,24 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("tablet invoices")
   end
 
+  test "lists read as cards on a phone: no header row, key cells only" do
+    visit "/invoices"
+    assert_no_selector "table thead", visible: true
+    within("tr##{ActionView::RecordIdentifier.dom_id(@invoice)}") do
+      assert_selector "td[data-cell=primary]", text: "Northwind Trail Series", visible: true
+      assert_selector "td[data-cell=amount]", text: "$5,400.00", visible: true
+      assert_selector "td[data-cell=status] .badge", visible: true
+      assert_selector "td[data-cell=secondary]", text: /INV-\d+/, visible: true
+      assert_no_selector "td:not([data-cell])", visible: true
+    end
+    shoot("invoices cards")
+
+    on_desktop
+    visit "/invoices"
+    assert_selector "table thead", visible: true
+    assert_selector "td:not([data-cell])", visible: true
+  end
+
   test "an invoice page fits a phone and keeps its primary action on screen" do
     visit "/invoices/#{@invoice.id}"
     assert_fits_viewport("invoice")

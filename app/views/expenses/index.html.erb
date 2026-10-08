@@ -6,7 +6,7 @@
 <%= render "documents/status_filter", statuses: [] %>
 
 <% if @documents.any? %>
-  <table class="data-table">
+  <table class="data-table cards">
     <thead>
       <tr>
         <th>Date</th>
@@ -19,11 +19,11 @@
     <tbody>
       <% @documents.each do |document| %>
         <tr id="<%= dom_id(document) %>" class="<%= 'muted' if document.voided? %>">
-          <td><%= document.date.iso8601 %></td>
-          <td><%= link_to document.counterparty, expense_path(document) %></td>
-          <td><%= document.expense.category_display %></td>
+          <td data-cell="secondary"><%= document.date.iso8601 %></td>
+          <td data-cell="primary"><%= link_to document.counterparty, expense_path(document) %></td>
+          <td data-cell="secondary"><%= document.expense.category_display %></td>
           <td><%= document.expense.bank_account.name %></td>
-          <td class="num"><%= money(document.total) %></td>
+          <td class="num" data-cell="amount"><%= money(document.total) %></td>
         </tr>
       <% end %>
     </tbody>

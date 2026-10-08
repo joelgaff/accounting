@@ -13,7 +13,7 @@
 </nav>
 
 <% if @contacts.any? %>
-  <table class="data-table">
+  <table class="data-table cards">
     <thead>
       <tr>
         <th>Name</th>
@@ -26,9 +26,9 @@
     <tbody>
       <% @contacts.each do |c| %>
         <tr>
-          <td><%= link_to c.name, contact_path(c) %></td>
-          <td class="muted"><%= c.kind %></td>
-          <td><%= c.email %></td>
+          <td data-cell="primary"><%= link_to c.name, contact_path(c) %></td>
+          <td class="muted" data-cell="secondary"><%= c.kind %></td>
+          <td data-cell="secondary"><%= c.email %></td>
           <td><%= c.phone %></td>
           <td><%= link_to "Edit", edit_contact_path(c) %></td>
         </tr>

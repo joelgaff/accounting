@@ -2,16 +2,16 @@
 <%= tag.section id: dom_id(document, :payments), style: "margin-top:32px;" do %>
   <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">Payments</h2>
   <% if document.payments.any? %>
-    <table class="data-table">
+    <table class="data-table cards">
       <thead><tr><th>Date</th><th>Bank</th><th>Reference</th><th class="num">Amount</th><th style="width:90px"></th></tr></thead>
       <tbody>
         <% document.payments.order(paid_on: :desc).each do |p| %>
           <tr id="<%= dom_id(p) %>">
-            <td><%= p.paid_on.iso8601 %></td>
-            <td><%= p.bank_account.name %></td>
-            <td><%= p.reference %></td>
-            <td class="num"><%= money(p.amount) %></td>
-            <td class="num">
+            <td data-cell="secondary"><%= p.paid_on.iso8601 %></td>
+            <td data-cell="primary"><%= p.bank_account.name %></td>
+            <td data-cell="secondary"><%= p.reference %></td>
+            <td class="num" data-cell="amount"><%= money(p.amount) %></td>
+            <td class="num" data-cell="status">
               <% unless document.voided? %>
                 <%= button_to "Remove", payment_path(p), method: :delete, class: "btn btn-secondary",
                       form: { data: { turbo_confirm: "Remove this #{money(p.amount)} payment? Its posting goes and any matched bank line returns to the queue." } },
