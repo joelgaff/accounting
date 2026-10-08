@@ -36,7 +36,8 @@ class OrganizationSettings < ApplicationRecord
   # prefix are not ours.
   def advance_invoice_sequence!(number)
     n = number_within_sequence(number) or return
-    update!(invoice_next_number: first_free_invoice_number(from: [ first_free_invoice_number, n + 1 ].max))
+    used = used_invoice_numbers.to_set
+    update!(invoice_next_number: first_free_invoice_number(used, from: [ first_free_invoice_number(used), n + 1 ].max))
   end
 
   private
@@ -52,8 +53,7 @@ class OrganizationSettings < ApplicationRecord
            .pluck(:number).filter_map { |n| number_within_sequence(n) }
   end
 
-  def first_free_invoice_number(from: nil)
-    used = used_invoice_numbers.to_set
+  def first_free_invoice_number(used = used_invoice_numbers.to_set, from: nil)
     n = from || invoice_next_number || (used.max || 0) + 1
     n += 1 while used.include?(n)
     n
