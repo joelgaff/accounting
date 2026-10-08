@@ -64,7 +64,7 @@ class Xero::ImportTest < ActiveSupport::TestCase
     assert_equal 2, Bill.where(number: "79738R").count, "the same vendor number in two years stays two bills"
     assert_match(/recorded 917\.64/, @conn.steps.find { |s| s["step"] == "bills" }["errors"].join)
     unnumbered = Bill.find_by!(xero_invoice_number: "b2c3d4e5-0000-0000-0000-000000000000").document
-    assert_equal "Bill ##{unnumbered.id}", unnumbered.label, "a made-up Xero key is not shown as a number"
+    assert_no_match(/#/, unnumbered.label, "a made-up Xero key is not shown as a number")
     assert unnumbered.paid?
     assert_equal "Rewards Card", unnumbered.payments.sole.bank_account.name
 

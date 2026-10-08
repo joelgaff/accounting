@@ -93,6 +93,28 @@ class DocumentTest < ActiveSupport::TestCase
     assert_not_includes @org.documents.invoices.outstanding_between(490, 510), inv
   end
 
+  test "a document without a number is named by what it is and who it was with, never by its id" do
+    exp  = create_expense(@org, vendor: "Zoom", amount: 15, category: @hosting, bank_account: @bank)
+    bill = create_bill(@org, vendor: "Gusto", amount: 10, category: @hosting, payable: @ap)
+    dep  = @org.documents.create!(date: Date.current, memo: "Race day cash", documentable: Deposit.new(bank_account: @bank),
+                                  line_items_attributes: [ { description: "Cash", quantity: 1, unit_amount: 40, account_id: @sales.id } ])
+    savings = create_bank_account(@org, name: "Savings", kind: "savings")
+    xfer = @org.documents.create!(date: Date.current, total: 100, documentable: Transfer.new(from_bank_account: @bank, to_bank_account: savings))
+    je   = @org.documents.create!(date: Date.current, documentable: JournalEntry.new(narrative: "Depreciation", lines_attributes: [ { account_id: @hosting.id, debit_amount: 5 }, { account_id: @bank.account.id, credit_amount: 5 } ]))
+
+    assert_equal "Expense · Zoom",            exp.label
+    assert_equal "Bill · Gusto",              bill.label
+    assert_equal "Deposit · Race day cash",   dep.label
+    assert_equal "Transfer · Bank → Savings", xfer.label
+    assert_equal "Journal entry · Depreciation", je.label
+    [ exp, bill, dep, xfer, je ].each { |d| assert_no_match(/#\d/, d.label, d.label) }
+
+    inv = create_invoice(@org, client_name: "Acme", amount: 10, receivable: @ar, revenue: @sales)
+    assert_match(/\AInvoice INV-\d+\z/, inv.label, "a numbered document keeps its number")
+    assert_equal "#{inv.label} · Acme", inv.title
+    assert_equal "Expense · Zoom", exp.title, "no name twice"
+  end
+
   test "label and scopes come from the delegated type" do
     inv = create_invoice(@org, client_name: "Acme", amount: 1, receivable: @ar, revenue: @sales)
     assert_equal "Invoice #{inv.invoice.number}", inv.label

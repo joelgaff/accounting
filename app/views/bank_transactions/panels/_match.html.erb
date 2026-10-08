@@ -2,7 +2,7 @@
   <div class="field grow">
     <%= f.label :document_id, "Invoice, bill or document" %>
     <%= f.select :document_id,
-          candidates.documents.map { |d| [ "#{d.label} — #{d.display_name} — #{money(d.settleable? ? d.balance_due : d.total)}", d.id ] },
+          candidates.documents.map { |d| [ "#{d.title} — #{money(d.settleable? ? d.balance_due : d.total)}", d.id ] },
           { prompt: "Choose…" } %>
   </div>
   <%= f.submit "Match", class: "btn btn-primary" %>

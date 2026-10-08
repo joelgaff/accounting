@@ -5,7 +5,7 @@
     <thead><tr><th>Document</th><th class="num" style="width:110px;">Amount</th><th style="width:30px;"></th></tr></thead>
     <tbody data-allocations-target="rows">
       <tr data-allocations-target="row">
-        <td><%= select_tag "allocations[0][document_id]", options_for_select(pool.map { |d| [ "#{d.label} · #{d.display_name} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
+        <td><%= select_tag "allocations[0][document_id]", options_for_select(pool.map { |d| [ "#{d.title} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
         <td class="num"><%= number_field_tag "allocations[0][amount]", txn.remaining.to_s("F"), step: 0.01, min: 0, data: { action: "input->allocations#recalc" } %></td>
         <td><button type="button" class="btn btn-secondary" data-action="allocations#remove" style="padding:2px 8px;">×</button></td>
       </tr>
@@ -20,7 +20,7 @@
   </table>
   <template data-allocations-target="template">
     <tr data-allocations-target="row">
-      <td><%= select_tag "allocations[NEW_RECORD][document_id]", options_for_select(pool.map { |d| [ "#{d.label} · #{d.display_name} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
+      <td><%= select_tag "allocations[NEW_RECORD][document_id]", options_for_select(pool.map { |d| [ "#{d.title} · #{money(d.balance_due)}", d.id ] }), prompt: "Choose…" %></td>
       <td class="num"><%= number_field_tag "allocations[NEW_RECORD][amount]", nil, step: 0.01, min: 0, data: { action: "input->allocations#recalc" } %></td>
       <td><button type="button" class="btn btn-secondary" data-action="allocations#remove" style="padding:2px 8px;">×</button></td>
     </tr>

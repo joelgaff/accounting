@@ -63,11 +63,17 @@ class Document < ApplicationRecord
   end
   def voided? = voided_at.present?
 
-  # "Invoice INV-2378" when the type carries a number, else "Expense #12".
+  # "Invoice INV-2378" when the type carries a number; otherwise what it is and
+  # who it was with, "Expense · Zoom", since a row id means nothing to a reader.
   def label
+    kind   = documentable.model_name.human
     number = documentable.try(:number).presence
-    number ? "#{documentable.model_name.human} #{number}" : "#{documentable.model_name.human} ##{id}"
+    return "#{kind} #{number}" if number
+    detail = counterparty.presence || memo.to_s.truncate(40).presence || documentable.try(:narrative).presence
+    detail ? "#{kind} · #{detail}" : kind
   end
+  # The label plus the name, for lists where a numbered document needs both.
+  def title        = documentable.try(:number).present? ? "#{label} · #{display_name}" : label
   def counterparty = contact&.name.presence || party_name
   def display_name = counterparty.presence || memo.to_s.truncate(40).presence || label
 

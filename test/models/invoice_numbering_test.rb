@@ -86,6 +86,6 @@ class InvoiceNumberingTest < ActiveSupport::TestCase
     numbered   = create_bill(@org, vendor: "V", amount: 10, category: cost, payable: ap, documentable_attributes: { number: "79738R" })
     unnumbered = create_bill(@org, vendor: "V", amount: 10, category: cost, payable: ap)
     assert_equal "Bill 79738R", numbered.label
-    assert_equal "Bill ##{unnumbered.id}", unnumbered.label
+    assert_equal "Bill · V", unnumbered.label
   end
 end

@@ -3,7 +3,7 @@
     ignored
   <% else %>
     <% parts = txn.payments.map { |p| link_to("#{p.document.label} #{money(p.amount)}", document_path_for(p.document)) } %>
-    <% parts << link_to("#{txn.document.label} · #{txn.document.display_name}", document_path_for(txn.document)) if txn.document %>
+    <% parts << link_to(txn.document.title, document_path_for(txn.document)) if txn.document %>
     → <%= safe_join(parts, ", ") %>
   <% end %>
 </span>
