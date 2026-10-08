@@ -1,27 +1,25 @@
-<%# Badge plus the actions a document offers. Replaced over turbo_stream after a void. %>
-<%= tag.div id: dom_id(document, :status), style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;" do %>
+<%# Badge plus the actions a document offers. Replaced over turbo_stream after approve or void.
+    On wide screens everything sits inline; on a phone the bar is pinned above the tabs and
+    the less-used actions live behind ···. %>
+<%= tag.div id: dom_id(document, :status), class: "status-actions", data: { controller: "sheet", action: "keydown@window->sheet#keydown" } do %>
   <%= status_badge(document.status) %>
-  <% if document.invoice? %>
-    <%= link_to "Print / PDF", print_invoice_path(document), class: "btn btn-secondary" %>
-    <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" unless document.draft? %>
-  <% end %>
-  <% if document.draft? %>
-    <%= button_to "Approve", approve_document_path_for(document), class: "btn btn-primary",
-          form: { style: "display:inline", data: { turbo_confirm: "Approve #{document.label}? It posts to the ledger and starts counting." } } %>
-  <% end %>
-  <% unless document.voided? %>
-    <%= link_to "Edit", edit_document_path_for(document), class: "btn btn-secondary" %>
-    <%# A draft never posted, so there is nothing to void; it is simply deleted. %>
-    <% unless document.draft? %>
-      <%= button_to "Void", void_document_path_for(document), class: "btn btn-secondary",
-            form: { style: "display:inline", data: { turbo_confirm: void_confirm_message(document) } } %>
-    <% end %>
-    <% if document.settleable? && document.approved? && !document.paid? %>
+  <div class="action-bar">
+    <% if document.draft? %>
+      <%= button_to "Approve", approve_document_path_for(document), class: "btn btn-primary",
+            form: { class: "inline-form", data: { turbo_confirm: "Approve #{document.label}? It posts to the ledger and starts counting." } } %>
+    <% elsif document.settleable? && document.approved? && !document.voided? && !document.paid? %>
       <%= link_to "Record payment", new_document_payment_path(document), class: "btn btn-primary" %>
     <% end %>
-  <% end %>
-  <% if document.deletable? %>
-    <%= button_to "Delete", delete_document_path_for(document), method: :delete, class: "btn btn-secondary btn-danger",
-          form: { style: "display:inline", data: { turbo_confirm: "Delete #{document.label} for good? Its lines, postings, history and attachments go with it. There is no undo." } } %>
-  <% end %>
+    <% unless document.voided? %>
+      <%= link_to "Edit", edit_document_path_for(document), class: "btn btn-secondary" %>
+    <% end %>
+    <span class="bar-only"><%= render "documents/action_overflow", document: document %></span>
+    <button type="button" class="btn btn-secondary more-trigger" title="More actions" aria-label="More actions" aria-expanded="false"
+            data-sheet-target="trigger" data-action="sheet#toggle">···</button>
+  </div>
+  <div class="sheet-dimmer" data-sheet-target="dimmer" data-action="click->sheet#close" hidden></div>
+  <div class="sheet-panel action-sheet" data-sheet-target="panel" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <%= render "documents/action_overflow", document: document %>
+  </div>
 <% end %>

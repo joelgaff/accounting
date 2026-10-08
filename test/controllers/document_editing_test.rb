@@ -142,7 +142,7 @@ class DocumentHistoryPagesTest < ActionDispatch::IntegrationTest
   test "show pages list history, notes append over turbo stream, and emailing records the send" do
     get invoice_path(@invoice)
     assert_response :success
-    assert_select "section h2", text: "History & notes"
+    assert_select "section h2 span", text: "History & notes"
     assert_select "li.history-event strong", text: "Created"
 
     post document_notes_path(@invoice), params: { note: { text: "Chased by phone" } }, as: :turbo_stream
@@ -225,7 +225,7 @@ class DocumentDeleteTest < ActionDispatch::IntegrationTest
 
     inv.void!
     get invoice_path(inv)
-    assert_select "button", text: "Delete", count: 1
+    assert_select ".action-bar button", text: "Delete", count: 1
     assert_difference "Document.count", -1 do
       delete invoice_path(inv)
     end

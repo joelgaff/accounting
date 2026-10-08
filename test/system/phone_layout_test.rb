@@ -109,9 +109,42 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     shoot("invoices chips")
   end
 
-  test "an invoice page fits a phone and keeps its primary action on screen" do
+  test "a document page keeps its actions in a bar above the tabs, with the rest in a sheet" do
     visit "/invoices/#{@invoice.id}"
     assert_fits_viewport("invoice")
-    assert_selector ".action-bar", visible: true
+    bar = find(".action-bar")
+    assert_equal "fixed", page.evaluate_script("getComputedStyle(arguments[0]).position", bar.native)
+    within(bar) do
+      assert_link "Record payment"
+      assert_link "Edit"
+      assert_no_link "Print / PDF"
+      click_on "More actions"
+    end
+    within(".sheet-panel") do
+      assert_link "Print / PDF"
+      assert_link "Email"
+      assert_button "Void"
+    end
+    shoot("invoice actions sheet")
+    find(".sheet-dimmer").click(x: 0, y: -320)
+
+    # Lines are cards; history is folded behind its count until tapped.
+    assert_no_selector "section table thead", visible: true
+    assert_selector "td[data-cell=primary]", text: "Services rendered", visible: true
+    assert_no_selector ".history li", visible: true
+    click_on "History · 1"
+    assert_selector ".history li", visible: true, count: 1
+    shoot("invoice page")
+
+    draft = create_invoice(@org, client_name: "Summit Races", amount: 180, receivable: @ar, revenue: @sales, state: "draft")
+    visit "/invoices/#{draft.id}"
+    within(".action-bar") { assert_button "Approve" }
+
+    on_desktop
+    visit "/invoices/#{@invoice.id}"
+    assert_not_equal "fixed", page.evaluate_script("getComputedStyle(document.querySelector('.action-bar')).position")
+    assert_link "Print / PDF", visible: true
+    assert_no_button "More actions", visible: true
+    assert_selector ".history li", visible: true, count: 1
   end
 end

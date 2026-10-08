@@ -1,12 +1,17 @@
 <%# History & notes, newest first, as Xero shows at the foot of every transaction. %>
-<section style="margin-top:32px;">
-  <h2 style="font-size:15px;font-weight:600;margin:0 0 12px;">History &amp; notes</h2>
-  <%= render "documents/note_form", document: document %>
-  <% events = document.events.includes(:user).newest_first.to_a %>
-  <ol id="<%= dom_id(document, :history_list) %>" class="history">
-    <%= render partial: "documents/history_event", collection: events, as: :event %>
-  </ol>
-  <% if events.empty? %>
-    <p id="<%= dom_id(document, :history_empty) %>" class="empty-state">No history yet.</p>
-  <% end %>
+<% events = document.events.includes(:user).newest_first.to_a %>
+<section style="margin-top:32px;" data-controller="fold">
+  <h2 class="fold-heading" style="font-size:15px;font-weight:600;margin:0 0 12px;">
+    <span>History &amp; notes</span>
+    <button type="button" class="btn btn-secondary fold-trigger" aria-expanded="false" data-fold-target="trigger" data-action="fold#toggle">History · <%= events.size %></button>
+  </h2>
+  <div class="fold-body" data-fold-target="body" hidden>
+    <%= render "documents/note_form", document: document %>
+    <ol id="<%= dom_id(document, :history_list) %>" class="history">
+      <%= render partial: "documents/history_event", collection: events, as: :event %>
+    </ol>
+    <% if events.empty? %>
+      <p id="<%= dom_id(document, :history_empty) %>" class="empty-state">No history yet.</p>
+    <% end %>
+  </div>
 </section>

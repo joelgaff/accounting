@@ -347,6 +347,18 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
 }
 .page-header .lede { margin: 6px 0 0; color: var(--dim); font-size: 12px; }
 
+/* ── Document actions: badge, a bar of buttons, and an overflow ─────────── */
+.status-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.action-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.action-bar .bar-only { display: contents; }
+.action-bar .inline-form, .action-sheet .inline-form { display: inline; margin: 0; }
+.action-bar .more-trigger, .status-actions .action-sheet, .status-actions .sheet-dimmer { display: none; }
+
+/* ── Folded sections: a button on phones, open on wide screens ──────────── */
+.fold-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fold-trigger { display: none; }
+.fold-body[hidden] { display: block; }
+
 /* ── Chips: a row of filter links, one marked current ───────────────────── */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
 .chips a {
@@ -995,7 +1007,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
   .data-table.cards td[data-cell="secondary"]:empty { display: none; }
   .data-table.cards td[data-cell="secondary"] ~ td[data-cell="secondary"]:not(:empty)::before { content: "·"; margin-right: 8px; color: var(--rule-lit); }
   .data-table.cards td[data-label]::before { content: attr(data-label) " "; color: var(--dim); }
-  .data-table.cards td[data-cell="secondary"] ~ td[data-cell="secondary"][data-label]:not(:empty)::before { content: "· " attr(data-label) " "; }
+  .data-table.cards td[data-cell="secondary"] ~ td[data-cell="secondary"][data-label]:not(:empty)::before { content: attr(data-label) " "; }
   .data-table.cards td[data-cell="status"]    { order: 5; margin-left: auto; }
   .data-table.cards td[data-cell="status"] form { display: inline; }
   .data-table.cards td.amount-in  { color: var(--credit); }
@@ -1016,6 +1028,29 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
     box-shadow: 0 10px 24px rgba(34, 211, 238, 0.35);
   }
   .page-header .page-primary::before { content: "+"; font-size: 28px; line-height: 1; font-weight: 500; }
+
+  /* Document actions: the bar pins above the tabs, the rest goes behind ···. */
+  .action-bar {
+    position: fixed; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 19;
+    flex-wrap: nowrap; gap: 8px; padding: 8px 12px;
+    background: var(--frame); border-top: 1px solid var(--rule);
+  }
+  .action-bar .bar-only { display: none; }
+  .action-bar .btn, .action-bar .inline-form { flex: 1 1 0; min-width: 0; text-align: center; }
+  .action-bar .inline-form { display: flex; }
+  .action-bar .inline-form .btn { width: 100%; }
+  .action-bar .btn { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+  .action-bar .more-trigger { display: inline-flex; flex: 0 0 48px; font-size: 18px; letter-spacing: 0.1em; }
+  .status-actions .sheet-dimmer[hidden], .status-actions .action-sheet[hidden] { display: none; }
+  .status-actions .sheet-dimmer:not([hidden]) { display: block; }
+  .status-actions .action-sheet:not([hidden]) { display: grid; gap: 8px; padding-top: 12px; }
+  .action-sheet .btn { display: block; width: 100%; text-align: center; min-height: 44px; }
+  .action-sheet .inline-form { display: block; }
+  body:has(.action-bar) .app-main { padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Folded sections. */
+  .fold-trigger { display: inline-flex; }
+  .fold-body[hidden] { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

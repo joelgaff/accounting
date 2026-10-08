@@ -1,0 +1,14 @@
+<%# The less-used actions. Rendered twice: inline in the bar for wide screens,
+    inside the ··· sheet for phones; CSS shows one copy per width. %>
+<% if document.invoice? %>
+  <%= link_to "Print / PDF", print_invoice_path(document), class: "btn btn-secondary" %>
+  <%= link_to "Email", email_invoice_path(document), class: "btn btn-secondary" unless document.draft? %>
+<% end %>
+<% unless document.voided? || document.draft? %>
+  <%= button_to "Void", void_document_path_for(document), class: "btn btn-secondary",
+        form: { class: "inline-form", data: { turbo_confirm: void_confirm_message(document) } } %>
+<% end %>
+<% if document.deletable? %>
+  <%= button_to "Delete", delete_document_path_for(document), method: :delete, class: "btn btn-secondary btn-danger",
+        form: { class: "inline-form", data: { turbo_confirm: "Delete #{document.label} for good? Its lines, postings, history and attachments go with it. There is no undo." } } %>
+<% end %>
