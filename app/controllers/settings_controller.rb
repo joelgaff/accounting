@@ -23,6 +23,18 @@ class SettingsController < ApplicationController
     end
   end
 
+  # Invoice prefix and next number. A blank next number means "follow the invoices".
+  def invoicing
+    settings = Current.organization.settings
+    attrs    = params.require(:organization_settings).permit(:invoice_prefix, :invoice_next_number)
+    attrs[:invoice_next_number] = attrs[:invoice_next_number].presence
+    if settings.update(attrs)
+      redirect_to settings_path, notice: "Invoices will be numbered from #{settings.next_invoice_number}."
+    else
+      redirect_to settings_path, alert: "Invoice numbering not saved: #{settings.errors.full_messages.to_sentence.sub('Invoice next number', 'the next number')}."
+    end
+  end
+
   # ── The "You" panel (local mode; Launchpad owns name and email otherwise) ──
 
   def profile

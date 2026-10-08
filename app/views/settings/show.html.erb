@@ -101,6 +101,17 @@
         <div class="settings-row-main"><%= pluralize(Current.organization.tax_rates.count, "rate") %> defined.</div>
         <div class="settings-row-action"><%= link_to "Manage", tax_rates_path, class: "btn btn-secondary" %></div>
       </div>
+      <%= form_with model: @settings, url: invoicing_settings_path, method: :patch, class: "app-form settings-row" do |f| %>
+        <div class="settings-row-label"><%= f.label :invoice_prefix, "Invoice numbering" %></div>
+        <div class="settings-row-main">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <%= f.text_field :invoice_prefix, style: "max-width:120px;", placeholder: "none", "aria-label": "Prefix" %>
+            <%= f.number_field :invoice_next_number, value: @settings.invoice_next_number, min: 1, step: 1, style: "max-width:140px;", placeholder: "next", "aria-label": "Next number" %>
+          </div>
+          <p class="settings-row-help">Next invoice: <strong><%= @settings.next_invoice_number %></strong>. Prefix can be blank. Leave the number empty to follow the highest invoice with this prefix.</p>
+        </div>
+        <div class="settings-row-action"><%= f.submit "Save numbering", class: "btn btn-primary" %></div>
+      <% end %>
     </div>
   </section>
 

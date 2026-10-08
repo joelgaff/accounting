@@ -27,7 +27,42 @@ class InvoiceNumberingTest < ActiveSupport::TestCase
     dup.line_items.build(description: "x", quantity: 1, unit_amount: 1, account: @sales)
     assert_not dup.save
     assert_match(/already used/, dup.errors.full_messages.join)
-    assert_equal "EE-101", Invoice.next_number(@org)
+  end
+
+  test "numbers under another prefix never steer the sequence" do
+    create_invoice(@org, client_name: "A", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "V1920067" })
+    create_invoice(@org, client_name: "B", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "INV-0042" })
+    assert_equal "INV-0043", Invoice.next_number(@org)
+  end
+
+  test "settings own the prefix and the next number, and saving an invoice advances it" do
+    settings = @org.settings
+    assert_equal "INV-", settings.invoice_prefix
+    assert_nil settings.invoice_next_number, "nothing set yet: the sequence follows the invoices that exist"
+
+    settings.update!(invoice_prefix: "EE-", invoice_next_number: 500)
+    assert_equal "EE-0500", Invoice.next_number(@org)
+    saved = create_invoice(@org, client_name: "A", amount: 10, receivable: @ar, revenue: @sales)
+    assert_equal "EE-0500", saved.invoice.number
+    assert_equal 501, settings.reload.invoice_next_number
+
+    create_invoice(@org, client_name: "B", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "EE-0700" })
+    assert_equal 701, settings.reload.invoice_next_number, "a higher number typed by hand moves the sequence up"
+    create_invoice(@org, client_name: "C", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "EE-0010" })
+    assert_equal 701, settings.reload.invoice_next_number, "a lower one never moves it down"
+    create_invoice(@org, client_name: "D", amount: 10, receivable: @ar, revenue: @sales, documentable_attributes: { number: "OLD-9999" })
+    assert_equal 701, settings.reload.invoice_next_number, "another prefix is none of its business"
+
+    settings.update!(invoice_prefix: "")
+    assert_equal "0701", Invoice.next_number(@org)
+  end
+
+  test "the next number must be a whole number of one or more" do
+    settings = @org.settings
+    assert_not settings.update(invoice_next_number: 0)
+    assert_not settings.update(invoice_next_number: -3)
+    assert settings.update(invoice_next_number: nil)
+    assert settings.update(invoice_next_number: 2380)
   end
 
   test "bills show the vendor's number when there is one" do

@@ -7,19 +7,14 @@ class Invoice < ApplicationRecord
 
   before_validation :sync_client_name_from_contact
   before_validation :assign_number, on: :create
+  after_save :advance_sequence, if: :saved_change_to_number?
   validates :client_name, :due_date, :number, presence: true
   validate  :number_unique_in_organization
   scoped_to_organization :receivable_account, organization: ->(i) { i.document&.organization }
 
-  # The next number in the organisation's run: same prefix and width as the
-  # highest one so far (INV-2378 → INV-2379), or INV-0001 to start.
-  def self.next_number(organization)
-    best = joins(:document).where(documents: { organization_id: organization.id }).where.not(number: nil).pluck(:number)
-               .filter_map { |n| (m = n.match(/\A(.*?)(\d+)\z/)) && [ m[2].to_i, m[1], m[2].length ] }.max
-    return "#{DEFAULT_PREFIX}0001" unless best
-    value, prefix, width = best
-    "#{prefix}#{(value + 1).to_s.rjust(width, '0')}"
-  end
+  # The next number in the organisation's sequence; Settings owns the prefix
+  # and the counter, so numbers under other prefixes never steer it.
+  def self.next_number(organization) = organization.settings.next_invoice_number
 
   def party_name  = client_name
   def settleable? = true
@@ -55,6 +50,10 @@ class Invoice < ApplicationRecord
 
   def assign_number
     self.number = self.class.next_number(document.organization) if number.blank? && document&.organization
+  end
+
+  def advance_sequence
+    document&.organization&.settings&.advance_invoice_sequence!(number)
   end
 
   def number_unique_in_organization

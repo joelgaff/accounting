@@ -77,6 +77,7 @@ Rails.application.routes.draw do
   end
 
   resource :settings, only: %i[show update] do
+    patch :invoicing
     patch :appearance
     patch :organization
     patch :profile
