@@ -11,32 +11,69 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     @sales   = Plutus::Revenue.create!(tenant: @org, name: "Timing Services", code: "4100")
     @hosting = Plutus::Expense.create!(tenant: @org, name: "Web Hosting", code: "6820")
     @org.settings.update!(receivable_account: @ar, payable_account: @ap, bank_account: @bank)
-    @invoice = create_invoice(@org, client_name: "Northwind Trail Series", amount: 5400, receivable: @ar, revenue: @sales)
-    create_bill(@org, vendor: "Gusto", amount: 6459, category: @hosting, payable: @ap)
-    create_expense(@org, vendor: "Blue Pixel Hosting", amount: 48, category: @hosting, bank_account: @bank)
+    @contact = @org.contacts.create!(name: "Northwind Trail Series", kind: "customer", email: "ops@northwind.example")
+    @invoice = create_invoice(@org, contact: @contact, amount: 5400, receivable: @ar, revenue: @sales)
+    @bill    = create_bill(@org, vendor: "Gusto", amount: 6459, category: @hosting, payable: @ap)
+    @expense = create_expense(@org, vendor: "Blue Pixel Hosting", amount: 48, category: @hosting, bank_account: @bank)
     @org.bank_transactions.create!(bank_account: @bank, posted_on: Date.current, amount: 5400, payee: "Northwind Trail Series", description: "ACH CREDIT")
     @klass = @org.tracking_categories.create!(name: "Class")
     sign_in_as_launchpad_user(@org)
     on_phone
   end
 
+  # Every page a signed-in person can reach by GET. Paths with an id are
+  # resolved against the records the setup creates.
   PAGES = {
-    "dashboard"      => "/",
-    "invoices"       => "/invoices",
-    "new invoice"    => "/invoices/new",
-    "expenses"       => "/expenses",
-    "bills"          => "/bills",
-    "reconcile"      => "/bank_transactions",
-    "reports"        => "/reports",
-    "profit & loss"  => "/reports/profit_and_loss",
-    "balance sheet"  => "/reports/balance_sheet",
-    "contacts"       => "/contacts",
-    "settings"       => "/settings"
+    "dashboard"            => "/",
+    "invoices"             => "/invoices",
+    "new invoice"          => "/invoices/new",
+    "edit invoice"         => "/invoices/%{invoice}/edit",
+    "invoice"              => "/invoices/%{invoice}",
+    "new payment"          => "/documents/%{invoice}/payments/new",
+    "bills"                => "/bills",
+    "bill"                 => "/bills/%{bill}",
+    "new bill"             => "/bills/new",
+    "expenses"             => "/expenses",
+    "expense"              => "/expenses/%{expense}",
+    "new expense"          => "/expenses/new",
+    "deposits"             => "/deposits",
+    "transfers"            => "/transfers",
+    "journal"              => "/journal_entries",
+    "new journal entry"    => "/journal_entries/new",
+    "recurring invoices"   => "/recurring_invoices",
+    "new recurring"        => "/recurring_invoices/new",
+    "contacts"             => "/contacts",
+    "contact"              => "/contacts/%{contact}",
+    "new contact"          => "/contacts/new",
+    "accounts"             => "/accounts",
+    "banking"              => "/bank_accounts",
+    "bank account"         => "/bank_accounts/%{bank}",
+    "reconcile"            => "/bank_transactions",
+    "bank rules"           => "/bank_rules",
+    "new bank rule"        => "/bank_rules/new",
+    "reports"              => "/reports",
+    "profit & loss"        => "/reports/profit_and_loss",
+    "balance sheet"        => "/reports/balance_sheet",
+    "trial balance"        => "/reports/trial_balance",
+    "general ledger"       => "/reports/general_ledger",
+    "receivables aging"    => "/reports/accounts_receivable_aging",
+    "payables aging"       => "/reports/accounts_payable_aging",
+    "settings"             => "/settings",
+    "people"               => "/settings/people",
+    "bank feed"            => "/settings/bank_feed",
+    "tax rates"            => "/settings/tax_rates",
+    "tracking categories"  => "/settings/tracking_categories",
+    "xero"                 => "/settings/xero",
+    "imports"              => "/imports"
   }.freeze
+
+  def resolve(path)
+    format(path, invoice: @invoice.id, bill: @bill.id, expense: @expense.id, contact: @contact.id, bank: @bank.id)
+  end
 
   PAGES.each do |label, path|
     test "#{label} fits a phone and shows the tab bar" do
-      visit path
+      visit resolve(path)
       assert_selector "main"
       assert_fits_viewport(label)
       assert_selector "nav.app-tabs a, nav.app-tabs button", minimum: 5
@@ -184,6 +221,15 @@ class PhoneLayoutTest < ApplicationSystemTestCase
     visit "/reports/balance_sheet"
     columns = all(".report-columns > *").map { |c| c.native.location.x }
     assert_equal 2, columns.uniq.size, "side by side on a desktop"
+  end
+
+  test "a contact's activity reads as cards and the trial balance keeps the account in view" do
+    visit "/contacts/#{@contact.id}"
+    assert_no_selector "table thead", visible: true
+    assert_selector "td[data-cell=primary]", text: /Invoice INV-/, visible: true
+    visit "/reports/trial_balance"
+    cell = find("table.frozen-first tbody tr td[data-frozen]", match: :first)
+    assert_equal "sticky", page.evaluate_script("getComputedStyle(arguments[0]).position", cell.native)
   end
 
   test "a document page keeps its actions in a bar above the tabs, with the rest in a sheet" do

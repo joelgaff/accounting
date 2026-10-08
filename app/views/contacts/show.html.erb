@@ -27,16 +27,16 @@
     <% if @outstanding.positive? %><span class="muted" style="font-weight:400;font-size:13px;">· <%= money(@outstanding) %> outstanding</span><% end %>
   </h2>
   <% if @documents.any? %>
-    <table class="data-table">
+    <table class="data-table cards">
       <thead><tr><th>Date</th><th>Document</th><th>Reference</th><th>Status</th><th class="num">Total</th><th class="num">Balance due</th></tr></thead>
       <tbody>
         <% @documents.each do |document| %>
           <tr id="<%= dom_id(document) %>">
-            <td><%= document.date.iso8601 %></td>
-            <td><%= link_to document.label, document_path_for(document) %></td>
-            <td class="muted"><%= document.reference %></td>
-            <td><%= status_badge(document.status) %></td>
-            <td class="num"><%= money(document.total) %></td>
+            <td data-cell="secondary"><%= document.date.iso8601 %></td>
+            <td data-cell="primary"><%= link_to document.label, document_path_for(document) %></td>
+            <td class="muted" data-cell="secondary"><%= document.reference %></td>
+            <td data-cell="status"><%= status_badge(document.status) %></td>
+            <td class="num" data-cell="amount"><%= money(document.total) %></td>
             <td class="num"><%= document.settleable? ? money(document.balance_due) : "—" %></td>
           </tr>
         <% end %>

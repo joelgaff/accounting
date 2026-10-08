@@ -5,11 +5,11 @@
 
 <%= render "reports/date_range_form", url: reports_trial_balance_path, from: @from, to: @to %>
 
-<table class="data-table">
+<table class="data-table frozen-first">
   <thead>
     <tr>
       <th style="width:80px">Code</th>
-      <th>Account</th>
+      <th data-frozen>Account</th>
       <th>Type</th>
       <th class="num">Debit</th>
       <th class="num">Credit</th>
@@ -19,7 +19,7 @@
     <% @report.rows.each do |r| %>
       <tr>
         <td><%= r.account.code %></td>
-        <td><%= r.account.name %></td>
+        <td data-frozen><%= r.account.name %></td>
         <td class="muted"><%= r.account.type.demodulize %></td>
         <td class="num"><%= r.debit.positive? ? "$#{number_with_precision(r.debit, precision: 2, delimiter: ',')}" : "" %></td>
         <td class="num"><%= r.credit.positive? ? "$#{number_with_precision(r.credit, precision: 2, delimiter: ',')}" : "" %></td>
