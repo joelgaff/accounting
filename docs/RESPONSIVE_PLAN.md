@@ -1,7 +1,7 @@
 # Responsive plan: desktop as is, phone layer underneath
 
 Mockups and the Xero research: https://claude.ai/artifact/NNRjozJYSTuXHQ2ZXwsTFH
-Written 2026-10-07. No code yet.
+Written 2026-10-07. Built 2026-10-08, all eleven steps, on master.
 
 ## What Xero does on small screens
 Native app, designed for a thumb: bottom tab bar (not a hamburger); lists are
@@ -43,7 +43,14 @@ scroll sideways, reconcile already renders cards. Reachable, not designed.
 
 Optional 12: swipe-right to OK on reconcile.
 
-## Open questions
-1. Which five tabs? Proposed Home, Invoices, Reconcile, Reports, More.
-2. Swipe to OK on reconcile, or button only?
-3. Line items on a phone form: expanding cards, or a full-screen editor per line?
+## Decisions
+1. Tabs: Home, Invoices, Expenses, Reconcile, More.
+2. Button only on reconcile; swiping is still optional step 12.
+3. Line items on a phone form are cards that expand in place.
+
+## Departures from the plan
+- Reconcile panels open under their card at full width rather than in a
+  bottom sheet, so the line being acted on stays in view.
+- Reports got the frozen column and stacking; collapsible groups were not
+  needed, the sections are short.
+- Journal lines on a phone keep the sideways sheet; rare enough to leave.
