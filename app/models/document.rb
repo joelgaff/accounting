@@ -76,8 +76,10 @@ class Document < ApplicationRecord
   def title        = documentable.try(:number).present? ? "#{label} · #{display_name}" : label
   # The memo when someone wrote it; the bank's own words copied onto a
   # reconciled line are not a why and are not worth repeating.
-  def why(bank_words = bank_transactions.first&.description)
-    words = memo.to_s.strip
+  def why(bank_words = bank_transactions.first&.description) = Document.why_from(memo, bank_words)
+
+  def self.why_from(words, bank_words)
+    words = words.to_s.strip
     return nil if words.blank? || words.casecmp?(bank_words.to_s.strip)
     words
   end

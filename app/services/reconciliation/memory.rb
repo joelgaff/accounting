@@ -61,11 +61,7 @@ module Reconciliation
     end
 
     # A why someone typed; the bank's own words copied onto the line are not one.
-    def why_of(line, bank_words)
-      words = line.description.to_s.strip
-      return nil if words.blank? || (bank_words && words.casecmp?(bank_words.to_s.strip))
-      words
-    end
+    def why_of(line, bank_words) = Document.why_from(line.description, bank_words)
 
     def document_scope
       @org.documents.posted.where(documentable_type: %w[Expense Deposit])
