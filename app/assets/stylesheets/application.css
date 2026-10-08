@@ -1242,6 +1242,7 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .card-hide:hover { color: var(--ink); border-color: var(--rule-lit); }
 .hidden-cards { font-size: 12px; margin-top: 8px; display: flex; gap: 6px; align-items: center; }
 .hidden-cards:empty { display: none; }
+.recon-summary .kpi-grid:empty { display: none; }   /* every card hidden: no gap left behind */
 .hidden-cards form { display: inline; margin: 0; }
 .link-button { background: none; border: 0; padding: 0; color: var(--cyan); font: inherit; cursor: pointer; text-decoration: underline; min-height: 0; }
 .recon-summary .kpi-source { line-height: 1.5; }
