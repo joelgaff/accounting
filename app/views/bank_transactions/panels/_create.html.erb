@@ -23,7 +23,7 @@
   <% end %>
   <div class="field grow">
     <%= f.label :memo, "Why" %>
-    <%= f.text_field :memo, placeholder: txn.description.to_s.truncate(60).presence || "What this was for", maxlength: 120 %>
+    <%= f.text_field :memo, value: hint&.memo, placeholder: txn.description.to_s.truncate(60).presence || "What this was for", maxlength: 120 %>
   </div>
   <div class="field">
     <%= f.label :contact_name, txn.deposit? ? "From (optional)" : "Vendor (optional)" %>

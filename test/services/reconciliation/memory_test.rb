@@ -81,6 +81,22 @@ class Reconciliation::MemoryTest < ActiveSupport::TestCase
     assert_equal "Created from a bank line", other.document.events.find_by!(action: "created").title
   end
 
+  test "memory remembers last time's why and hands it to the next line" do
+    coded("BLUEPIXEL HOSTING 08/02", account: @hosting, on: Date.new(2026, 8, 2))
+    t = line(-48, "BLUEPIXEL HOSTING 09/02", on: Date.new(2026, 9, 2))
+    Reconciliation::Categorize.new(t, account: @hosting, contact_name: "Blue Pixel Hosting", memo: "Monthly hosting").call
+    fresh = line(-48, "BLUEPIXEL HOSTING 10/02")
+
+    hit = Reconciliation::Memory.new(@org, [ fresh ]).for(fresh)
+    assert_equal "Monthly hosting", hit.memo, "the newest coding's words"
+    assert_equal "Monthly hosting", hit.coding[:memo]
+
+    untyped = line(-20, "AMZN MKTP US*2K3")
+    Reconciliation::Categorize.new(untyped, account: @hosting, contact_name: "Amazon").call
+    again = line(-20, "AMZN MKTP US*7Q9")
+    assert_nil Reconciliation::Memory.new(@org, [ again ]).for(again).memo, "the bank's own words are not a why worth repeating"
+  end
+
   test "an expense typed by hand teaches the same lesson when its vendor is in the line" do
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 7, 1))
     create_expense(@org, vendor: "Gusto", amount: 6459, category: @hosting, bank_account: @checking, date: Date.new(2026, 8, 1))

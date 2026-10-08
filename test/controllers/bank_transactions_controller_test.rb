@@ -130,6 +130,18 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Monthly hosting", doc.line_items.sole.description
   end
 
+  test "the create panel comes prefilled with last time's why, and a memory OK carries it" do
+    3.times { |i| t = line(-48, on: Date.new(2026, 7 + i, 2), description: "BLUEPIXEL HOSTING 0#{7 + i}/02"); Reconciliation::Categorize.new(t, account: @hosting, contact_name: "Blue Pixel Hosting", memo: "Monthly hosting").call }
+    fresh = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    get bank_transactions_path(status: "unmatched")
+    assert_select "##{row_id(fresh)} [data-segment=create] input[name=memo][value='Monthly hosting']"
+
+    post accept_suggestion_bank_transaction_path(fresh), params: { kind: "memory" }, as: :turbo_stream
+    doc = fresh.reload.document
+    assert_equal "Monthly hosting", doc.memo
+    assert_equal "Monthly hosting", doc.line_items.sole.description
+  end
+
   test "memory OK is refused when the books no longer agree" do
     coded("ZOOM.US", account: @hosting, on: Date.new(2026, 9, 1), contact: "Zoom")
     fresh = line(-15, description: "ZOOM.US")
