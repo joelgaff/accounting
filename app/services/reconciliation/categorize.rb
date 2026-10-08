@@ -22,17 +22,16 @@ module Reconciliation
       raise MatchDocument::Mismatch, "nothing left on this line to categorize" unless gross.positive?
       raise MatchDocument::Mismatch, "name who this was with" if @contact_name.nil?
       net, _   = TaxInclusive.split(gross, @tax_rate&.rate)
-      contact  = @contact_name && Contact.find_or_create_named(org, @contact_name, kind: @txn.deposit? ? "customer" : "vendor")
 
       Document.transaction do
         document = org.documents.create!(
           date:         @txn.posted_on,
           reference:    @txn.reference,
           memo:         @memo || @txn.description,
-          contact:      contact,
+          contact_name: @contact_name,                 # the document finds or makes the contact
           source:       @source,
           created_via:  @via,
-          documentable: build_type(contact),
+          documentable: build_type,
           line_items_attributes: [ { description: (@memo || @txn.description.to_s).truncate(120), quantity: 1,
                                      unit_amount: net, account: @account, tax_rate: @tax_rate,
                                      tracking_option_ids: @tracking } ]
@@ -45,12 +44,8 @@ module Reconciliation
 
     private
 
-    def build_type(contact)
-      if @txn.deposit?
-        Deposit.new(bank_account: @txn.bank_account)
-      else
-        Expense.new(bank_account: @txn.bank_account, vendor: contact.name)
-      end
+    def build_type
+      (@txn.deposit? ? Deposit : Expense).new(bank_account: @txn.bank_account)   # the vendor mirrors the contact
     end
   end
 end
