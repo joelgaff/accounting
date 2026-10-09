@@ -31,6 +31,15 @@ class InvoicePdf
   # The big word at the top. A draft says so, since the PDF may travel.
   def title = @document.draft? ? "DRAFT INVOICE" : "INVOICE"
 
+  # The small lines under the organisation's name: dates, reference, and the
+  # account number the customer knows us by, when the contact has one.
+  def meta_lines
+    [ "Issued #{fmt_date @document.date}",
+      "Due #{fmt_date @invoice.due_date}",
+      ("Reference #{@document.reference}" if @document.reference.present?),
+      ("Account no. #{@document.contact.account_number}" if @document.contact&.account_number.present?) ].compact
+  end
+
   private
 
   def header(pdf)
@@ -42,9 +51,7 @@ class InvoicePdf
     pdf.bounding_box([ pdf.bounds.width - 240, top ], width: 240) do
       pdf.text @org.name, size: 12, style: :bold, align: :right
       pdf.fill_color DIM
-      pdf.text "Issued #{fmt_date @document.date}", size: 9.5, align: :right
-      pdf.text "Due #{fmt_date @invoice.due_date}", size: 9.5, align: :right
-      pdf.text "Reference #{@document.reference}", size: 9.5, align: :right if @document.reference.present?
+      meta_lines.each { |line| pdf.text line, size: 9.5, align: :right }
       pdf.fill_color INK
     end
     pdf.move_down 26

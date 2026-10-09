@@ -29,6 +29,12 @@
     <%= f.text_field :phone %>
   </div>
 
+  <div class="field">
+    <%= f.label :account_number, "Account number" %>
+    <%= f.text_field :account_number, placeholder: "EE-7788", style: "max-width:240px;" %>
+    <p class="settings-row-help">The number this contact knows you by: your vendor or customer number with them. Printed on invoices to them.</p>
+  </div>
+
   <fieldset style="border:0;padding:0;margin:16px 0;">
     <legend style="font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);font-weight:600;">Address</legend>
     <div class="field">

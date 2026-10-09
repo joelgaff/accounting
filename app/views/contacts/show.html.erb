@@ -7,6 +7,9 @@
   <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Kind</dt>       <dd style="margin:0;"><%= @contact.kind %></dd>
   <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Email</dt>      <dd style="margin:0;"><%= @contact.email %></dd>
   <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Phone</dt>      <dd style="margin:0;"><%= @contact.phone %></dd>
+  <% if @contact.account_number.present? %>
+    <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Account no.</dt> <dd style="margin:0;"><%= @contact.account_number %></dd>
+  <% end %>
   <% if [@contact.address, @contact.city, @contact.postal_code].any?(&:present?) %>
     <dt style="font-weight:600;color:var(--text-muted);font-size:13px;">Address</dt>
     <dd style="margin:0;">

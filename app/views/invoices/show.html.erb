@@ -13,6 +13,9 @@
   <% if @document.reference.present? %>
     <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Reference</div><div><%= @document.reference %></div></div>
   <% end %>
+  <% if @document.contact&.account_number.present? %>
+    <div><div class="muted" style="font-size:12px;text-transform:uppercase;">Account no.</div><div><%= @document.contact.account_number %></div></div>
+  <% end %>
 </div>
 
 <%= render "documents/line_items", document: @document %>

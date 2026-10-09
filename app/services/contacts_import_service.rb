@@ -38,7 +38,7 @@ class ContactsImportService < Imports::BaseService
             last_name:      row["lastname"].presence,
             phone:          (row["phonenumber"].presence || row["mobilenumber"].presence),
             tax_number:     row["taxnumber"].presence,
-            company_number: row["accountnumber"].presence,
+            account_number: row["accountnumber"].presence,
             address:        compose_address(row),
             city:           row["pocity"].presence,
             region:         row["poregion"].presence,

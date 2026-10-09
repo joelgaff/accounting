@@ -235,6 +235,28 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     assert_select "button", text: "Mark as sent", count: 0
   end
 
+  test "an invoice to a contact with an account number prints it; one without shows nothing" do
+    ironman = @org.contacts.create!(name: "Ironman", kind: "customer", account_number: "EE-7788")
+    inv     = create_invoice(@org, contact: ironman, amount: 500, receivable: @ar, revenue: @sales)
+    plain   = create_invoice(@org, client_name: "Walk-up", amount: 10, receivable: @ar, revenue: @sales)
+
+    get invoice_path(inv)
+    assert_select "dd, div", text: /EE-7788/
+    assert_match(/Account no\./, response.body)
+    get print_invoice_path(inv)
+    assert_select ".invoice-meta", text: /Account no\. EE-7788/
+    assert_includes InvoicePdf.new(inv).meta_lines, "Account no. EE-7788"
+
+    get print_invoice_path(plain)
+    assert_select ".invoice-meta", text: /Account no\./, count: 0
+    assert_not InvoicePdf.new(plain).meta_lines.any? { |l| l.include?("Account no.") }
+
+    get contact_path(ironman)
+    assert_select "dd", text: "EE-7788"
+    get edit_contact_path(ironman)
+    assert_select "input[name='contact[account_number]'][value='EE-7788']"
+  end
+
   test "other types are approved on create, as before" do
     bank = create_bank_account(@org, name: "Bank", code: "090")
     post expenses_path, params: { document: { date: "2026-09-01", contact_name: "DO", documentable_attributes: { bank_account_id: bank.id }, line_items_attributes: line(20, @hosting) } }

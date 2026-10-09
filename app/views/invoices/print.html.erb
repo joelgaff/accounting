@@ -51,6 +51,8 @@
     <strong><%= @document.organization.name %></strong><br>
     Issued <%= @document.date.strftime("%b %-d, %Y") %><br>
     Due <%= invoice.due_date.strftime("%b %-d, %Y") %>
+    <% if @document.reference.present? %><br>Reference <%= @document.reference %><% end %>
+    <% if @document.contact&.account_number.present? %><br>Account no. <%= @document.contact.account_number %><% end %>
   </div>
 </div>
 
