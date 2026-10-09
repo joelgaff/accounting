@@ -30,13 +30,7 @@ class RecurringInvoice < ApplicationRecord
         documentable: Invoice.new(client_name: client_name, due_date: as_of + net_days.days,
                                   receivable_account: receivable_account)
       )
-      line_items.each do |src|
-        line = invoice.line_items.build(
-          description: src.description, quantity: src.quantity,
-          unit_amount: src.unit_amount, account: src.account, tax_rate: src.tax_rate
-        )
-        src.copy_tracking_to(line)
-      end
+      line_items.each { |src| src.copy_to(invoice) }
       invoice.save!
 
       # Advance schedule

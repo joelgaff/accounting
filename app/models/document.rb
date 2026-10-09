@@ -94,11 +94,7 @@ class Document < ApplicationRecord
   def copy_from(original)
     self.contact        = original.contact
     self.copied_from_id = original.id
-    original.line_items.each do |src|
-      line = line_items.build(description: src.description, quantity: src.quantity, unit_amount: src.unit_amount,
-                              account: src.account, tax_rate: src.tax_rate)
-      src.copy_tracking_to(line)
-    end
+    original.line_items.each { |src| src.copy_to(self) }
     documentable.copy_from(original.documentable, original: original, document: self)
     self
   end
