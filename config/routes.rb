@@ -18,10 +18,11 @@ Rails.application.routes.draw do
       post :approve
       post :mark_sent
       post :mark_unsent
+      get  :copy
     end
   end
   resources :bills, only: %i[index show new create edit update destroy] do
-    member { post :void; post :approve }
+    member { post :void; post :approve; get :copy }
   end
   %i[expenses deposits transfers].each do |kind|
     resources kind, only: %i[index show new create edit update destroy] do

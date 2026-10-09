@@ -15,6 +15,11 @@ class DocumentEvent < ApplicationRecord
 
   def note? = action == "note"
 
+  # The document a created one was copied from, when it still exists.
+  def copied_from
+    document.organization.documents.find_by(id: details["copied_from"]) if details["copied_from"]
+  end
+
   def actor_name
     user&.name.presence || user&.email.presence || (details["source"] == "xero_import" ? "Xero import" : "System")
   end

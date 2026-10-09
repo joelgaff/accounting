@@ -29,5 +29,7 @@ module Documentable
   def ledger_description(_document) = raise(NotImplementedError, "#{self.class} must define ledger_description")
   def status                        = "posted"
   def draftable?                    = false   # invoices and bills start as drafts; the rest post on save
+  def copyable?                     = false   # offers "Copy": a new one prefilled from this
+  def copy_from(_source, original:, document:); end   # what the type carries across on a copy
   def take_control_account_from(_settings); end   # invoices and bills post to the account Settings names at approval
 end

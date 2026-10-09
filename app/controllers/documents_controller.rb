@@ -3,7 +3,7 @@
 class DocumentsController < ApplicationController
   include Paginatable
 
-  before_action :load_form_collections, only: %i[new create edit update]
+  before_action :load_form_collections, only: %i[new create edit update copy]
   before_action :load_document,         if: -> { params[:id].present? }   # every member action, subclasses included
   before_action :refuse_if_voided,      only: %i[edit update void approve]
 
@@ -30,6 +30,14 @@ class DocumentsController < ApplicationController
       @document.line_items.build if @document.documentable.line_items? && @document.live_line_items.empty?
       render :new, status: :unprocessable_entity
     end
+  end
+
+  # The new form, filled from an existing document. Nothing is saved until the form is.
+  def copy
+    original  = @document
+    @document = build_document.copy_from(original)
+    flash.now[:notice] = "Copied from #{original.label}. Nothing is saved until you save it."
+    render :new
   end
 
   def edit; end
@@ -86,7 +94,7 @@ class DocumentsController < ApplicationController
   def documents_path_for_type = helpers.documents_path_for(@document)
   def created_notice         = "#{type_name} created."
   def type_name              = documentable_class.model_name.human
-  def universal_permitted    = %i[contact_id contact_name date reference memo]
+  def universal_permitted    = %i[contact_id contact_name date reference memo copied_from_id]
   def approve_requested?     = params[:approve].present?
 
   def scope

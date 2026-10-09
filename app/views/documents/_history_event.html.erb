@@ -8,5 +8,8 @@
     <% event.detail_lines.each do |line| %>
       <div class="history-detail"><%= line %></div>
     <% end %>
+    <% if (source = event.copied_from) %>
+      <div class="history-detail"><%= link_to "Copied from #{source.label}", document_path_for(source) %></div>
+    <% end %>
   </div>
 </li>

@@ -1,5 +1,5 @@
 class BillsController < DocumentsController
-  before_action -> { require_control_account(:payable_account, "Accounts Payable", "bills") }, only: %i[new create]
+  before_action -> { require_control_account(:payable_account, "Accounts Payable", "bills") }, only: %i[new create copy]
 
   private
 

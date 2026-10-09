@@ -17,6 +17,13 @@ class Invoice < ApplicationRecord
   def party_name  = client_name
   def settleable? = true
   def draftable?  = true
+  def copyable?   = true
+
+  # The customer and the payment terms: the gap between issue and due, not the dates.
+  def copy_from(source, original:, document:)
+    self.client_name = source.client_name
+    self.due_date    = document.date + (source.due_date - original.date).to_i
+  end
   def sent?       = sent_at.present?
 
   # Sent to the customer: emailed from here, or marked by hand because it went

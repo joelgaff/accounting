@@ -9,6 +9,9 @@ class Bill < ApplicationRecord
 
   def settleable? = true
   def draftable?  = true
+  def copyable?   = true
+
+  def copy_from(source, original:, document:) = self.vendor = source.vendor
 
   def take_control_account_from(settings)
     self.payable_account = settings.payable_account if settings.payable_account

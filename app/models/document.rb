@@ -15,6 +15,7 @@ class Document < ApplicationRecord
 
   attr_accessor :created_via   # noted in the history: "memory" when reconcile coded it from past codings
   attr_accessor :contact_name  # a name typed on a form: the contact is found or made before validation
+  attr_accessor :copied_from_id # the document this one was copied from, noted in the history
 
   belongs_to :organization
   belongs_to :contact, optional: true
@@ -85,6 +86,27 @@ class Document < ApplicationRecord
     words = words.to_s.strip
     return nil if words.blank? || words.casecmp?(bank_words.to_s.strip)
     words
+  end
+
+  # Fill this new document from another: who it is with, its lines and their tracking,
+  # and what the type keeps (the invoice's payment terms, the bill's vendor). Number,
+  # dates, state, sent mark, payments, attachments, reference and memo stay with the original.
+  def copy_from(original)
+    self.contact        = original.contact
+    self.copied_from_id = original.id
+    original.line_items.each do |src|
+      line = line_items.build(description: src.description, quantity: src.quantity, unit_amount: src.unit_amount,
+                              account: src.account, tax_rate: src.tax_rate)
+      src.copy_tracking_to(line)
+    end
+    documentable.copy_from(original.documentable, original: original, document: self)
+    self
+  end
+
+  def copyable? = documentable.copyable?
+
+  def copied_from
+    organization.documents.find_by(id: copied_from_id) if copied_from_id.present?
   end
 
   def counterparty = contact&.name.presence || party_name

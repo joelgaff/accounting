@@ -1,5 +1,6 @@
 <%= form_with model: document, **document_form_options(document), class: "app-form app-form-wide" do |f| %>
   <%= render "documents/errors", document: document %>
+  <%= f.hidden_field :copied_from_id if document.copied_from_id.present? %>
 
   <% if customers.any? %>
     <div class="field">
