@@ -4,7 +4,7 @@
 <%= tag.div id: dom_id(document, :status), class: "status-actions", data: { controller: "sheet", action: "keydown@window->sheet#keydown" } do %>
   <%= status_badge(document.status) %>
   <% if document.invoice? && document.invoice.sent? %>
-    <span class="sent-mark" title="Sent <%= document.invoice.sent_at.strftime("%b %-d, %Y") %>">✓ sent</span>
+    <span class="sent-mark">✓ Sent <%= document.invoice.sent_at.strftime("%b %-d, %Y") %></span>
   <% end %>
   <div class="action-bar">
     <% if document.draft? %>

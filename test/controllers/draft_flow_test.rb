@@ -222,6 +222,10 @@ class DraftFlowTest < ActionDispatch::IntegrationTest
     get invoice_path(inv)
     assert_select ".action-bar button", text: "Mark as sent", count: 0
     assert_select "button", text: "Mark as unsent"
+    assert_select ".sent-mark", text: "✓ Sent #{inv.invoice.sent_at.strftime("%b %-d, %Y")}"
+    get print_invoice_path(inv)
+    assert_select ".sent-mark", 0
+    assert_no_match(/Sent #{inv.invoice.sent_at.strftime("%b %-d")}/, response.body, "the printed invoice says nothing about sending")
     post mark_unsent_invoice_path(inv), as: :turbo_stream
     assert_not inv.invoice.reload.sent?
     get invoices_path(status: "unsent")
