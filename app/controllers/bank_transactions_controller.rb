@@ -4,10 +4,13 @@ class BankTransactionsController < ApplicationController
   before_action :load_transaction, only: %i[match allocate categorize transfer accept_suggestion ignore unmatch]
   before_action :load_collections
 
+  DEFAULT_VIEW = "unmatched"   # the page opens on what is left to do; "all" shows every line
+
   def index
+    @status = view_for(params[:status])
     coded = [ :documentable, Reconciliation::Coding::LINE_PRELOAD ]
     scope = Current.organization.bank_transactions.includes(:bank_account, :bank_rule, payments: { document: coded }, document: coded)
-    scope = scope.where(status: params[:status]) if params[:status].in?(BankTransaction::STATUSES)
+    scope = scope.where(status: @status) if @status.in?(BankTransaction::STATUSES)
     scope = scope.where(bank_account_id: params[:bank_account_id]) if params[:bank_account_id].present?
     @transactions    = paginate(scope.order(posted_on: :desc, id: :desc), per: 100)
     @candidates      = Reconciliation::Candidates.new(Current.organization, @transactions)
@@ -128,9 +131,16 @@ class BankTransactionsController < ApplicationController
     @contact_names = org.contacts.ordered.pluck(:name)
   end
 
-  # The filter the page was showing, from where the form was sent.
+  # The view a ?status= names: one of the statuses, "all", or the default when blank or unknown.
+  def view_for(status)
+    status.in?(BankTransaction::STATUSES + [ "all" ]) ? status : DEFAULT_VIEW
+  end
+
+  # The view the page was showing, from where the form was sent; nil when there is no
+  # telling, and then a row stays put rather than vanish.
   def view_status
-    Rack::Utils.parse_query(URI(request.referer.to_s).query.to_s)["status"]
+    return nil if request.referer.blank?
+    view_for(Rack::Utils.parse_query(URI(request.referer).query.to_s)["status"])
   rescue URI::InvalidURIError
     nil
   end

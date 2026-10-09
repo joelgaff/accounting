@@ -173,9 +173,32 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
 
     other = line(-20, description: "ZOOM.US")
     post categorize_bank_transaction_path(other), params: { account_id: @hosting.id, contact_name: "Zoom" }, as: :turbo_stream,
-         headers: { "Referer" => bank_transactions_url }
+         headers: { "Referer" => bank_transactions_url(status: "all") }
     assert_match(/action="replace" target="#{row_id(other)}"/, response.body)
     assert_match(/badge-matched/, response.body)
+  end
+
+  test "the page opens on the unmatched lines; All is one chip away" do
+    todo = line(-48, description: "BLUEPIXEL HOSTING 10/02")
+    done = line(-20, description: "ZOOM.US")
+    @org.contacts.create!(name: "Zoom", kind: "vendor")
+    Reconciliation::Categorize.new(done, account: @hosting, contact_name: "Zoom").call
+
+    get bank_transactions_path
+    assert_select "##{row_id(todo)}"
+    assert_select "##{row_id(done)}", 0, "a reconciled line is not on the default view"
+    assert_select "nav.chips a[aria-current=page]", text: "Unmatched"
+    assert_select "nav.chips a[href=?]", bank_transactions_path(status: "all"), text: "All"
+
+    get bank_transactions_path(status: "all")
+    assert_select "##{row_id(todo)}"
+    assert_select "##{row_id(done)}"
+    assert_select "nav.chips a[aria-current=page]", text: "All"
+
+    # Reconciled from the default view, a line leaves it, as it does from ?status=unmatched.
+    post categorize_bank_transaction_path(todo), params: { account_id: @hosting.id, contact_name: "Blue Pixel Hosting" }, as: :turbo_stream,
+         headers: { "Referer" => bank_transactions_url }
+    assert_match(/action="remove" target="#{row_id(todo)}"/, response.body)
   end
 
   test "the create panel insists on a vendor" do
