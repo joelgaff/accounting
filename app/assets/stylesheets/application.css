@@ -37,15 +37,19 @@
   --violet:  #a78bfa;
   --magenta: #e879f9;
 
-  /* Tracking chip palette: eight hues a tracking option can wear, told apart at a glance */
-  --hue-0: #fb923c;   /* orange */
-  --hue-1: #a78bfa;   /* violet */
-  --hue-2: #34d399;   /* green */
-  --hue-3: #f472b6;   /* pink */
-  --hue-4: #38bdf8;   /* sky */
-  --hue-5: #facc15;   /* yellow */
-  --hue-6: #2dd4bf;   /* teal */
-  --hue-7: #c084fc;   /* purple */
+  /* Tracking chip palette: twelve hues a tracking option can wear, neighbours kept far apart */
+  --hue-0:  #fb923c;   /* orange */
+  --hue-1:  #a78bfa;   /* violet */
+  --hue-2:  #34d399;   /* green */
+  --hue-3:  #f472b6;   /* pink */
+  --hue-4:  #38bdf8;   /* sky */
+  --hue-5:  #facc15;   /* yellow */
+  --hue-6:  #2dd4bf;   /* teal */
+  --hue-7:  #e879f9;   /* magenta */
+  --hue-8:  #f87171;   /* red */
+  --hue-9:  #a3e635;   /* lime */
+  --hue-10: #818cf8;   /* indigo */
+  --hue-11: #67e8f9;   /* cyan */
 
   /* Aliases — existing inline styles and partials resolve through these */
   --bg: var(--void);
@@ -99,14 +103,18 @@
   --violet:  #6d28d9;
   --magenta: #a21caf;
 
-  --hue-0: #c2410c;
-  --hue-1: #6d28d9;
-  --hue-2: #047857;
-  --hue-3: #be185d;
-  --hue-4: #0369a1;
-  --hue-5: #a16207;
-  --hue-6: #0f766e;
-  --hue-7: #7e22ce;
+  --hue-0:  #c2410c;
+  --hue-1:  #6d28d9;
+  --hue-2:  #047857;
+  --hue-3:  #be185d;
+  --hue-4:  #0369a1;
+  --hue-5:  #a16207;
+  --hue-6:  #0f766e;
+  --hue-7:  #a21caf;
+  --hue-8:  #b91c1c;
+  --hue-9:  #4d7c0f;
+  --hue-10: #4338ca;
+  --hue-11: #0e7490;
 
   --shadow-md: 0 18px 50px rgba(15, 30, 60, 0.12);
   --wash: rgba(15, 30, 60, 0.035);
@@ -1241,6 +1249,10 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .coding .hue-5 { --hue: var(--hue-5); }
 .coding .hue-6 { --hue: var(--hue-6); }
 .coding .hue-7 { --hue: var(--hue-7); }
+.coding .hue-8 { --hue: var(--hue-8); }
+.coding .hue-9 { --hue: var(--hue-9); }
+.coding .hue-10 { --hue: var(--hue-10); }
+.coding .hue-11 { --hue: var(--hue-11); }
 /* The why someone typed, under the name it belongs to. */
 .why { display: block; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
 .suggestion form { margin: 0; flex: none; }

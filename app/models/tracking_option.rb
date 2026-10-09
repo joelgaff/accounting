@@ -1,9 +1,9 @@
 # One value of a tracking category: "2026" under Event Year, "Summit Races"
-# under Class. Each wears a colour from a short palette so its chip is told
-# apart at a glance; the palette goes round within a category and starts
+# under Class. Each wears one of twelve colours so its chip is told apart
+# at a glance; the palette goes round within a category and starts
 # over in the next, so two categories can both hold an orange.
 class TrackingOption < ApplicationRecord
-  PALETTE_SIZE = 8
+  PALETTE_SIZE = 12
 
   belongs_to :tracking_category, inverse_of: :options
   has_many   :selections, class_name: "TrackingSelection", dependent: :restrict_with_error

@@ -8,7 +8,7 @@ class AddColorToTrackingOptions < ActiveRecord::Migration[8.1]
         WHERE earlier.tracking_category_id = tracking_options.tracking_category_id
           AND (earlier.position < tracking_options.position
                OR (earlier.position = tracking_options.position AND earlier.id < tracking_options.id))
-      ) % 8
+      ) % 12
     SQL
   end
 
