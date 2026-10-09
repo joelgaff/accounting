@@ -82,7 +82,8 @@ module ApplicationHelper
   def coding_chips(coding)
     return if coding.nil? || !coding.any?
     tag.span(class: "coding") do
-      safe_join(coding.accounts.map { |a| tag.span(a, class: "coding-account") } + coding.tracking.map { |t| tag.span(t, class: "coding-tracking") })
+      safe_join(coding.accounts.map { |a| tag.span(a, class: "coding-account") } +
+                coding.tracking.map { |t| tag.span(t.name, class: "coding-tracking hue-#{t.color}") })
     end
   end
 

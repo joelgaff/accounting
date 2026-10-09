@@ -201,6 +201,25 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/action="remove" target="#{row_id(todo)}"/, response.body)
   end
 
+  test "tracking chips wear their option's colour" do
+    year   = @org.tracking_categories.create!(name: "Event Year", options_attributes: [ { name: "2025" }, { name: "2026" } ])
+    klass  = @org.tracking_categories.create!(name: "Class", options_attributes: [ { name: "EE Timing" }, { name: "Summit Races" } ])
+    y2026  = year.options.find_by!(name: "2026")
+    summit = klass.options.find_by!(name: "Summit Races")
+    assert_equal y2026.color, summit.color, "second option in each category: same colour"
+
+    3.times { |i| coded("ZOOM.US", account: @hosting, on: Date.new(2026, 7 + i, 1), contact: "Zoom", amount: -15, tracking: [ y2026.id, summit.id ]) }
+    fresh = line(-15, description: "ZOOM.US")
+    get bank_transactions_path
+    assert_select "##{row_id(fresh)} .suggestion .coding-tracking.hue-#{y2026.color}", text: "2026"
+    assert_select "##{row_id(fresh)} .suggestion .coding-tracking.hue-#{summit.color}", text: "Summit Races"
+
+    done = line(-15, description: "ZOOM.US", on: Date.current - 1)
+    Reconciliation::Categorize.new(done, account: @hosting, contact_name: "Zoom", tracking_option_ids: [ y2026.id ]).call
+    get bank_transactions_path(status: "matched")
+    assert_select "##{row_id(done)} .coding-tracking.hue-#{y2026.color}", text: "2026"
+  end
+
   test "the create panel insists on a vendor" do
     txn = line(-48, description: "BLUEPIXEL HOSTING 10/02")
     get bank_transactions_path

@@ -19,7 +19,7 @@ module Reconciliation
       @memory     = memory
       @rules      = @org.bank_rules.active.ordered.includes(:account, :contact, :transfer_bank_account, :conditions).to_a
       @memo       = {}
-      @option_names = @org.tracking_categories.includes(:options).flat_map(&:options).to_h { |o| [ o.id, o.name ] }
+      @options = @org.tracking_categories.includes(:options).flat_map(&:options).index_by(&:id)
     end
 
     def for(txn)
@@ -42,7 +42,7 @@ module Reconciliation
       end
       rule = txn.bank_rule || @rules.detect { |r| r.matches?(txn) }
       out.unshift(Suggestion.new(kind: :rule, target: rule, score: 100, label: "Rule “#{rule.name}”: #{rule.summary}",
-                                 coding: Coding.of(account: rule.account, tracking_option_ids: rule.try(:tracking_option_ids), option_names: @option_names))) if rule
+                                 coding: Coding.of(account: rule.account, tracking_option_ids: rule.try(:tracking_option_ids), options: @options))) if rule
       out
     end
 
@@ -62,7 +62,7 @@ module Reconciliation
       account = [ hit.account.code, hit.account.name ].compact_blank.join(" ")
       Suggestion.new(kind: :memory, target: nil, data: hit, score: hit.confident? ? MEMORY_CONFIDENT : MEMORY_HINT,
                      label: "#{txn.deposit? ? 'Deposit' : 'Expense'} · #{hit.contact_name.presence || 'no contact'}",
-                     coding: Coding.of(account: hit.account, tracking_option_ids: hit.tracking_option_ids, option_names: @option_names))
+                     coding: Coding.of(account: hit.account, tracking_option_ids: hit.tracking_option_ids, options: @options))
     end
 
     def date_score(a, b, window: DATE_WINDOW)

@@ -37,6 +37,16 @@
   --violet:  #a78bfa;
   --magenta: #e879f9;
 
+  /* Tracking chip palette: eight hues a tracking option can wear, told apart at a glance */
+  --hue-0: #fb923c;   /* orange */
+  --hue-1: #a78bfa;   /* violet */
+  --hue-2: #34d399;   /* green */
+  --hue-3: #f472b6;   /* pink */
+  --hue-4: #38bdf8;   /* sky */
+  --hue-5: #facc15;   /* yellow */
+  --hue-6: #2dd4bf;   /* teal */
+  --hue-7: #c084fc;   /* purple */
+
   /* Aliases — existing inline styles and partials resolve through these */
   --bg: var(--void);
   --surface: var(--panel);
@@ -88,6 +98,15 @@
   --pending: #b45309;
   --violet:  #6d28d9;
   --magenta: #a21caf;
+
+  --hue-0: #c2410c;
+  --hue-1: #6d28d9;
+  --hue-2: #047857;
+  --hue-3: #be185d;
+  --hue-4: #0369a1;
+  --hue-5: #a16207;
+  --hue-6: #0f766e;
+  --hue-7: #7e22ce;
 
   --shadow-md: 0 18px 50px rgba(15, 30, 60, 0.12);
   --wash: rgba(15, 30, 60, 0.035);
@@ -1213,7 +1232,15 @@ input[type="file"]::file-selector-button:hover { background: rgba(41, 74, 120, 0
 .suggestion .coding { margin-top: 3px; }
 .recon-actions > .muted .coding { margin-top: 3px; }
 .coding span { font-size: 10px; line-height: 1.5; padding: 0 6px; border: 1px solid var(--rule-lit); border-radius: 3px; color: var(--dim); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.coding .coding-tracking { color: var(--violet); border-color: rgba(167, 139, 250, 0.45); }
+.coding .coding-tracking { --hue: var(--violet); color: var(--hue); border-color: color-mix(in srgb, var(--hue) 45%, transparent); }
+.coding .hue-0 { --hue: var(--hue-0); }
+.coding .hue-1 { --hue: var(--hue-1); }
+.coding .hue-2 { --hue: var(--hue-2); }
+.coding .hue-3 { --hue: var(--hue-3); }
+.coding .hue-4 { --hue: var(--hue-4); }
+.coding .hue-5 { --hue: var(--hue-5); }
+.coding .hue-6 { --hue: var(--hue-6); }
+.coding .hue-7 { --hue: var(--hue-7); }
 /* The why someone typed, under the name it belongs to. */
 .why { display: block; font-size: 11.5px; color: var(--dim); margin-top: 2px; }
 .suggestion form { margin: 0; flex: none; }
