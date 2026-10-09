@@ -6,7 +6,7 @@
   </div>
 </header>
 
-<%= render "documents/status_filter", statuses: %w[draft unsent open partial overdue paid] %>
+<%= render "documents/status_filter", statuses: %w[draft unsent unpaid open partial overdue paid] %>
 
 <% if @documents.any? %>
   <table class="data-table cards">

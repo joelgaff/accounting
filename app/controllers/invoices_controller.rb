@@ -48,6 +48,8 @@ class InvoicesController < DocumentsController
     index_scope.posted.select { |d| !d.invoice.sent? && !d.paid? }
   end
 
+  def due_on(document) = document.invoice.due_date
+
   def refuse_if_draft
     return unless @document.draft?
     redirect_to invoice_path(@document), alert: "#{@document.label} is a draft; approve it before emailing."

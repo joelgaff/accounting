@@ -100,16 +100,20 @@ class DocumentsController < ApplicationController
     base.chronological
   end
 
-  # ?status= narrows the index: voided, all, or one of the type's own statuses.
+  # ?status= narrows the index: voided, all, unpaid, or one of the type's own statuses.
   def filtered
     base = index_scope
     case @status
     when "voided" then base.voided
     when "all"    then base
+    when "unpaid" then base.posted.reject(&:paid?).sort_by { |d| [ due_on(d), d.id ] }
     when nil, ""  then base.live
     else               base.live.select { |d| d.status == @status }
     end
   end
+
+  # When the money is expected, for the unpaid list's order. Types with a due date override.
+  def due_on(document) = document.date
 
   def load_document
     @document = scope.find(params[:id])
