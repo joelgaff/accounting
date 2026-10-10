@@ -142,7 +142,7 @@ class DocumentsController < ApplicationController
     params.require(:document).permit(
       *universal_permitted,
       attachments: [],
-      line_items_attributes: [ :id, :description, :quantity, :unit_amount, :account_id, :tax_rate_id, :_destroy, { tracking_option_ids: [] } ],
+      line_items_attributes: [ :id, :description, :quantity, :unit_amount, :account_id, :tax_rate_id, :rebills_document_id, :_destroy, { tracking_option_ids: [] } ],
       documentable_attributes: documentable_permitted
     )
   end

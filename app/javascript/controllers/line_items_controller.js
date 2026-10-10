@@ -18,9 +18,23 @@ export default class extends Controller {
 
   add(event) {
     event.preventDefault()
-    const html = this.templateTarget.innerHTML.replace(/NEW_RECORD/g, this.indexValue)
-    this.rowsTarget.insertAdjacentHTML("beforeend", html)
+    this.insert(this.templateTarget.innerHTML)
+  }
+
+  // A row's HTML with NEW_RECORD placeholders, from the template or handed over
+  // by the billable panel; it gets the next index and joins the table.
+  insert(html) {
+    this.rowsTarget.insertAdjacentHTML("beforeend", html.replace(/NEW_RECORD/g, this.indexValue))
     this.indexValue += 1
+    this.recalc()
+  }
+
+  // Rows that are not saved yet simply go; nothing to mark for destruction.
+  dropUnsaved(selector) {
+    this.rowsTarget.querySelectorAll(selector).forEach(row => {
+      if (row.querySelector('input[name*="[id]"]')) return
+      row.remove()
+    })
     this.recalc()
   }
 

@@ -41,7 +41,9 @@ Rails.application.routes.draw do
       post :restore
     end
   end
-  resources :contacts
+  resources :contacts do
+    resources :billable_expenses, only: :index, module: :contacts   # the costs an invoice for them can pick up
+  end
   resources :journal_entries, only: %i[index show new create edit update destroy] do
     member { post :void }
   end

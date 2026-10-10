@@ -1,4 +1,4 @@
-<tr data-line-items-target="row" data-open="<%= li_form.object.new_record? || li_form.object.errors.any? %>">
+<tr data-line-items-target="row" data-open="<%= li_form.object.new_record? || li_form.object.errors.any? %>"<%= tag.attributes(data: { rebills: li_form.object.rebills_document_id }) if li_form.object.rebills_document_id %>>
   <td data-cell="description"><%= li_form.text_field :description, placeholder: "Description", style: "width:100%;" %></td>
   <td class="num" data-label="Qty"><%= li_form.number_field :quantity, step: 0.0001, min: 0, inputmode: "decimal", value: li_form.object.quantity || 1, style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "qty" } %></td>
   <td class="num" data-label="Unit price"><%= li_form.number_field :unit_amount, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", data: { action: "input->line-items#recalc", line_items_target: "unit" } %></td>
@@ -14,6 +14,7 @@
   <td class="num" data-cell="amount"><%= number_field_tag nil, nil, id: nil, step: 0.01, placeholder: "0.00", inputmode: "decimal", style: "width:100%;text-align:right;", "aria-label": "Amount", data: { action: "input->line-items#amountChanged", line_items_target: "amount" } %></td>
   <td data-cell="tools">
     <%= li_form.hidden_field :_destroy, data: { line_items_target: "destroy" } %>
+    <%= li_form.hidden_field :rebills_document_id if li_form.object.rebills_document_id %>
     <button type="button" class="btn btn-secondary line-details" data-action="line-items#toggle" aria-expanded="<%= li_form.object.new_record? || li_form.object.errors.any? %>">Details</button>
     <button type="button" class="btn btn-secondary" data-action="line-items#remove" style="padding:2px 8px;" aria-label="Remove line">×</button>
   </td>

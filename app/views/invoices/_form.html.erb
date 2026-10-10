@@ -1,11 +1,12 @@
-<%= form_with model: document, **document_form_options(document), class: "app-form app-form-wide" do |f| %>
+<%= form_with model: document, **document_form_options(document), class: "app-form app-form-wide",
+              data: { controller: "billable", billable_url_value: contact_billable_expenses_path("__ID__") } do |f| %>
   <%= render "documents/errors", document: document %>
   <%= f.hidden_field :copied_from_id if document.copied_from_id.present? %>
 
   <% if customers.any? %>
     <div class="field">
       <%= f.label :contact_id, "Customer" %>
-      <%= f.collection_select :contact_id, customers, :id, :name, include_blank: "— pick a customer or type a name below —" %>
+      <%= f.collection_select :contact_id, customers, :id, :name, { include_blank: "— pick a customer or type a name below —" }, data: { action: "change->billable#customerChanged" } %>
     </div>
   <% end %>
 
@@ -38,6 +39,10 @@
 
   <%# Line items — one row per service line, each with its own revenue account + optional tax. %>
   <%= render "shared/line_items_fields", form: f, accounts: revenue_accounts, tax_rates: tax_rates %>
+
+  <%# The customer's unbilled billable costs, offered as rows to add. Empty until a customer is picked. %>
+  <%= turbo_frame_tag dom_id(Current.organization, :billable_expenses), src: (contact_billable_expenses_path(document.contact) if document.contact),
+                      data: { billable_target: "frame", action: "turbo:frame-load->billable#panelLoaded" } %>
 
   <div class="field">
     <%= f.label :attachments, "Attachments (PDF, images)" %>
