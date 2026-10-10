@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -292,7 +292,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_120000) do
     t.integer "invoice_next_number"
     t.string "email_from_name"
     t.string "email_reply_to"
+    t.integer "billable_income_account_id"
     t.index ["bank_account_id"], name: "index_organization_settings_on_bank_account_id"
+    t.index ["billable_income_account_id"], name: "index_organization_settings_on_billable_income_account_id"
     t.index ["organization_id"], name: "index_organization_settings_on_organization_id", unique: true
     t.index ["payable_account_id"], name: "index_organization_settings_on_payable_account_id"
     t.index ["receivable_account_id"], name: "index_organization_settings_on_receivable_account_id"
@@ -512,6 +514,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_120000) do
   add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "journal_lines", "plutus_accounts", column: "account_id"
   add_foreign_key "organization_settings", "organizations"
+  add_foreign_key "organization_settings", "plutus_accounts", column: "billable_income_account_id"
   add_foreign_key "payments", "bank_accounts"
   add_foreign_key "payments", "bank_transactions"
   add_foreign_key "payments", "documents"

@@ -39,6 +39,14 @@ class SettingsController < ApplicationController
                   plain: { "Invoice next number" => "the next number" })
   end
 
+  # The revenue account a picked-up billable expense defaults to on an invoice. Blank: the expense's own.
+  def billing
+    attrs = params.require(:organization_settings).permit(:billable_income_account_id)
+    save_settings(attrs, what: "Billable expenses",
+                  notice: ->(s) { s.billable_income_account ? "Picked-up expenses will go to #{s.billable_income_account.name}." : "Picked-up expenses will go to each expense's own account." },
+                  plain: { "Billable income account" => "the account" })
+  end
+
   # ── The "You" panel (local mode; Launchpad owns name and email otherwise) ──
 
   def profile
@@ -114,6 +122,7 @@ class SettingsController < ApplicationController
     @bank_accounts      = Current.organization.bank_accounts.active.ordered
     @asset_accounts     = Plutus::Asset.where(tenant: Current.organization).order(:code, :name)
     @liability_accounts = Plutus::Liability.where(tenant: Current.organization).order(:code, :name)
+    @revenue_accounts   = Plutus::Revenue.where(tenant: Current.organization).order(:code, :name)
   end
 
   def settings_params

@@ -3,8 +3,9 @@ class OrganizationSettings < ApplicationRecord
   belongs_to :bank_account,       optional: true
   belongs_to :receivable_account, class_name: "Plutus::Asset",     optional: true
   belongs_to :payable_account,    class_name: "Plutus::Liability", optional: true
+  belongs_to :billable_income_account, class_name: "Plutus::Revenue", optional: true   # where a picked-up billable expense goes on an invoice
 
-  scoped_to_organization :bank_account, :receivable_account, :payable_account, organization: ->(s) { s.organization }
+  scoped_to_organization :bank_account, :receivable_account, :payable_account, :billable_income_account, organization: ->(s) { s.organization }
 
   NUMBER_WIDTH = 4   # INV-0001; the digits grow past four on their own
 
@@ -17,6 +18,7 @@ class OrganizationSettings < ApplicationRecord
   def email_sender_name = email_from_name.presence || organization.name
   validates :invoice_next_number, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
   validate  :control_accounts_stay_set
+  validate  :billable_income_is_revenue
 
   # Which documents post to each control account.
   CONTROL_ACCOUNTS = { receivable_account: :invoices, payable_account: :bills }.freeze
@@ -28,6 +30,12 @@ class OrganizationSettings < ApplicationRecord
       next unless organization.documents.public_send(documents).exists?
       errors.add(attr, "can't be cleared while #{documents} post to it; pick another account instead")
     end
+  end
+
+  # The revenue-typed association loads nothing for an expense account's id, so check the id itself.
+  def billable_income_is_revenue
+    return if billable_income_account_id.nil? || billable_income_account.present?
+    errors.add(:billable_income_account, "must be a revenue account")
   end
 
   # The number the next invoice gets: the prefix plus the first free number at
