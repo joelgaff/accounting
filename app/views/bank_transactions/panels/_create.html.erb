@@ -2,7 +2,7 @@
 <% hint = local_assigns[:hint] %>
 <%= form_with url: categorize_bank_transaction_path(txn), method: :post, class: "app-form recon-form" do |f| %>
   <% if hint %>
-    <p class="recon-hint muted">Last time: <%= [ hint.contact_name, hint.account.name ].compact_blank.join(" · ") %><%= " (#{hint.count}×)" if hint.count > 1 %></p>
+    <p class="recon-hint muted">Last time: <%= [ hint.contact_name, hint.account.name, ("billed to #{hint.billable_to_name}" if hint.billable_to_name) ].compact_blank.join(" · ") %><%= " (#{hint.count}×)" if hint.count > 1 %></p>
   <% end %>
   <div class="field grow">
     <%= f.label :account_id, txn.deposit? ? "Income account" : "Expense category" %>
@@ -29,6 +29,12 @@
     <%= f.label :contact_name, txn.deposit? ? "From" : "Vendor" %>
     <%= f.text_field :contact_name, value: hint&.contact_name, list: dom_id(Current.organization, :contact_names), placeholder: "Existing or new contact", required: true %>
   </div>
+  <% unless txn.deposit? %>
+    <div class="field">
+      <%= f.label :billable_to, "Bill to" %>
+      <%= f.text_field :billable_to, value: hint&.billable_to_name, list: dom_id(Current.organization, :contact_names), placeholder: "Customer to invoice this to (optional)" %>
+    </div>
+  <% end %>
   <div class="recon-submit">
     <%= f.submit (txn.deposit? ? "Create deposit" : "Create expense"), class: "btn btn-primary" %>
     <%= link_to "Make a rule", new_bank_rule_path(bank_transaction_id: txn.id), class: "muted", style: "font-size:11.5px;", title: "Make a rule from this line" %>

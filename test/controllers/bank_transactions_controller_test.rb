@@ -20,9 +20,9 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
 
   # ── Memory: what a payee was coded to before ──────────────────────────────
 
-  def coded(description, account:, on:, contact: "Blue Pixel Hosting", amount: -48, tracking: [])
+  def coded(description, account:, on:, contact: "Blue Pixel Hosting", amount: -48, tracking: [], billable_to: nil)
     txn = line(amount, on: on, description: description)
-    Reconciliation::Categorize.new(txn, account: account, contact_name: contact, tracking_option_ids: tracking).call
+    Reconciliation::Categorize.new(txn, account: account, contact_name: contact, tracking_option_ids: tracking, billable_to: billable_to).call
     txn
   end
 
@@ -218,6 +218,31 @@ class BankTransactionsControllerTest < ActionDispatch::IntegrationTest
     Reconciliation::Categorize.new(done, account: @hosting, contact_name: "Zoom", tracking_option_ids: [ y2026.id ]).call
     get bank_transactions_path(status: "matched")
     assert_select "##{row_id(done)} .coding-tracking.hue-#{y2026.color}", text: "2026"
+  end
+
+  test "the create panel takes a customer to bill the cost to, and memory remembers them" do
+    northwind = @org.contacts.create!(name: "Northwind", kind: "customer")
+    txn = line(-500, description: "DELTA AIR 001")
+    get bank_transactions_path
+    assert_select "##{row_id(txn)} [data-segment=create] input[name=billable_to]"
+    deposit = line(500, description: "NORTHWIND ACH")
+    get bank_transactions_path
+    assert_select "##{row_id(deposit)} [data-segment=create] input[name=billable_to]", 0, "a deposit is not a cost"
+
+    post categorize_bank_transaction_path(txn), params: { account_id: @hosting.id, contact_name: "Delta", billable_to: "Northwind" }, as: :turbo_stream
+    assert_response :success
+    assert_equal northwind, txn.reload.document.billable_to
+
+    2.times { |i| coded("DELTA AIR 00#{i + 2}", account: @hosting, on: Date.new(2026, 8 + i, 1), contact: "Delta", amount: -500, billable_to: "Northwind") }
+    fresh = line(-500, description: "DELTA AIR 009", on: Date.current - 1)
+    get bank_transactions_path
+    assert_select "##{row_id(fresh)} .recon-hint", text: /billed to Northwind/
+    assert_select "##{row_id(fresh)} [data-segment=create] input[name=billable_to][value=Northwind]"
+    assert_select "##{row_id(fresh)} .suggestion .btn", text: "OK"
+
+    post accept_suggestion_bank_transaction_path(fresh), params: { kind: "memory" }, as: :turbo_stream
+    assert_response :success
+    assert_equal northwind, fresh.reload.document.billable_to
   end
 
   test "the create panel insists on a vendor" do

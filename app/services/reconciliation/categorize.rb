@@ -3,8 +3,10 @@ module Reconciliation
   # in) with one line item, then link the two.
   class Categorize
     # via: what chose the coding when a person did not type it ("memory").
-    def initialize(txn, account:, tax_rate: nil, contact_name: nil, memo: nil, tracking_option_ids: [], source: "reconcile", via: nil)
+    # billable_to: a customer's name; the expense is flagged to be picked up on their invoice.
+    def initialize(txn, account:, tax_rate: nil, contact_name: nil, memo: nil, tracking_option_ids: [], billable_to: nil, source: "reconcile", via: nil)
       @txn          = txn
+      @billable_to  = billable_to.to_s.strip.presence
       @via          = via
       @account      = account
       @tax_rate     = tax_rate
@@ -29,6 +31,7 @@ module Reconciliation
           reference:    @txn.reference,
           memo:         @memo || @txn.description,
           contact_name: @contact_name,                 # the document finds or makes the contact
+          billable_to:  customer_to_bill,
           source:       @source,
           created_via:  @via,
           documentable: build_type,
@@ -43,6 +46,12 @@ module Reconciliation
     end
 
     private
+
+    # Only a cost is billable; a deposit's "bill to" is ignored.
+    def customer_to_bill
+      return nil if @billable_to.nil? || @txn.deposit?
+      Contact.find_or_create_named(@txn.organization, @billable_to, kind: "customer")
+    end
 
     def build_type
       (@txn.deposit? ? Deposit : Expense).new(bank_account: @txn.bank_account)   # the vendor mirrors the contact

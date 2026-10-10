@@ -65,6 +65,7 @@ class BankTransactionsController < ApplicationController
         tax_rate:     params[:tax_rate_id].present? ? Current.organization.tax_rates.find(params[:tax_rate_id]) : nil,
         contact_name: params[:contact_name],
         memo:         params[:memo],
+        billable_to:  params[:billable_to],
         tracking_option_ids: params[:tracking_option_ids]
       ).call
     end

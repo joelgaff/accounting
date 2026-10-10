@@ -9,12 +9,12 @@ module Reconciliation
   class Memory
     CONFIDENT_AFTER = 3
 
-    Hit    = Struct.new(:contact_name, :account, :tax_rate, :tracking_option_ids, :memo, :count, :confident, keyword_init: true) do
+    Hit    = Struct.new(:contact_name, :account, :tax_rate, :tracking_option_ids, :memo, :billable_to_name, :count, :confident, keyword_init: true) do
       def confident? = confident
       # The keyword arguments Categorize takes.
-      def coding = { account: account, tax_rate: tax_rate, contact_name: contact_name, tracking_option_ids: tracking_option_ids, memo: memo }
+      def coding = { account: account, tax_rate: tax_rate, contact_name: contact_name, tracking_option_ids: tracking_option_ids, memo: memo, billable_to: billable_to_name }
     end
-    Coding = Struct.new(:document, :contact_name, :account, :tax_rate, :tracking_option_ids, :memo, keyword_init: true)
+    Coding = Struct.new(:document, :contact_name, :account, :tax_rate, :tracking_option_ids, :memo, :billable_to_name, keyword_init: true)
 
     def initialize(organization, transactions)
       @org  = organization
@@ -41,7 +41,8 @@ module Reconciliation
       tax    = agree && recent.map { |c| c.tax_rate&.id }.uniq.size == 1 ? recent.first.tax_rate : nil
       newest = codings.first
       Hit.new(contact_name: newest.contact_name, account: newest.account, tax_rate: agree ? tax : newest.tax_rate,
-              tracking_option_ids: newest.tracking_option_ids, memo: newest.memo, count: codings.size, confident: agree)
+              tracking_option_ids: newest.tracking_option_ids, memo: newest.memo, billable_to_name: newest.billable_to_name,
+              count: codings.size, confident: agree)
     end
 
     # key => codings, newest first, each document once.
@@ -54,7 +55,7 @@ module Reconciliation
           line = document.line_items.first or next
           by_key[key] << Coding.new(document: document, contact_name: document.counterparty, account: line.account,
                                     tax_rate: line.tax_rate, tracking_option_ids: line.tracking_option_ids.sort,
-                                    memo: why_of(line, bank_words))
+                                    memo: why_of(line, bank_words), billable_to_name: document.billable_to&.name)
         end
         by_key.transform_values { |codings| codings.sort_by { |c| [ c.document.date, c.document.id ] }.reverse }
       end
@@ -65,7 +66,7 @@ module Reconciliation
 
     def document_scope
       @org.documents.posted.where(documentable_type: %w[Expense Deposit])
-          .includes(:contact, :documentable, line_items: [ :account, :tax_rate, :tracking_selections ])
+          .includes(:contact, :billable_to, :documentable, line_items: [ :account, :tax_rate, :tracking_selections ])
     end
 
     # Lines already reconciled into an expense or deposit, keyed like the new line.

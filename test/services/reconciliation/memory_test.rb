@@ -117,4 +117,18 @@ class Reconciliation::MemoryTest < ActiveSupport::TestCase
     assert_equal @hosting, hit.account
     assert_equal "Gusto", hit.contact_name
   end
+
+  test "memory carries who a cost was billed to, so the next one is flagged the same way" do
+    northwind = @org.contacts.create!(name: "Northwind", kind: "customer")
+    3.times do |i|
+      txn = line(-500, "DELTA AIR 00#{i}", on: Date.new(2026, 7 + i, 1))
+      Reconciliation::Categorize.new(txn, account: @hosting, contact_name: "Delta", billable_to: "Northwind").call
+    end
+    fresh = line(-500, "DELTA AIR 009")
+    hit = Reconciliation::Memory.new(@org, [ fresh ]).for(fresh)
+    assert hit.confident?
+    assert_equal "Northwind", hit.billable_to_name
+    assert_equal "Northwind", hit.coding[:billable_to]
+    assert_equal northwind, @org.documents.expenses.last.billable_to
+  end
 end
