@@ -108,13 +108,14 @@ class DocumentsController < ApplicationController
     base.chronological
   end
 
-  # ?status= narrows the index: voided, all, unpaid, or one of the type's own statuses.
+  # ?status= narrows the index: voided, all, unpaid, billable, or one of the type's own statuses.
   def filtered
     base = index_scope
     case @status
     when "voided" then base.voided
     when "all"    then base
     when "unpaid" then base.posted.reject(&:paid?).sort_by { |d| [ due_on(d), d.id ] }
+    when "billable" then base.posted.where.not(billable_to_id: nil).unbilled   # flagged for a customer, not yet on their invoice
     when nil, ""  then base.live
     else               base.live.select { |d| d.status == @status }
     end

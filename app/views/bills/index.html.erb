@@ -3,7 +3,7 @@
   <%= link_to "New bill", new_bill_path, class: "btn btn-primary page-primary" %>
 </header>
 
-<%= render "documents/status_filter", statuses: %w[draft unpaid open partial paid] %>
+<%= render "documents/status_filter", statuses: %w[draft unpaid open partial paid billable] %>
 
 <% if @documents.any? %>
   <table class="data-table cards">

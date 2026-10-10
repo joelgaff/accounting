@@ -14,6 +14,7 @@ class ContactsController < ApplicationController
   def show
     @documents   = @contact.documents.live.includes(:documentable, :payments).chronological.limit(50)
     @outstanding = @documents.select(&:settleable?).sum(&:balance_due)
+    @unbilled    = Current.organization.documents.billable_to(@contact).unbilled.includes(:documentable, :contact).chronological
   end
 
   def new
