@@ -8,5 +8,5 @@
     <p><%= link_to "Import your Chart of Accounts", new_chart_of_accounts_import_path %> for categories, and <%= link_to "add a bank account", new_bank_account_path %> under Banking.</p>
   </div>
 <% else %>
-  <%= render "form", document: @document, expense_accounts: @expense_accounts, bank_accounts: @bank_accounts, vendors: @vendors, tax_rates: @tax_rates %>
+  <%= render "form", document: @document, expense_accounts: @expense_accounts, bank_accounts: @bank_accounts, vendors: @vendors, customers: @customers, tax_rates: @tax_rates %>
 <% end %>

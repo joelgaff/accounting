@@ -11,7 +11,10 @@ class ExpensesController < DocumentsController
     super.tap { |doc| doc.expense.bank_account ||= Current.organization.settings.bank_account }
   end
 
+  def universal_permitted    = super + %i[billable_to_id]   # a cost can be flagged for a customer
+
   def load_form_collections
+    @customers        = Current.organization.contacts.customers.ordered
     @expense_accounts = Plutus::Expense.where(tenant: Current.organization).order(:name)
     @bank_accounts    = Current.organization.bank_accounts.active.ordered
     @vendors          = Current.organization.contacts.vendors.ordered

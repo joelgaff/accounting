@@ -18,6 +18,8 @@
   <% end %>
 </div>
 
+<%= render "documents/billable", document: @document %>
+
 <%= render "documents/line_items", document: @document %>
 <%= render "documents/attachments", document: @document, title: "Receipts" %>
 

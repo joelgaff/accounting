@@ -19,6 +19,7 @@ class Document < ApplicationRecord
 
   belongs_to :organization
   belongs_to :contact, optional: true
+  belongs_to :billable_to, class_name: "Contact", optional: true   # the customer an expense or bill will be invoiced to
   delegated_type :documentable, types: TYPES, dependent: :destroy, autosave: true, inverse_of: :document
   has_many :entries, class_name: "Plutus::Entry", as: :commercial_document
   has_many :bank_transactions, dependent: :nullify
@@ -28,7 +29,7 @@ class Document < ApplicationRecord
   before_validation :link_documentable
   before_validation :contact_from_name
   before_validation :sync_totals
-  scoped_to_organization :contact, organization: ->(doc) { doc.organization }
+  scoped_to_organization :contact, :billable_to, organization: ->(doc) { doc.organization }
   enum :state, { draft: "draft", approved: "approved" }, validate: true
   validates :date, presence: true
   validates :source, inclusion: { in: SOURCES }
@@ -36,6 +37,8 @@ class Document < ApplicationRecord
   validates :total, numericality: { greater_than: 0 }, if: :approved?
   validate  :must_have_line_items, if: -> { approved? && documentable&.line_items? }
   validate  :party_named,          if: -> { (expense? || deposit?) && source != "xero_import" }
+  validate  :only_purchases_are_billable
+  before_save :make_billable_to_a_customer
   validate  :not_voided,             on: :update
   validate  :total_covers_payments,  on: :update
   validate  :total_matches_bank_line, on: :update
@@ -48,6 +51,7 @@ class Document < ApplicationRecord
   scope :live,   -> { where(voided_at: nil) }
   scope :voided, -> { where.not(voided_at: nil) }
   scope :posted, -> { live.approved }   # on the ledger: neither draft nor voided
+  scope :billable_to, ->(contact) { posted.where(billable_to: contact) }   # costs flagged for a customer
   scope :outstanding_between, ->(low, high) {
     where("(documents.total - COALESCE((SELECT SUM(payments.amount) FROM payments WHERE payments.document_id = documents.id), 0)) BETWEEN ? AND ?", low, high)
   }
@@ -100,6 +104,7 @@ class Document < ApplicationRecord
   end
 
   def copyable? = documentable.copyable?
+  def billable? = expense? || bill?
 
   def copied_from
     organization.documents.find_by(id: copied_from_id) if copied_from_id.present?
@@ -191,6 +196,15 @@ class Document < ApplicationRecord
   end
 
   private
+
+  def only_purchases_are_billable
+    errors.add(:billable_to, "applies to expenses and bills only") if billable_to_id.present? && !billable?
+  end
+
+  # Whoever a cost is billed to is a customer, whatever they were before.
+  def make_billable_to_a_customer
+    billable_to.update!(kind: "both") if billable_to && !billable_to.customer?
+  end
 
   def refuse_unless_deletable
     return if deletable?

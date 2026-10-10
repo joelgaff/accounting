@@ -26,6 +26,12 @@
   <% end %>
 
   <div class="field">
+    <%= f.label :billable_to_id, "Bill to" %>
+    <%= f.collection_select :billable_to_id, customers, :id, :name, include_blank: "Not billable" %>
+    <span class="field-help">A customer this cost will be picked up on an invoice for.</span>
+  </div>
+
+  <div class="field">
     <%= f.label :reference, "Reference (optional)" %>
     <%= f.text_field :reference %>
   </div>

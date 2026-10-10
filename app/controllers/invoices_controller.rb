@@ -64,6 +64,7 @@ class InvoicesController < DocumentsController
       doc.invoice.due_date           = Date.current + 30.days
       doc.invoice.number             = Invoice.next_number(Current.organization)
       doc.invoice.receivable_account = Current.organization.settings.receivable_account
+      doc.contact = Current.organization.contacts.find_by(id: params[:contact_id]) if params[:contact_id].present?   # "New invoice for Northwind"
     end
   end
 

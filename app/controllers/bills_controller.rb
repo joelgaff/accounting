@@ -13,7 +13,10 @@ class BillsController < DocumentsController
     super.tap { |doc| doc.bill.payable_account ||= Current.organization.settings.payable_account }
   end
 
+  def universal_permitted    = super + %i[billable_to_id]   # a cost can be flagged for a customer
+
   def load_form_collections
+    @customers        = Current.organization.contacts.customers.ordered
     scope = Plutus::Account.where(tenant: Current.organization)
     @expense_accounts   = scope.where(type: "Plutus::Expense").order(:name)
     @vendors            = Current.organization.contacts.vendors.ordered

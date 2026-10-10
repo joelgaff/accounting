@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_141000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -209,6 +209,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.string "source", default: "manual", null: false
     t.datetime "voided_at"
     t.string "state", default: "approved", null: false
+    t.integer "billable_to_id"
+    t.index ["billable_to_id"], name: "index_documents_on_billable_to_id"
     t.index ["contact_id"], name: "index_documents_on_contact_id"
     t.index ["documentable_type", "documentable_id"], name: "index_documents_on_documentable", unique: true
     t.index ["organization_id", "date"], name: "index_documents_on_organization_id_and_date"
@@ -508,6 +510,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
   add_foreign_key "document_events", "organizations"
   add_foreign_key "document_events", "users"
   add_foreign_key "documents", "contacts"
+  add_foreign_key "documents", "contacts", column: "billable_to_id"
   add_foreign_key "documents", "organizations"
   add_foreign_key "expenses", "bank_accounts"
   add_foreign_key "invoices", "plutus_accounts", column: "receivable_account_id"

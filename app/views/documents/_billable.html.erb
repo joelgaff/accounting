@@ -1,0 +1,7 @@
+<%# Who a cost is billable to, and whether it has been invoiced yet. %>
+<% if document.billable_to %>
+  <p class="billable">
+    Billable to <strong><%= document.billable_to.name %></strong> · not yet invoiced ·
+    <%= link_to "New invoice for #{document.billable_to.name}", new_invoice_path(contact_id: document.billable_to.id) %>
+  </p>
+<% end %>
