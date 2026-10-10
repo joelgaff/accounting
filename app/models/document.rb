@@ -23,6 +23,7 @@ class Document < ApplicationRecord
   delegated_type :documentable, types: TYPES, dependent: :destroy, autosave: true, inverse_of: :document
   has_many :entries, class_name: "Plutus::Entry", as: :commercial_document
   has_many :bank_transactions, dependent: :nullify
+  has_many :rebilling_lines, class_name: "LineItem", foreign_key: :rebills_document_id, dependent: :nullify, inverse_of: :rebills
   has_many_attached :attachments
 
   before_validation :default_date
@@ -52,6 +53,7 @@ class Document < ApplicationRecord
   scope :voided, -> { where.not(voided_at: nil) }
   scope :posted, -> { live.approved }   # on the ledger: neither draft nor voided
   scope :billable_to, ->(contact) { posted.where(billable_to: contact) }   # costs flagged for a customer
+  scope :unbilled, -> { where.not(id: LineItem.rebilling.select(:rebills_document_id)) }   # no live invoice carries them yet
   scope :outstanding_between, ->(low, high) {
     where("(documents.total - COALESCE((SELECT SUM(payments.amount) FROM payments WHERE payments.document_id = documents.id), 0)) BETWEEN ? AND ?", low, high)
   }
@@ -105,6 +107,12 @@ class Document < ApplicationRecord
 
   def copyable? = documentable.copyable?
   def billable? = expense? || bill?
+
+  # The live invoice carrying a line that rebills this cost, draft or approved; nil when none does.
+  def billed_on
+    rebilling_lines.includes(:lineable).map(&:lineable).find { |doc| doc.is_a?(Document) && doc.invoice? && !doc.voided? }
+  end
+  def billed? = billed_on.present?
 
   def copied_from
     organization.documents.find_by(id: copied_from_id) if copied_from_id.present?

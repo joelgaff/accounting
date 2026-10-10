@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_141000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_142000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -277,9 +277,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_141000) do
     t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "rebills_document_id"
     t.index ["account_id"], name: "index_line_items_on_account_id"
     t.index ["lineable_type", "lineable_id", "position"], name: "index_line_items_on_lineable_type_and_lineable_id_and_position"
     t.index ["lineable_type", "lineable_id"], name: "index_line_items_on_lineable"
+    t.index ["rebills_document_id"], name: "index_line_items_on_rebills_document_id"
     t.index ["tax_rate_id"], name: "index_line_items_on_tax_rate_id"
   end
 
@@ -516,6 +518,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_141000) do
   add_foreign_key "invoices", "plutus_accounts", column: "receivable_account_id"
   add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "journal_lines", "plutus_accounts", column: "account_id"
+  add_foreign_key "line_items", "documents", column: "rebills_document_id"
   add_foreign_key "organization_settings", "organizations"
   add_foreign_key "organization_settings", "plutus_accounts", column: "billable_income_account_id"
   add_foreign_key "payments", "bank_accounts"
