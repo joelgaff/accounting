@@ -78,6 +78,15 @@
   one-tap OK that re-reads the books before creating. The Create panel's "Why" becomes the line
   description and the document memo; `Document#why` is the memo unless it is only the bank's own
   words, and memory carries last time's why.
+- **Billable expenses** (`docs/BILLABLE_EXPENSES_PLAN.md`): an Expense or Bill carries `billable_to`
+  (a customer); an invoice `LineItem` carries `rebills` (the cost it picked up). Billed is derived:
+  `Document#billed_on` is the live invoice, draft included, holding such a line, and `unbilled` is
+  the scope without one. `Billing::PickUp` builds the invoice lines (markup on the unit price, tax
+  and tracking copied, account from `OrganizationSettings#billable_income_account` or the cost's
+  own); `Contacts::BillableExpensesController` renders them as templates in a Turbo frame under the
+  invoice form, and `billable_controller.js` hands a ticked cost's rows to the line-items controller.
+  Reconcile's Create panel and `Memory` carry `billable_to` too. Gross method: the cost stays an
+  expense, the invoice line is revenue.
 
 ## Tracking categories (Xero-style)
 - `TrackingCategory` → `TrackingOption`; anything `Trackable` (`LineItem`, `JournalLine`,

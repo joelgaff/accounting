@@ -36,6 +36,10 @@ that worked and own the rest.
 - **Invoicing:** invoices numbered from a prefix and counter you set, with a
   PDF, emailed to the customer with the PDF attached, recurring invoices, and
   a per-document activity log.
+- **Billable expenses**, the way Xero does them: flag an expense or bill as
+  billable to a customer, and their next invoice offers it under the lines,
+  marked up if you like, with tax and tracking carried across. The cost stays
+  an expense at its real price; the invoice line is revenue.
 - **Xero import over the API.** Connect a Xero app under Settings and pull the
   chart of accounts, tax rates, contacts, tracking categories, every invoice
   and bill with lines and payments, spend and receive money, transfers and
